@@ -9,7 +9,6 @@ import Vue from 'vue'
 import App from '@/App'
 import router from '@/js/router'
 import BootstrapVue from 'bootstrap-vue'
-import 'leaflet-easybutton'
 
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
