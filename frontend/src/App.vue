@@ -14,6 +14,7 @@
 import L from 'leaflet'
 import 'leaflet.fullscreen'
 import $ from 'jquery'
+import axios from 'axios'
 
 export default {
   name: 'App',
@@ -22,11 +23,14 @@ export default {
     this.addLayers(map)
     this.addFullScreenControl(map)
     this.addCogsButton(map)
+    this.downloadTracks(map)
   },
   data: function () {
     return {
       'mapboxApiToken': 'MAPBOX_API_KEY',
-      'googleApiToken': 'GOOGLE_API_KEY'
+      'googleApiToken': 'GOOGLE_API_KEY',
+      'tracks': [],
+      'appHost': window.location.hostname === 'localhost' ? 'http://localhost:8000/djangoapp/' : '/djangoapp/'
     }
   },
   methods: {
@@ -90,6 +94,10 @@ export default {
         type: 'terrain'
       })
 
+      let googleHybrid = L.gridLayer.googleMutant({
+        type: 'hybrid'
+      })
+
       let openTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
         maxZoom: 17,
         attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
@@ -112,7 +120,8 @@ export default {
         'Hike bike': hikeBike,
         'Google roads': googleRoads,
         'Google satellite': googleSatellite,
-        'Google terrain': googleTerrain
+        'Google terrain': googleTerrain,
+        'Google hybrid': googleHybrid
       }
       L.control.layers(baseMaps).addTo(map)
     },
@@ -140,6 +149,27 @@ export default {
         titleCancel: 'Exit fullscreen',
         fullscreenElement: document.getElementById('app')
       }).addTo(map)
+    },
+    'downloadTracks': function (map) {
+      axios.get(this.appHost + 'api/tracks/').then(
+        function (response) {
+          console.log(response.data.results)
+          for (let track of response.data.results) {
+            let gpsPointList = []
+            for (let point of JSON.parse(track.points_json)) {
+              let gpsPoint = new L.LatLng(point[0], point[1])
+              gpsPointList.push(gpsPoint)
+            }
+            let gpsTrack = new L.Polyline(gpsPointList, {
+              color: 'red',
+              weight: 3,
+              opacity: 1,
+              smoothFactor: 1
+            })
+            gpsTrack.addTo(map)
+          }
+        }
+      )
     }
   }
 }
