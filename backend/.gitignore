@@ -1,3 +1,5 @@
 maplas_env
 src/db.sqlite3
 __pycache__
+set_env.bat
+.idea
