@@ -12,6 +12,7 @@
 
 <script>
 import L from 'leaflet'
+import 'leaflet.fullscreen'
 import $ from 'jquery'
 
 export default {
@@ -19,11 +20,13 @@ export default {
   mounted: function () {
     let map = this.createMap([52.743682, 16.273668], 11)
     this.addLayers(map)
+    this.addFullScreenControl(map)
     this.addCogsButton(map)
   },
   data: function () {
     return {
-      'mapboxApiToken': 'MAPBOX_API_KEY'
+      'mapboxApiToken': 'MAPBOX_API_KEY',
+      'googleApiToken': 'GOOGLE_API_KEY'
     }
   },
   methods: {
@@ -129,6 +132,14 @@ export default {
         }
       })
       map.addControl(new CogsControl())
+    },
+    'addFullScreenControl': function (map) {
+      L.control.fullscreen({
+        position: 'topleft',
+        title: 'Enter fullscreen',
+        titleCancel: 'Exit fullscreen',
+        fullscreenElement: document.getElementById('app')
+      }).addTo(map)
     }
   }
 }
@@ -160,6 +171,8 @@ export default {
     max-width: 400px;
     min-height: 100vh;
     margin-left: -400px;
+    transition: margin-left 0.5s linear;
+    background-color: white;
   }
 
   #sidebar.active {
@@ -178,6 +191,10 @@ export default {
   .content {
     min-height: 100vh;
     width: 100%;
+  }
+
+  .leaflet-control-zoom-fullscreen {
+    background-image: url(assets/fullscreen_icon.png);
   }
 
 </style>

@@ -17,7 +17,7 @@ import '@fortawesome/fontawesome-free/css/all.css'
 
 Vue.config.productionTip = false
 Vue.use(BootstrapVue)
-loadgoogle()
+loadgoogle({key: 'GOOGLE_API_KEY'})
 
 /* eslint-disable no-new */
 new Vue({
