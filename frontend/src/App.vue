@@ -23,6 +23,7 @@ export default {
     this.addLayers(map)
     this.addFullScreenControl(map)
     this.addCogsButton(map)
+    this.addCurrentLocationControl(map)
     this.downloadTracks(map)
   },
   data: function () {
@@ -150,10 +151,16 @@ export default {
         fullscreenElement: document.getElementById('app')
       }).addTo(map)
     },
+    'addCurrentLocationControl': function (map) {
+      map.addControl(L.control.locate({
+        locateOptions: {
+          enableHighAccuracy: true
+        }
+      }))
+    },
     'downloadTracks': function (map) {
       axios.get(this.appHost + 'api/tracks/').then(
         function (response) {
-          console.log(response.data.results)
           for (let track of response.data.results) {
             let gpsPointList = []
             for (let point of JSON.parse(track.points_json)) {
@@ -161,7 +168,7 @@ export default {
               gpsPointList.push(gpsPoint)
             }
             let gpsTrack = new L.Polyline(gpsPointList, {
-              color: 'red',
+              color: track.color ? track.color : 'red',
               weight: 3,
               opacity: 1,
               smoothFactor: 1

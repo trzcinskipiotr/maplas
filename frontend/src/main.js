@@ -4,6 +4,7 @@
 // eslint-disable-next-line
 import L from 'leaflet'
 import 'leaflet.gridlayer.googlemutant'
+import 'leaflet.locatecontrol'
 import loadgoogle from 'load-google-maps-api'
 import Vue from 'vue'
 import App from '@/App'

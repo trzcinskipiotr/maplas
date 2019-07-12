@@ -1,4 +1,5 @@
 Django==2.2
+django-colorfield==0.1.15
 django-cors-headers==3.0.2
 djangorestframework==3.9.4
 gpxpy==1.3.5
