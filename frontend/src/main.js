@@ -14,6 +14,7 @@ import '@/js/vue'
 
 import Verte from 'verte'
 import 'verte/dist/verte.css'
+import '@/css/style.css'
 
 import 'bootstrap'
 import 'bootstrap/dist/css/bootstrap.css'

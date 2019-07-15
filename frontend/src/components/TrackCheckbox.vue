@@ -90,9 +90,3 @@ export default {
   }
 }
 </script>
-
-<style>
-  .verte__menu-origin {
-    z-index: 1000000;
-  }
-</style>
