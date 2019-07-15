@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-on:mouseover="changeWidth(6)" v-on:mouseleave="changeWidth(3)">
     <div style="display: inline" class="custom-control custom-checkbox">
       <input type="checkbox" class="custom-control-input" :id="'checkbox' + track.id" v-model="checked" />
       <label class="custom-control-label" :for="'checkbox' + track.id">{{ track.name }}</label>
@@ -51,6 +51,11 @@ export default {
         .then((response) => {
 
         })
+    },
+    'changeWidth': function (width) {
+      this.gpsTrack.setStyle({
+        weight: width
+      })
     }
   },
   mounted () {
