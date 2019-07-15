@@ -1,5 +1,5 @@
 <template>
-  <div style="display: inline">
+  <div>
     <div style="display: inline" class="custom-control custom-checkbox">
       <input type="checkbox" class="custom-control-input" :id="'checkbox' + track.id" v-model="checked" />
       <label class="custom-control-label" :for="'checkbox' + track.id">{{ track.name }}</label>
@@ -7,7 +7,7 @@
     <div style="display: inline">
       <font-awesome-icon style="height: 24px;" v-if="track.type === TrackType.bicycle" icon="biking"/>
       <font-awesome-icon style="height: 24px;" v-else-if="track.type === TrackType.walk" icon="shoe-prints"/>
-      <verte v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte>
+      <div style="display: inline-block"><verte v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte></div>
       <font-awesome-icon @click="saveColor" style="height: 24px; cursor: pointer" icon="save"/>
     </div>
   </div>
@@ -48,13 +48,10 @@ export default {
     'saveColor': function () {
       this.track.color = this.color
       axios.put(this.appHost + `api/tracks/${this.track.id}/`, this.track)
-      .then((response) => {
+        .then((response) => {
 
-      })
-      .catch((err) => {
-
-      })
-    },
+        })
+    }
   },
   mounted () {
     let gpsPointList = []
@@ -71,7 +68,8 @@ export default {
     })
     this.gpsTrack.bindTooltip('<b>Name: </b>' + this.track.name + '<br>' +
                               '<b>Distance: </b>' + Math.round(this.track.distance / 100) / 10 + 'km<br>' +
-                              '<b>Start time: </b>' + formatDate(this.track.start_time), {'sticky': true, 'opacity': 0.95})
+                              '<b>Start time: </b>' + formatDate(this.track.start_time) + '<br>' +
+                              '<b>ID: </b>' + this.track.id, {'sticky': true, 'opacity': 0.95})
     this.gpsTrack.on('mouseover', function (e) {
       e.target.setStyle({
         weight: 6
@@ -92,9 +90,3 @@ export default {
   }
 }
 </script>
-
-<style scoped>
-  .verte {
-    display: inline;
-  }
-</style>

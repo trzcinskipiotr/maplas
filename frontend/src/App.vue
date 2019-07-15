@@ -181,6 +181,32 @@ export default {
       axios.get(this.appHost + 'api/tracks/').then(
         response => {
           this.tracks = response.data.results
+          if (this.$route.query.tracks) {
+            let tracksIds = this.$route.query.tracks.split(',')
+            let minLat = 500
+            let maxLat = -500
+            let minLon = 500
+            let maxLon = -500
+            for (let track of this.tracks) {
+              if (tracksIds.includes(String(track.id))) {
+                for (let point of JSON.parse(track.points_json)) {
+                  if (point[0] < minLat) {
+                    minLat = point[0]
+                  }
+                  if (point[0] > maxLat) {
+                    maxLat = point[0]
+                  }
+                  if (point[1] < minLon) {
+                    minLon = point[1]
+                  }
+                  if (point[1] > maxLon) {
+                    maxLon = point[1]
+                  }
+                }
+              }
+            }
+            this.map.fitBounds([[minLat, minLon], [maxLat, maxLon]])
+          }
         }
       )
     }
