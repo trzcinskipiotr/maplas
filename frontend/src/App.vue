@@ -2,6 +2,16 @@
   <div id="app">
     <div class="wrapper">
       <div id="sidebar">
+        <div class="card">
+          <div class="card-header">
+            Tracks
+          </div>
+          <div class="card-body">
+            <div v-for="track in tracks" :key="track.id">
+              <TrackCheckbox :track="track" :map="map"></TrackCheckbox>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="content">
         <div id="map"></div>
@@ -19,18 +29,19 @@ import axios from 'axios'
 export default {
   name: 'App',
   mounted: function () {
-    let map = this.createMap([52.743682, 16.273668], 11)
-    this.addLayers(map)
-    this.addFullScreenControl(map)
-    this.addCogsButton(map)
-    this.addCurrentLocationControl(map)
-    this.downloadTracks(map)
+    this.map = this.createMap([52.743682, 16.273668], 11)
+    this.addLayers(this.map)
+    this.addFullScreenControl(this.map)
+    this.addCogsButton(this.map)
+    this.addCurrentLocationControl(this.map)
+    this.downloadTracks(this.map)
   },
   data: function () {
     return {
       'mapboxApiToken': 'MAPBOX_API_KEY',
       'googleApiToken': 'GOOGLE_API_KEY',
       'tracks': [],
+      'map': undefined,
       'appHost': window.location.hostname === 'localhost' ? 'http://localhost:8000/djangoapp/' : '/djangoapp/'
     }
   },
@@ -41,7 +52,8 @@ export default {
       return map
     },
     'addLayers': function (map) {
-      let mapboxStreets = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
+      let layers = {}
+      layers['mapboxStreets'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
         maxZoom: 18,
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
           '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
@@ -49,7 +61,7 @@ export default {
         id: 'mapbox.streets'
       })
 
-      let mapboxSatellite = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
+      layers['mapboxSatellite'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
         maxZoom: 18,
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
           '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
@@ -57,7 +69,7 @@ export default {
         id: 'mapbox.satellite'
       })
 
-      let mapboxOutdoor = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
+      layers['mapboxOutdoor'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
         maxZoom: 18,
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
           '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
@@ -65,7 +77,7 @@ export default {
         id: 'mapbox.outdoors'
       })
 
-      let mapboxSatelliteStreets = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
+      layers['mapboxSatelliteStreets'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
         maxZoom: 18,
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
           '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
@@ -73,58 +85,65 @@ export default {
         id: 'mapbox.streets-satellite'
       })
 
-      let esriWorldImagery = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      layers['esriWorldImagery'] = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
       })
 
-      let esriWorldTopoMap = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+      layers['esriWorldTopoMap'] = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
         attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
       })
 
-      let openStreetMap = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'}).addTo(map)
+      layers['openStreetMap'] = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+      })
 
-      let googleRoads = L.gridLayer.googleMutant({
+      layers['googleRoads'] = L.gridLayer.googleMutant({
         type: 'roadmap'
       })
 
-      let googleSatellite = L.gridLayer.googleMutant({
+      layers['googleSatellite'] = L.gridLayer.googleMutant({
         type: 'satellite'
       })
 
-      let googleTerrain = L.gridLayer.googleMutant({
+      layers['googleTerrain'] = L.gridLayer.googleMutant({
         type: 'terrain'
       })
 
-      let googleHybrid = L.gridLayer.googleMutant({
+      layers['googleHybrid'] = L.gridLayer.googleMutant({
         type: 'hybrid'
       })
 
-      let openTopoMap = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+      layers['openTopoMap'] = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
         maxZoom: 17,
         attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
       })
 
-      let hikeBike = L.tileLayer('https://tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png', {
+      layers['hikeBike'] = L.tileLayer('https://tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png', {
         maxZoom: 19,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       })
 
       let baseMaps = {
-        'OpenStreetMap': openStreetMap,
-        'OpenTopoMap': openTopoMap,
-        'Mapbox streets': mapboxStreets,
-        'Mapbox satellite': mapboxSatellite,
-        'Mapbox outdoor': mapboxOutdoor,
-        'Mapbox hybrid': mapboxSatelliteStreets,
-        'ESRI imaginary': esriWorldImagery,
-        'ESRI topo': esriWorldTopoMap,
-        'Hike bike': hikeBike,
-        'Google roads': googleRoads,
-        'Google satellite': googleSatellite,
-        'Google terrain': googleTerrain,
-        'Google hybrid': googleHybrid
+        'OpenStreetMap': layers['openStreetMap'],
+        'OpenTopoMap': layers['openTopoMap'],
+        'Mapbox streets': layers['mapboxStreets'],
+        'Mapbox satellite': layers['mapboxSatellite'],
+        'Mapbox outdoor': layers['mapboxOutdoor'],
+        'Mapbox hybrid': layers['mapboxSatelliteStreets'],
+        'ESRI imaginary': layers['esriWorldImagery'],
+        'ESRI topo': layers['esriWorldTopoMap'],
+        'Hike bike': layers['hikeBike'],
+        'Google roads': layers['googleRoads'],
+        'Google satellite': layers['googleSatellite'],
+        'Google terrain': layers['googleTerrain'],
+        'Google hybrid': layers['googleHybrid']
       }
       L.control.layers(baseMaps).addTo(map)
+      if (layers.hasOwnProperty(this.$route.query.maplayer)) {
+        layers[this.$route.query.maplayer].addTo(map)
+      } else {
+        layers['openStreetMap'].addTo(map)
+      }
     },
     'addCogsButton': function (map) {
       let CogsControl = L.Control.extend({
@@ -160,21 +179,8 @@ export default {
     },
     'downloadTracks': function (map) {
       axios.get(this.appHost + 'api/tracks/').then(
-        function (response) {
-          for (let track of response.data.results) {
-            let gpsPointList = []
-            for (let point of JSON.parse(track.points_json)) {
-              let gpsPoint = new L.LatLng(point[0], point[1])
-              gpsPointList.push(gpsPoint)
-            }
-            let gpsTrack = new L.Polyline(gpsPointList, {
-              color: track.color ? track.color : 'red',
-              weight: 3,
-              opacity: 1,
-              smoothFactor: 1
-            })
-            gpsTrack.addTo(map)
-          }
+        response => {
+          this.tracks = response.data.results
         }
       )
     }

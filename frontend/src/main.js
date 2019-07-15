@@ -10,15 +10,31 @@ import Vue from 'vue'
 import App from '@/App'
 import router from '@/js/router'
 import BootstrapVue from 'bootstrap-vue'
+import '@/js/vue'
 
+import Verte from 'verte'
+import 'verte/dist/verte.css'
+
+import 'bootstrap'
 import 'bootstrap/dist/css/bootstrap.css'
 import 'bootstrap-vue/dist/bootstrap-vue.css'
 import 'leaflet/dist/leaflet.css'
 import '@fortawesome/fontawesome-free/css/all.css'
 
+import { library } from '@fortawesome/fontawesome-svg-core'
+import { faShoePrints, faBiking, faCircle, faSave } from '@fortawesome/free-solid-svg-icons'
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
+
 Vue.config.productionTip = false
 Vue.use(BootstrapVue)
 loadgoogle({key: 'GOOGLE_API_KEY'})
+
+library.add(faShoePrints)
+library.add(faBiking)
+library.add(faCircle)
+library.add(faSave)
+Vue.component('font-awesome-icon', FontAwesomeIcon)
+Vue.component('verte', Verte)
 
 /* eslint-disable no-new */
 new Vue({
