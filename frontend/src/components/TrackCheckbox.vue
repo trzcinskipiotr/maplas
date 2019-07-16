@@ -1,20 +1,27 @@
 <template>
-  <div v-on:mouseover="changeWidth(6)" v-on:mouseleave="changeWidth(3)">
-    <div style="display: inline" class="custom-control custom-checkbox">
+  <div v-on:mouseover="highlightRow(6)" v-on:mouseleave="unhighlightRow(3)">
+    <div style="display: inline" class="custom-control custom-checkbox" :id="'trackcheckbox' + track.id">
       <input type="checkbox" class="custom-control-input" :id="'checkbox' + track.id" v-model="checked" />
       <label class="custom-control-label" :for="'checkbox' + track.id">{{ track.name }}</label>
     </div>
     <div style="display: inline">
-      <font-awesome-icon style="height: 24px;" v-if="track.type === TrackType.bicycle" icon="biking"/>
-      <font-awesome-icon style="height: 24px;" v-else-if="track.type === TrackType.walk" icon="shoe-prints"/>
+      <TrackTypeIcon :track="track" height=24></TrackTypeIcon>
       <div style="display: inline-block"><verte v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte></div>
       <font-awesome-icon @click="saveColor" style="height: 24px; cursor: pointer" icon="save"/>
+    </div>
+    <div style="display: none">
+      <div :id="'tooltip' + track.id">
+        <b>Name: </b>{{ track.name }}<br>
+        <b>Start time: </b>{{ track.start_time|formatDate }}<br>
+        <b>Distance: </b>{{ track.distance|roundTrackDistance }}<br>
+        <b>Type: </b><TrackTypeIcon :track="track" height=12></TrackTypeIcon><br>
+        <b>ID: </b>{{ track.id }}
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import {formatDate} from '@/js/utils'
 import {TrackType} from '@/js/const'
 import L from 'leaflet'
 import axios from 'axios'
@@ -52,6 +59,14 @@ export default {
 
         })
     },
+    'highlightRow': function (width) {
+      document.getElementById('trackcheckbox' + this.track.id).style.fontWeight = 'bold'
+      this.changeWidth(width)
+    },
+    'unhighlightRow': function (width) {
+      document.getElementById('trackcheckbox' + this.track.id).style.fontWeight = 'normal'
+      this.changeWidth(width)
+    },
     'changeWidth': function (width) {
       this.gpsTrack.setStyle({
         weight: width
@@ -71,20 +86,14 @@ export default {
       opacity: 1,
       smoothFactor: 1
     })
-    this.gpsTrack.bindTooltip('<b>Name: </b>' + this.track.name + '<br>' +
-                              '<b>Distance: </b>' + Math.round(this.track.distance / 100) / 10 + 'km<br>' +
-                              '<b>Start time: </b>' + formatDate(this.track.start_time) + '<br>' +
-                              '<b>ID: </b>' + this.track.id, {'sticky': true, 'opacity': 0.95})
+    this.gpsTrack.component = this
+    this.gpsTrack.bindTooltip(document.getElementById('tooltip' + this.track.id), {'sticky': true, 'opacity': 0.95})
     this.gpsTrack.on('mouseover', function (e) {
-      e.target.setStyle({
-        weight: 6
-      })
+      e.target.component.highlightRow(6)
       e.target.bringToFront()
     })
     this.gpsTrack.on('mouseout', function (e) {
-      e.target.setStyle({
-        weight: 3
-      })
+      e.target.component.unhighlightRow(3)
     })
     if (this.$route.query.tracks) {
       let tracksIds = this.$route.query.tracks.split(',')
