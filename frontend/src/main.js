@@ -25,7 +25,7 @@ import 'leaflet/dist/leaflet.css'
 import '@fortawesome/fontawesome-free/css/all.css'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
-import { faShoePrints, faBiking, faCircle, faSave } from '@fortawesome/free-solid-svg-icons'
+import { faShoePrints, faBiking, faCircle, faSave, faDownload } from '@fortawesome/free-solid-svg-icons'
 import { faCalendarTimes, faCalendarCheck } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
@@ -37,6 +37,7 @@ library.add(faShoePrints)
 library.add(faBiking)
 library.add(faCircle)
 library.add(faSave)
+library.add(faDownload)
 library.add(faCalendarCheck)
 library.add(faCalendarTimes)
 Vue.component('font-awesome-icon', FontAwesomeIcon)

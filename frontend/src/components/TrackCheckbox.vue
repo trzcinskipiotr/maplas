@@ -7,6 +7,7 @@
     <div style="display: inline">
       <TrackTypeIcon :track="track" height=24></TrackTypeIcon>
       <TrackStatusIcon :track="track" height=24></TrackStatusIcon>
+      <TrackDownload :track="track" height=24></TrackDownload>
       <div style="display: inline-block"><verte v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte></div>
       <font-awesome-icon @click="saveColor" style="height: 24px; cursor: pointer" icon="save"/>
     </div>
