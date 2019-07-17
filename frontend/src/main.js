@@ -11,6 +11,8 @@ import App from '@/App'
 import router from '@/js/router'
 import BootstrapVue from 'bootstrap-vue'
 import '@/js/vue'
+import '@/js/mixin'
+import store from '@/js/store'
 
 import Verte from 'verte'
 import 'verte/dist/verte.css'
@@ -24,6 +26,7 @@ import '@fortawesome/fontawesome-free/css/all.css'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faShoePrints, faBiking, faCircle, faSave } from '@fortawesome/free-solid-svg-icons'
+import { faCalendarTimes, faCalendarCheck } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 Vue.config.productionTip = false
@@ -34,6 +37,8 @@ library.add(faShoePrints)
 library.add(faBiking)
 library.add(faCircle)
 library.add(faSave)
+library.add(faCalendarCheck)
+library.add(faCalendarTimes)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 Vue.component('verte', Verte)
 
@@ -41,6 +46,7 @@ Vue.component('verte', Verte)
 new Vue({
   el: '#app',
   router,
+  store,
   components: { App },
   template: '<App/>'
 })

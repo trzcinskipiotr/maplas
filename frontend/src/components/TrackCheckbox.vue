@@ -6,6 +6,7 @@
     </div>
     <div style="display: inline">
       <TrackTypeIcon :track="track" height=24></TrackTypeIcon>
+      <TrackStatusIcon :track="track" height=24></TrackStatusIcon>
       <div style="display: inline-block"><verte v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte></div>
       <font-awesome-icon @click="saveColor" style="height: 24px; cursor: pointer" icon="save"/>
     </div>
@@ -15,6 +16,7 @@
         <b>Start time: </b>{{ track.start_time|formatDate }}<br>
         <b>Distance: </b>{{ track.distance|roundTrackDistance }}<br>
         <b>Type: </b><TrackTypeIcon :track="track" height=12></TrackTypeIcon><br>
+        <b>Status: </b><TrackStatusIcon :track="track" height=12></TrackStatusIcon><br>
         <b>ID: </b>{{ track.id }}
       </div>
     </div>
@@ -22,27 +24,24 @@
 </template>
 
 <script>
-import {TrackType} from '@/js/const'
 import L from 'leaflet'
 import axios from 'axios'
 export default {
   name: 'TrackCheckbox',
-  props: ['track', 'map'],
+  props: ['track'],
   data: function () {
     return {
       'checked': undefined,
       'gpxTrack': undefined,
-      'TrackType': TrackType,
-      'color': undefined,
-      'appHost': window.location.hostname === 'localhost' ? 'http://localhost:8000/djangoapp/' : '/djangoapp/'
+      'color': undefined
     }
   },
   watch: {
     'checked': function () {
       if (this.checked) {
-        this.gpsTrack.addTo(this.map)
+        this.gpsTrack.addTo(this.$store.getters.map)
       } else {
-        this.gpsTrack.removeFrom(this.map)
+        this.gpsTrack.removeFrom(this.$store.getters.map)
       }
     },
     'color': function () {
@@ -54,7 +53,7 @@ export default {
   methods: {
     'saveColor': function () {
       this.track.color = this.color
-      axios.put(this.appHost + `api/tracks/${this.track.id}/`, this.track)
+      axios.put(this.$store.getters.appHost + `api/tracks/${this.track.id}/`, this.track)
         .then((response) => {
 
         })

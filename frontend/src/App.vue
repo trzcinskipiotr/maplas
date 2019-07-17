@@ -8,7 +8,7 @@
           </div>
           <div class="card-body">
             <div v-for="track in tracks" :key="track.id">
-              <TrackCheckbox :track="track" :map="map"></TrackCheckbox>
+              <TrackCheckbox :track="track"></TrackCheckbox>
             </div>
           </div>
         </div>
@@ -29,20 +29,21 @@ import axios from 'axios'
 export default {
   name: 'App',
   mounted: function () {
-    this.map = this.createMap([52.743682, 16.273668], 11)
-    this.addLayers(this.map)
-    this.addFullScreenControl(this.map)
-    this.addCogsButton(this.map)
-    this.addCurrentLocationControl(this.map)
-    this.downloadTracks(this.map)
+    this.$store.commit('setAppHost', window.location.hostname === 'localhost' ? 'http://localhost:8000/djangoapp/' : '/djangoapp/')
+    let map = this.createMap([52.743682, 16.273668], 11)
+    this.$store.commit('setMap', map)
+    this.addLayers()
+    this.addScaleControl()
+    this.addFullScreenControl()
+    this.addCogsButton()
+    this.addCurrentLocationControl()
+    this.downloadTracks()
   },
   data: function () {
     return {
       'mapboxApiToken': 'MAPBOX_API_KEY',
       'googleApiToken': 'GOOGLE_API_KEY',
-      'tracks': [],
-      'map': undefined,
-      'appHost': window.location.hostname === 'localhost' ? 'http://localhost:8000/djangoapp/' : '/djangoapp/'
+      'tracks': []
     }
   },
   methods: {
@@ -51,7 +52,10 @@ export default {
       map.setView(center, zoom)
       return map
     },
-    'addLayers': function (map) {
+    'addScaleControl': function () {
+      L.control.scale({'metric': true, 'position': 'topleft', 'imperial': false, 'maxWidth': 200}).addTo(this.$store.getters.map)
+    },
+    'addLayers': function () {
       let layers = {}
       layers['mapboxStreets'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
         maxZoom: 18,
@@ -138,14 +142,14 @@ export default {
         'Google terrain': layers['googleTerrain'],
         'Google hybrid': layers['googleHybrid']
       }
-      L.control.layers(baseMaps).addTo(map)
+      L.control.layers(baseMaps).addTo(this.$store.getters.map)
       if (layers.hasOwnProperty(this.$route.query.maplayer)) {
-        layers[this.$route.query.maplayer].addTo(map)
+        layers[this.$route.query.maplayer].addTo(this.$store.getters.map)
       } else {
-        layers['openStreetMap'].addTo(map)
+        layers['openStreetMap'].addTo(this.$store.getters.map)
       }
     },
-    'addCogsButton': function (map) {
+    'addCogsButton': function () {
       let CogsControl = L.Control.extend({
         options: {
           position: 'topleft'
@@ -160,25 +164,25 @@ export default {
           return container
         }
       })
-      map.addControl(new CogsControl())
+      this.$store.getters.map.addControl(new CogsControl())
     },
-    'addFullScreenControl': function (map) {
+    'addFullScreenControl': function () {
       L.control.fullscreen({
         position: 'topleft',
         title: 'Enter fullscreen',
         titleCancel: 'Exit fullscreen',
         fullscreenElement: document.getElementById('app')
-      }).addTo(map)
+      }).addTo(this.$store.getters.map)
     },
-    'addCurrentLocationControl': function (map) {
-      map.addControl(L.control.locate({
+    'addCurrentLocationControl': function () {
+      this.$store.getters.map.addControl(L.control.locate({
         locateOptions: {
           enableHighAccuracy: true
         }
       }))
     },
-    'downloadTracks': function (map) {
-      axios.get(this.appHost + 'api/tracks/').then(
+    'downloadTracks': function () {
+      axios.get(this.$store.getters.appHost + 'api/tracks/').then(
         response => {
           this.tracks = response.data.results
           if (this.$route.query.tracks) {
@@ -190,22 +194,14 @@ export default {
             for (let track of this.tracks) {
               if (tracksIds.includes(String(track.id))) {
                 for (let point of JSON.parse(track.points_json)) {
-                  if (point[0] < minLat) {
-                    minLat = point[0]
-                  }
-                  if (point[0] > maxLat) {
-                    maxLat = point[0]
-                  }
-                  if (point[1] < minLon) {
-                    minLon = point[1]
-                  }
-                  if (point[1] > maxLon) {
-                    maxLon = point[1]
-                  }
+                  minLat = point[0] < minLat ? point[0] : minLat
+                  maxLat = point[0] > maxLat ? point[0] : maxLat
+                  minLon = point[1] < minLon ? point[1] : minLon
+                  maxLon = point[1] > maxLon ? point[1] : maxLon
                 }
               }
             }
-            this.map.fitBounds([[minLat, minLon], [maxLat, maxLon]])
+            this.$store.getters.map.fitBounds([[minLat, minLon], [maxLat, maxLon]])
           }
         }
       )
