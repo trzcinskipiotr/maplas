@@ -8,6 +8,7 @@
       <TrackTypeIcon :track="track" height=24></TrackTypeIcon>
       <TrackStatusIcon :track="track" height=24></TrackStatusIcon>
       <TrackDownload :track="track" height=24></TrackDownload>
+      <font-awesome-icon @click="centerTrack" style="height: 24px; cursor: pointer" icon="search-location"/>
       <div style="display: inline-block"><verte v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte></div>
       <font-awesome-icon @click="saveColor" style="height: 24px; cursor: pointer" icon="save"/>
     </div>
@@ -58,6 +59,19 @@ export default {
         .then((response) => {
 
         })
+    },
+    'centerTrack': function () {
+      let minLat = 500
+      let maxLat = -500
+      let minLon = 500
+      let maxLon = -500
+      for (let point of JSON.parse(this.track.points_json)) {
+        minLat = point[0] < minLat ? point[0] : minLat
+        maxLat = point[0] > maxLat ? point[0] : maxLat
+        minLon = point[1] < minLon ? point[1] : minLon
+        maxLon = point[1] > maxLon ? point[1] : maxLon
+      }
+      this.$store.getters.map.fitBounds([[minLat, minLon], [maxLat, maxLon]])
     },
     'highlightRow': function (width) {
       document.getElementById('trackcheckbox' + this.track.id).style.fontWeight = 'bold'
