@@ -4,11 +4,34 @@
       <div id="sidebar">
         <div class="card">
           <div class="card-header">
-            Tracks
+            Main menu
+            <div style="float: right;"><font-awesome-icon @click="closePanel" style="cursor: pointer;" :icon="['far', 'times-circle']"/></div>
           </div>
-          <div class="card-body">
-            <div v-for="track in tracks" :key="track.id">
-              <TrackCheckbox :track="track"></TrackCheckbox>
+          <div class="mx-0 px-0 card-body">
+            <ul class="nav nav-tabs" id="tabs" role="tablist">
+              <li class="nav-item">
+                <a class="nav-link active" id="home-tab" data-toggle="tab" href="#tabtracks" role="tab">Tracks</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabsettings" role="tab">Settings</a>
+              </li>
+            </ul>
+            <div class="tab-content" id="tab_content_tracks">
+              <div class="tab-pane show active" role="tabpanel" id="tabtracks">
+                <div class="card">
+                  <div class="card-body">
+                    <div v-for="track in tracks" :key="track.id">
+                      <TrackCheckbox :track="track"></TrackCheckbox>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="tab-pane show" role="tabpanel" id="tabsettings">
+                <div class="card">
+                  <div class="card-body">
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -148,6 +171,9 @@ export default {
       } else {
         layers['openStreetMap'].addTo(this.$store.getters.map)
       }
+    },
+    'closePanel': function () {
+      $('#sidebar').toggleClass('active')
     },
     'addCogsButton': function () {
       let CogsControl = L.Control.extend({

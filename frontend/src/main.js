@@ -26,7 +26,7 @@ import '@fortawesome/fontawesome-free/css/all.css'
 
 import { library } from '@fortawesome/fontawesome-svg-core'
 import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation } from '@fortawesome/free-solid-svg-icons'
-import { faCalendarTimes, faCalendarCheck } from '@fortawesome/free-regular-svg-icons'
+import { faCalendarTimes, faCalendarCheck, faWindowClose, faTimesCircle } from '@fortawesome/free-regular-svg-icons'
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 Vue.config.productionTip = false
@@ -41,6 +41,8 @@ library.add(faDownload)
 library.add(faCalendarCheck)
 library.add(faCalendarTimes)
 library.add(faSearchLocation)
+library.add(faWindowClose)
+library.add(faTimesCircle)
 Vue.component('font-awesome-icon', FontAwesomeIcon)
 Vue.component('verte', Verte)
 
