@@ -16,7 +16,8 @@ export default {
         gpsPointList.push(gpsPoint)
       }
       let gpxData = new BaseBuilder()
-      gpxData.setSegmentPoints(gpsPointList)
+      gpxData.setMetadata(new BaseBuilder.MODELS.Metadata({name: this.track.name}))
+      gpxData.setTracks([new BaseBuilder.MODELS.Track([new BaseBuilder.MODELS.Segment(gpsPointList)], {'name': this.track.name})])
       let blob = new Blob([buildGPX(gpxData.toObject())], {type: 'text/plain;charset=utf-8'})
       FileSaver.saveAs(blob, this.track.name + '.gpx')
     }
