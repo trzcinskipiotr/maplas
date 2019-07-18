@@ -76,6 +76,7 @@ export default {
     'highlightRow': function (width) {
       document.getElementById('trackcheckbox' + this.track.id).style.fontWeight = 'bold'
       this.changeWidth(width)
+      this.gpsTrack.bringToFront()
     },
     'unhighlightRow': function (width) {
       document.getElementById('trackcheckbox' + this.track.id).style.fontWeight = 'normal'

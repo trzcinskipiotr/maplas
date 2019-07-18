@@ -5,7 +5,9 @@
         <div class="card">
           <div class="card-header">
             Main menu
-            <div style="float: right;"><font-awesome-icon @click="closePanel" style="cursor: pointer;" :icon="['far', 'times-circle']"/></div>
+            <div style="float: right;">
+              <font-awesome-icon @click="togglePanel" style="cursor: pointer;" :icon="['far', 'times-circle']"/>
+            </div>
           </div>
           <div class="mx-0 px-0 card-body">
             <ul class="nav nav-tabs" id="tabs" role="tablist">
@@ -40,6 +42,14 @@
         <div id="map"></div>
       </div>
     </div>
+    <div id="cogsdiv" style="display: none;">
+      <div id="cogsdivinner" @click="togglePanel" class="leaflet-touch leaflet-bar cogsbutton">
+        <font-awesome-icon style="cursor: pointer;" icon="cogs" size="lg"/>
+      </div>
+    </div>
+    <span style="position: fixed; left: 50%; top: 10px; z-index: 100000;">
+      <font-awesome-icon v-if="loading" class="fa-spin" icon="spinner" size="3x"/>
+    </span>
   </div>
 </template>
 
@@ -66,7 +76,8 @@ export default {
     return {
       'mapboxApiToken': 'MAPBOX_API_KEY',
       'googleApiToken': 'GOOGLE_API_KEY',
-      'tracks': []
+      'tracks': [],
+      'loading': true,
     }
   },
   methods: {
@@ -172,7 +183,7 @@ export default {
         layers['openStreetMap'].addTo(this.$store.getters.map)
       }
     },
-    'closePanel': function () {
+    'togglePanel': function () {
       $('#sidebar').toggleClass('active')
     },
     'addCogsButton': function () {
@@ -181,13 +192,7 @@ export default {
           position: 'topleft'
         },
         onAdd: function (map) {
-          var container = L.DomUtil.create('div', 'leaflet-touch leaflet-bar cogsbutton')
-          var ima = L.DomUtil.create('i', 'fas fa-cogs fa-lg')
-          container.append(ima)
-          container.onclick = function () {
-            $('#sidebar').toggleClass('active')
-          }
-          return container
+          return document.getElementById('cogsdivinner')
         }
       })
       this.$store.getters.map.addControl(new CogsControl())
@@ -211,6 +216,7 @@ export default {
       axios.get(this.$store.getters.appHost + 'api/tracks/').then(
         response => {
           this.tracks = response.data.results
+          this.loading = false
           if (this.$route.query.tracks) {
             let tracksIds = this.$route.query.tracks.split(',')
             let minLat = 500
