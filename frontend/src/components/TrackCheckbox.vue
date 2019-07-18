@@ -114,7 +114,11 @@ export default {
       let tracksIds = this.$route.query.tracks.split(',')
       this.checked = tracksIds.includes(String(this.track.id))
     } else {
-      this.checked = true
+      if (this.isPlannedTrack(this.track)) {
+        this.checked = false
+      } else {
+        this.checked = true
+      }
     }
   }
 }
