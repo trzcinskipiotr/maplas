@@ -105,7 +105,6 @@ export default {
     this.gpsTrack.bindTooltip(document.getElementById('tooltip' + this.track.id), {'sticky': true, 'opacity': 0.95})
     this.gpsTrack.on('mouseover', function (e) {
       e.target.component.highlightRow(6)
-      e.target.bringToFront()
     })
     this.gpsTrack.on('mouseout', function (e) {
       e.target.component.unhighlightRow(3)

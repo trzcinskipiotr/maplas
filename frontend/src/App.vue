@@ -77,12 +77,12 @@ export default {
       'mapboxApiToken': 'MAPBOX_API_KEY',
       'googleApiToken': 'GOOGLE_API_KEY',
       'tracks': [],
-      'loading': true,
+      'loading': true
     }
   },
   methods: {
     'createMap': function (center, zoom) {
-      let map = L.map('map')
+      let map = L.map('map', {'zoomAnimation': false})
       map.setView(center, zoom)
       return map
     },
@@ -96,7 +96,8 @@ export default {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
           '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
           'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        id: 'mapbox.streets'
+        id: 'mapbox.streets',
+        errorTileUrl: 'static/tiledownloadfailed.jpg'
       })
 
       layers['mapboxSatellite'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
@@ -104,7 +105,8 @@ export default {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
           '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
           'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        id: 'mapbox.satellite'
+        id: 'mapbox.satellite',
+        errorTileUrl: 'static/tiledownloadfailed.jpg'
       })
 
       layers['mapboxOutdoor'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
@@ -112,7 +114,8 @@ export default {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
           '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
           'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        id: 'mapbox.outdoors'
+        id: 'mapbox.outdoors',
+        errorTileUrl: 'static/tiledownloadfailed.jpg'
       })
 
       layers['mapboxSatelliteStreets'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
@@ -120,45 +123,55 @@ export default {
         attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
           '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
           'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
-        id: 'mapbox.streets-satellite'
+        id: 'mapbox.streets-satellite',
+        errorTileUrl: 'static/tiledownloadfailed.jpg'
       })
 
       layers['esriWorldImagery'] = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+        attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+        errorTileUrl: 'static/tiledownloadfailed.jpg'
       })
 
       layers['esriWorldTopoMap'] = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
-        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community'
+        attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
+        errorTileUrl: 'static/tiledownloadfailed.jpg'
       })
 
       layers['openStreetMap'] = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+        errorTileUrl: 'static/tiledownloadfailed.jpg'
       })
 
       layers['googleRoads'] = L.gridLayer.googleMutant({
-        type: 'roadmap'
+        type: 'roadmap',
+        errorTileUrl: 'static/tiledownloadfailed.jpg'
       })
 
       layers['googleSatellite'] = L.gridLayer.googleMutant({
-        type: 'satellite'
+        type: 'satellite',
+        errorTileUrl: 'static/tiledownloadfailed.jpg'
       })
 
       layers['googleTerrain'] = L.gridLayer.googleMutant({
-        type: 'terrain'
+        type: 'terrain',
+        errorTileUrl: 'static/tiledownloadfailed.jpg'
       })
 
       layers['googleHybrid'] = L.gridLayer.googleMutant({
-        type: 'hybrid'
+        type: 'hybrid',
+        errorTileUrl: 'static/tiledownloadfailed.jpg'
       })
 
       layers['openTopoMap'] = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
         maxZoom: 17,
-        attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)'
+        attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+        errorTileUrl: 'static/tiledownloadfailed.jpg'
       })
 
       layers['hikeBike'] = L.tileLayer('https://tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png', {
         maxZoom: 19,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        errorTileUrl: 'static/tiledownloadfailed.jpg'
       })
 
       let baseMaps = {
@@ -267,9 +280,11 @@ export default {
     min-width: 400px;
     max-width: 400px;
     min-height: 100vh;
+    max-height: 100vh;
     margin-left: -400px;
     transition: margin-left 0.5s linear;
     background-color: white;
+    overflow: scroll;
   }
 
   #sidebar.active {
