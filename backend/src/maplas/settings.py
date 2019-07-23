@@ -129,3 +129,5 @@ STATIC_ROOT = '/staticfiles/'
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 CORS_ORIGIN_ALLOW_ALL = True
+
+OPTIMIZE_EPSILON = float(os.environ.get('OPTIMIZE_EPSILON') or 0.00002)

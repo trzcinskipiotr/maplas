@@ -254,7 +254,7 @@ export default {
             let maxLon = -500
             for (let track of this.tracks) {
               if (tracksIds.includes(String(track.id))) {
-                for (let point of JSON.parse(track.points_json)) {
+                for (let point of JSON.parse(track.points_json_optimized)) {
                   minLat = point[0] < minLat ? point[0] : minLat
                   maxLat = point[0] > maxLat ? point[0] : maxLat
                   minLon = point[1] < minLon ? point[1] : minLon

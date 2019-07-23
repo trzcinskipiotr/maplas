@@ -11,7 +11,7 @@ export default {
   methods: {
     'saveGPX': function () {
       let gpsPointList = []
-      for (let point of JSON.parse(this.track.points_json)) {
+      for (let point of JSON.parse(this.track.points_json_optimized)) {
         let gpsPoint = new BaseBuilder.MODELS.Point(point[0], point[1])
         gpsPointList.push(gpsPoint)
       }

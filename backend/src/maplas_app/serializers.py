@@ -6,4 +6,4 @@ class TrackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        fields = ['id', 'name', 'description', 'color', 'points_json', 'status', 'type', 'start_time', 'end_time', 'distance']
+        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance']

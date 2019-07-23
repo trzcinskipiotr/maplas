@@ -65,7 +65,7 @@ export default {
       let maxLat = -500
       let minLon = 500
       let maxLon = -500
-      for (let point of JSON.parse(this.track.points_json)) {
+      for (let point of JSON.parse(this.track.points_json_optimized)) {
         minLat = point[0] < minLat ? point[0] : minLat
         maxLat = point[0] > maxLat ? point[0] : maxLat
         minLon = point[1] < minLon ? point[1] : minLon
@@ -90,7 +90,7 @@ export default {
   },
   mounted () {
     let gpsPointList = []
-    for (let point of JSON.parse(this.track.points_json)) {
+    for (let point of JSON.parse(this.track.points_json_optimized)) {
       let gpsPoint = new L.LatLng(point[0], point[1])
       gpsPointList.push(gpsPoint)
     }
