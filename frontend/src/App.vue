@@ -50,6 +50,9 @@
     <span style="position: fixed; left: 50%; top: 10px; z-index: 100000;">
       <font-awesome-icon v-if="loading" class="fa-spin" icon="spinner" size="3x"/>
     </span>
+    <span style="position: fixed; left: 50%; top: 50%; z-index: 100000;">
+      <font-awesome-icon v-if="tileLoading" class="fa-spin" icon="spinner" size="3x"/>
+    </span>
   </div>
 </template>
 
@@ -77,7 +80,8 @@ export default {
       'mapboxApiToken': 'MAPBOX_API_KEY',
       'googleApiToken': 'GOOGLE_API_KEY',
       'tracks': [],
-      'loading': true
+      'loading': true,
+      'tileLoading': true
     }
   },
   methods: {
@@ -189,6 +193,18 @@ export default {
         'Google terrain': layers['googleTerrain'],
         'Google hybrid': layers['googleHybrid']
       }
+
+      for (let layer in baseMaps) {
+        if (baseMaps.hasOwnProperty(layer)) {
+          baseMaps[layer].on('loading', event => {
+            this.tileLoading = true
+          })
+          baseMaps[layer].on('load', event => {
+            this.tileLoading = false
+          })
+        }
+      }
+
       L.control.layers(baseMaps).addTo(this.$store.getters.map)
       if (layers.hasOwnProperty(this.$route.query.maplayer)) {
         layers[this.$route.query.maplayer].addTo(this.$store.getters.map)
