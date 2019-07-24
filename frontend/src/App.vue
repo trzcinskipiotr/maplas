@@ -22,7 +22,9 @@
               <div class="tab-pane show active" role="tabpanel" id="tabtracks">
                 <div class="card">
                   <div class="card-body">
-                    <div v-for="track in tracks" :key="track.id">
+                    Selected {{ $store.getters.selectedTracks.length }} of {{ $store.getters.tracks.length }} tracks<br>
+                    Selected tracks distance {{ $store.getters.selectedTracks|sumTracksDistance|roundTrackDistance }}<br><br>
+                    <div v-for="track in $store.getters.tracks" :key="track.gpstrack.id">
                       <TrackCheckbox :track="track"></TrackCheckbox>
                     </div>
                   </div>
@@ -53,6 +55,11 @@
     <span style="position: fixed; left: 50%; top: 50%; z-index: 100000;">
       <font-awesome-icon v-if="tileLoading" class="fa-spin" icon="spinner" size="3x"/>
     </span>
+    <span style="position: fixed; left: 50%; top: 10px; z-index: 100000;">
+      <div v-for="alert in $store.getters.alerts" class="alert border border-dark" v-bind:class="{ 'alert-success': isSuccessAlert(alert), 'alert-danger': isDangerAlert(alert) }" v-bind:key="alert.date" role="alert">
+        {{ alert.message }}
+      </div>
+    </span>
   </div>
 </template>
 
@@ -61,6 +68,7 @@ import L from 'leaflet'
 import 'leaflet.fullscreen'
 import $ from 'jquery'
 import axios from 'axios'
+import Track from '@/js/track'
 
 export default {
   name: 'App',
@@ -79,7 +87,6 @@ export default {
     return {
       'mapboxApiToken': 'MAPBOX_API_KEY',
       'googleApiToken': 'GOOGLE_API_KEY',
-      'tracks': [],
       'loading': true,
       'tileLoading': true
     }
@@ -244,22 +251,31 @@ export default {
     'downloadTracks': function () {
       axios.get(this.$store.getters.appHost + 'api/tracks/').then(
         response => {
-          this.tracks = response.data.results
+          let tracks = []
+          for (let gpstrack of response.data.results) {
+            let checked
+            if (this.$route.query.tracks) {
+              let tracksIds = this.$route.query.tracks.split(',')
+              checked = tracksIds.includes(String(gpstrack.id))
+            } else {
+              checked = !this.isPlannedTrack(gpstrack)
+            }
+            let track = new Track(gpstrack, checked)
+            tracks.push(track)
+          }
+          this.$store.commit('setTracks', tracks)
           this.loading = false
           if (this.$route.query.tracks) {
-            let tracksIds = this.$route.query.tracks.split(',')
             let minLat = 500
             let maxLat = -500
             let minLon = 500
             let maxLon = -500
-            for (let track of this.tracks) {
-              if (tracksIds.includes(String(track.id))) {
-                for (let point of JSON.parse(track.points_json_optimized)) {
-                  minLat = point[0] < minLat ? point[0] : minLat
-                  maxLat = point[0] > maxLat ? point[0] : maxLat
-                  minLon = point[1] < minLon ? point[1] : minLon
-                  maxLon = point[1] > maxLon ? point[1] : maxLon
-                }
+            for (let track of this.$store.getters.selectedTracks) {
+              for (let point of JSON.parse(track.gpstrack.points_json_optimized)) {
+                minLat = point[0] < minLat ? point[0] : minLat
+                maxLat = point[0] > maxLat ? point[0] : maxLat
+                minLon = point[1] < minLon ? point[1] : minLon
+                maxLon = point[1] > maxLon ? point[1] : maxLon
               }
             }
             this.$store.getters.map.fitBounds([[minLat, minLon], [maxLat, maxLon]])
@@ -304,7 +320,7 @@ export default {
   }
 
   #sidebar.active {
-    margin-left: 0px;
+    margin-left: 0;
   }
 
   .cogsbutton {

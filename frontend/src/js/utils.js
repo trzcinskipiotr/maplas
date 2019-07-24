@@ -11,3 +11,11 @@ export function roundTrackDistance (value) {
     return String(Math.round(value / 100) / 10) + 'km'
   }
 }
+
+export function sumTracksDistance (tracks) {
+  let distance = 0
+  for (let track of tracks) {
+    distance = distance + track.gpstrack.distance
+  }
+  return distance
+}

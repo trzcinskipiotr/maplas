@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import {TrackType, TrackStatus} from '@/js/const'
+import {TrackType, TrackStatus, AlertStatus} from '@/js/const'
 
 Vue.mixin({
   methods: {
@@ -14,6 +14,19 @@ Vue.mixin({
     },
     'isPlannedTrack': function (track) {
       return track.status === TrackStatus.planned
+    },
+    'isDangerAlert': function (alert) {
+      return alert.status === AlertStatus.danger
+    },
+    'isSuccessAlert': function (alert) {
+      return alert.status === AlertStatus.success
+    },
+    'createAlert': function (status, message, timeout) {
+      let alert = {'status': status, 'message': message, 'date': Date.now()}
+      this.$store.commit('addAlert', alert)
+      window.setTimeout(() => {
+        this.$store.commit('removeAlert')
+      }, timeout)
     }
   }
 })
