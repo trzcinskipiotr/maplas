@@ -41,7 +41,11 @@
         </div>
       </div>
       <div class="content">
-        <div id="map"></div>
+        <div id="map">
+          <span style="position: absolute; left: 50%; top: 50%; z-index: 100000;">
+            <font-awesome-icon v-if="tileLoading" class="fa-spin" icon="spinner" size="4x"/>
+          </span>
+        </div>
       </div>
     </div>
     <div id="cogsdiv" style="display: none;">
@@ -49,17 +53,14 @@
         <font-awesome-icon style="cursor: pointer;" icon="cogs" size="lg"/>
       </div>
     </div>
-    <span style="position: fixed; left: 50%; top: 10px; z-index: 100000;">
+    <div style="position: fixed; left: 50%; top: 10px; z-index: 100000;">
       <font-awesome-icon v-if="loading" class="fa-spin" icon="spinner" size="3x"/>
-    </span>
-    <span style="position: fixed; left: 50%; top: 50%; z-index: 100000;">
-      <font-awesome-icon v-if="tileLoading" class="fa-spin" icon="spinner" size="3x"/>
-    </span>
-    <span style="position: fixed; left: 50%; top: 10px; z-index: 100000;">
+    </div>
+    <div style="position: fixed; left: 50%; top: 10px; z-index: 100000;">
       <div v-for="alert in $store.getters.alerts" class="alert border border-dark" v-bind:class="{ 'alert-success': isSuccessAlert(alert), 'alert-danger': isDangerAlert(alert) }" v-bind:key="alert.date" role="alert">
         {{ alert.message }}
       </div>
-    </span>
+    </div>
   </div>
 </template>
 
@@ -69,13 +70,13 @@ import 'leaflet.fullscreen'
 import $ from 'jquery'
 import axios from 'axios'
 import Track from '@/js/track'
+import {AlertStatus} from './js/const'
 
 export default {
   name: 'App',
   mounted: function () {
     this.$store.commit('setAppHost', window.location.hostname === 'localhost' ? 'http://localhost:8000/djangoapp/' : '/djangoapp/')
-    let map = this.createMap([52.743682, 16.273668], 11)
-    this.$store.commit('setMap', map)
+    this.createMap([52.743682, 16.273668], 11)
     this.addLayers()
     this.addScaleControl()
     this.addFullScreenControl()
@@ -95,10 +96,7 @@ export default {
     'createMap': function (center, zoom) {
       let map = L.map('map', {'zoomAnimation': false})
       map.setView(center, zoom)
-      return map
-    },
-    'addScaleControl': function () {
-      L.control.scale({'metric': true, 'position': 'topleft', 'imperial': false, 'maxWidth': 200}).addTo(this.$store.getters.map)
+      this.$store.commit('setMap', map)
     },
     'addLayers': function () {
       let layers = {}
@@ -219,19 +217,8 @@ export default {
         layers['openStreetMap'].addTo(this.$store.getters.map)
       }
     },
-    'togglePanel': function () {
-      $('#sidebar').toggleClass('active')
-    },
-    'addCogsButton': function () {
-      let CogsControl = L.Control.extend({
-        options: {
-          position: 'topleft'
-        },
-        onAdd: function (map) {
-          return document.getElementById('cogsdivinner')
-        }
-      })
-      this.$store.getters.map.addControl(new CogsControl())
+    'addScaleControl': function () {
+      L.control.scale({'metric': true, 'position': 'topleft', 'imperial': false, 'maxWidth': 200}).addTo(this.$store.getters.map)
     },
     'addFullScreenControl': function () {
       L.control.fullscreen({
@@ -248,10 +235,22 @@ export default {
         }
       }))
     },
+    'addCogsButton': function () {
+      let CogsControl = L.Control.extend({
+        options: {
+          position: 'topleft'
+        },
+        onAdd: function (map) {
+          return document.getElementById('cogsdivinner')
+        }
+      })
+      this.$store.getters.map.addControl(new CogsControl())
+    },
     'downloadTracks': function () {
       axios.get(this.$store.getters.appHost + 'api/tracks/').then(
         response => {
           let tracks = []
+          this.createAlert(AlertStatus.success, response.data.results.length + ' tracks downloaded', 2000)
           for (let gpstrack of response.data.results) {
             let checked
             if (this.$route.query.tracks) {
@@ -282,6 +281,12 @@ export default {
           }
         }
       )
+    },
+    'togglePanel': function () {
+      $('#sidebar').toggleClass('active')
+      setTimeout(() => {
+        this.$store.getters.map.invalidateSize({pan: false, animate: false})
+      }, 1000)
     }
   }
 }

@@ -5,11 +5,11 @@
       <label class="custom-control-label" :for="'checkbox' + track.gpstrack.id">{{ track.gpstrack.name }}</label>
     </div>
     <div style="display: inline">
+      <div style="display: inline-block"><verte v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte></div>
       <TrackTypeIcon :track="track.gpstrack" height=24></TrackTypeIcon>
       <TrackStatusIcon :track="track.gpstrack" height=24></TrackStatusIcon>
       <TrackDownload :track="track.gpstrack" height=24></TrackDownload>
       <font-awesome-icon @click="centerTrack" style="height: 24px; cursor: pointer" icon="search-location"/>
-      <div style="display: inline-block"><verte v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte></div>
       <font-awesome-icon @click="saveColor" style="height: 24px; cursor: pointer" icon="save"/>
     </div>
     <div style="display: none">
