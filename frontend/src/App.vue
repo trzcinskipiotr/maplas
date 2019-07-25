@@ -313,15 +313,30 @@ export default {
     align-items: stretch;
   }
 
-  #sidebar {
-    min-width: 400px;
-    max-width: 400px;
-    min-height: 100vh;
-    max-height: 100vh;
-    margin-left: -400px;
-    transition: margin-left 0.5s linear;
-    background-color: white;
-    overflow: scroll;
+  @media (min-width: 400px) {
+    #sidebar {
+      min-width: 400px;
+      max-width: 400px;
+      min-height: 100vh;
+      max-height: 100vh;
+      margin-left: -400px;
+      transition: margin-left 0.5s linear;
+      background-color: white;
+      overflow: scroll;
+    }
+  }
+
+  @media (max-width: 400px) {
+    #sidebar {
+      min-width: 100%;
+      max-width: 100%;
+      min-height: 100vh;
+      max-height: 100vh;
+      margin-left: -100%;
+      transition: margin-left 0.5s linear;
+      background-color: white;
+      overflow: scroll;
+    }
   }
 
   #sidebar.active {
