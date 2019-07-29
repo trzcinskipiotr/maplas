@@ -20,15 +20,19 @@ def create_track_from_gpx(filename):
         for segment in track.segments:
             for point in segment.points:
                 points.append([point.latitude, point.longitude])
-    Track.objects.create(name=gpx.name or Path(filename).stem, points_json=json.dumps(points), distance=distance, status=Track.Status.done,
+    database_track = Track.objects.create(name=gpx.name or Path(filename).stem, points_json=json.dumps(points), distance=distance, status=Track.Status.done,
                          type=Track.Type.bicycle, start_time=start_time, end_time=end_time)
+    optimize_track(database_track)
 
-def optimize_track(points_json):
+def optimize_points(points_json):
     points = json.loads(points_json)
     return rdp.rdp(points, epsilon=settings.OPTIMIZE_EPSILON, algo='iter', return_mask=False)
+
+def optimize_track(track):
+    track.points_json_optimized = optimize_points(track.points_json)
+    track.save()
 
 def optimize_tracks():
     tracks = Track.objects.all()
     for track in tracks:
-        track.points_json_optimized = optimize_track(track.points_json)
-        track.save()
+        optimize_track(track)

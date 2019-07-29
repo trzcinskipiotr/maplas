@@ -42,7 +42,7 @@
       </div>
       <div class="content">
         <div id="map">
-          <span style="position: absolute; left: 50%; top: 50%; z-index: 100000;">
+          <span class="centerloading">
             <font-awesome-icon v-if="tileLoading" class="fa-spin" icon="spinner" size="4x"/>
           </span>
         </div>
@@ -53,10 +53,10 @@
         <font-awesome-icon style="cursor: pointer;" icon="cogs" size="lg"/>
       </div>
     </div>
-    <div style="position: fixed; left: 50%; top: 10px; z-index: 100000;">
+    <div class="alertmessage">
       <font-awesome-icon v-if="loading" class="fa-spin" icon="spinner" size="3x"/>
     </div>
-    <div style="position: fixed; left: 50%; top: 10px; z-index: 100000;">
+    <div class="alertmessage">
       <div v-for="alert in $store.getters.alerts" class="alert border border-dark" v-bind:class="{ 'alert-success': isSuccessAlert(alert), 'alert-danger': isDangerAlert(alert) }" v-bind:key="alert.date" role="alert">
         {{ alert.message }}
       </div>
@@ -183,6 +183,12 @@ export default {
         errorTileUrl: 'static/tiledownloadfailed.jpg'
       })
 
+      layers['hyddaBase'] = L.tileLayer('https://{s}.tile.openstreetmap.se/hydda/base/{z}/{x}/{y}.png', {
+	      maxZoom: 18,
+	      attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        errorTileUrl: 'static/tiledownloadfailed.jpg'
+      })
+
       let baseMaps = {
         'OpenStreetMap': layers['openStreetMap'],
         'OpenTopoMap': layers['openTopoMap'],
@@ -196,7 +202,8 @@ export default {
         'Google roads': layers['googleRoads'],
         'Google satellite': layers['googleSatellite'],
         'Google terrain': layers['googleTerrain'],
-        'Google hybrid': layers['googleHybrid']
+        'Google hybrid': layers['googleHybrid'],
+        'Hydda base': layers['hyddaBase']
       }
 
       for (let layer in baseMaps) {
@@ -257,7 +264,7 @@ export default {
               let tracksIds = this.$route.query.tracks.split(',')
               checked = tracksIds.includes(String(gpstrack.id))
             } else {
-              checked = !this.isPlannedTrack(gpstrack)
+              checked = ((!this.isPlannedTrack(gpstrack)) && (this.isBicycleTrack(gpstrack)))
             }
             let track = new Track(gpstrack, checked)
             tracks.push(track)
@@ -355,6 +362,28 @@ export default {
   .content {
     min-height: 100vh;
     width: 100%;
+  }
+
+  .alertmessage {
+    position: fixed;
+    top: 10px;
+    left: 50%;
+    z-index: 100000;
+    -webkit-transform: translate(-50%, 0);
+    -moz-transform: translate(-50%, 0);
+    -o-transform: translate(-50%, 0);
+    transform: translate(-50%, 0);
+  }
+
+  .centerloading {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 100000;
+    -webkit-transform: translate(-50%, -50%);
+    -moz-transform: translate(-50%, -50%);
+    -o-transform: translate(-50%, -50%);
+    transform: translate(-50%, -50%);
   }
 
   .leaflet-control-zoom-fullscreen {
