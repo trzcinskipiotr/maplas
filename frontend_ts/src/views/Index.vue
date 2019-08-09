@@ -4,7 +4,7 @@
       <div id="sidebar">
         <div class="card">
           <div class="card-header">
-            Main menu
+            {{ $t('mainMenu') }}
             <div style="float: right;">
               <font-awesome-icon @click="togglePanel" style="cursor: pointer;" :icon="['far', 'times-circle']"/>
             </div>
@@ -12,18 +12,18 @@
           <div class="mx-0 px-0 card-body">
             <ul class="nav nav-tabs" id="tabs" role="tablist">
               <li class="nav-item">
-                <a class="nav-link active" id="home-tab" data-toggle="tab" href="#tabtracks" role="tab">Tracks</a>
+                <a class="nav-link active" id="home-tab" data-toggle="tab" href="#tabtracks" role="tab">{{ $t('tracks') }}</a>
               </li>
               <li class="nav-item">
-                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabsettings" role="tab">Settings</a>
+                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabsettings" role="tab">{{ $t('settings') }}</a>
               </li>
             </ul>
             <div class="tab-content" id="tab_content_tracks">
               <div class="tab-pane show active" role="tabpanel" id="tabtracks">
                 <div class="card">
                   <div class="card-body">
-                    Selected {{ $store.getters.selectedTracks.length }} of {{ $store.state.tracks.length }} tracks<br>
-                    Selected tracks distance {{ $store.getters.selectedTracks|sumTracksDistance|roundTrackDistance }}<br><br>
+                    {{ $t('tracksSelected', [$store.getters.selectedTracks.length, $store.state.tracks.length]) }}<br>
+                    {{ $t('tracksSelectedDistance') }} {{ $store.getters.selectedTracks|sumTracksDistance|roundTrackDistance }}<br><br>
                     <div v-for="track in $store.state.tracks" :key="track.gpsTrack.id">
                       <AppTrack :track="track"></AppTrack>
                     </div>
@@ -33,6 +33,12 @@
               <div class="tab-pane show" role="tabpanel" id="tabsettings">
                 <div class="card">
                   <div class="card-body">
+                    {{ $t('language') }}: <v-select v-model="language" :options="languages">
+                      <template slot="option" slot-scope="option">
+                        <flag :iso="option.flag" v-bind:squared=false />
+                        {{ option.label }}
+                      </template>
+                    </v-select>
                   </div>
                 </div>
               </div>
@@ -66,7 +72,7 @@
 
 /* tslint:disable:no-string-literal */
 <script lang="ts">
-import { Component, Prop, Vue } from 'vue-property-decorator';
+import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import L from 'leaflet';
 import 'leaflet.gridlayer.googlemutant';
 import 'leaflet.fullscreen';
@@ -77,6 +83,7 @@ import BaseComponent from '@/components/Base.vue';
 import { AlertStatus } from '@/ts/types';
 import Track from '@/ts/Track';
 import GpsTrack from '@/ts/GpsTrack';
+import i18n from '@/plugins/i18n';
 
 @Component
 export default class Index extends BaseComponent {
@@ -85,7 +92,16 @@ export default class Index extends BaseComponent {
   private loading: boolean = true;
   private tileLoading: boolean = true;
 
+  private languages = [{flag: 'us', language: 'en', label: 'English'}, {flag: 'pl', language: 'pl', label: 'Polski' }];
+  private language: {flag: string, language: string, label: string} | null = null;
+
+  @Watch('language')
+  private onLanguageChanged(value: string, oldValue: string) {
+    i18n.locale = this.language!.language;
+  }
+
   private mounted() {
+    this.setLanguage();
     this.setAppHost();
     this.createMap([52.743682, 16.273668], 11);
     this.addLayers();
@@ -94,6 +110,21 @@ export default class Index extends BaseComponent {
     this.addCogsButton();
     this.addCurrentLocationControl();
     this.downloadTracks();
+  }
+
+  private setLanguage() {
+    if (typeof this.$route.query.lang === 'string') {
+      for (const lang of this.languages) {
+        if (this.$route.query.lang === lang.language) {
+          this.language = lang;
+        }
+      }
+      if (! this.language) {
+        this.language = this.languages[0];
+      }
+    } else {
+      this.language = this.languages[0];
+    }
   }
 
   private setAppHost() {
@@ -326,11 +357,11 @@ export default class Index extends BaseComponent {
             this.$store.state.map!.fitBounds(trackBounds);
           }
         }
-        this.createAlert(AlertStatus.success, response.data.results.length + ' tracks downloaded', 2000);
+        this.createAlert(AlertStatus.success, this.$t('tracksDownloaded', [response.data.results.length]).toString(), 2000);
       },
     ).catch(
       (response) => {
-        this.createAlert(AlertStatus.danger, 'Error during track download', 2000);
+        this.createAlert(AlertStatus.danger, this.$t('tracksError').toString(), 2000);
       },
     ).finally(
       () => {
@@ -440,6 +471,10 @@ export default class Index extends BaseComponent {
     -moz-transform: translate(-50%, 0);
     -o-transform: translate(-50%, 0);
     transform: translate(-50%, 0);
+  }
+
+  .vs__clear {
+    display: none;
   }
 
 </style>

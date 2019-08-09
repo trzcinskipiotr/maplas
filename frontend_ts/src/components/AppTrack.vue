@@ -14,12 +14,12 @@
     </div>
     <div style="display: none">
       <div :id="'tooltip' + track.gpsTrack.id">
-        <b>Name: </b>{{ track.gpsTrack.name }}<br>
-        <b>Start time: </b>{{ track.gpsTrack.startTime|formatDate }}<br>
-        <b>Distance: </b>{{ track.gpsTrack.distance|roundTrackDistance }}<br>
-        <b>Type: </b><TrackTypeIcon :gpsTrack="track.gpsTrack" height=12></TrackTypeIcon><br>
-        <b>Status: </b><TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br>
-        <b>ID: </b>{{ track.gpsTrack.id }}
+        <b>{{ $t('name') }}: </b>{{ track.gpsTrack.name }}<br>
+        <b>{{ $t('startTime') }}: </b>{{ track.gpsTrack.startTime|formatDate }}<br>
+        <b>{{ $t('distance') }}: </b>{{ track.gpsTrack.distance|roundTrackDistance }}<br>
+        <b>{{ $t('type') }}: </b><TrackTypeIcon :gpsTrack="track.gpsTrack" height=12></TrackTypeIcon><br>
+        <b>{{ $t('status') }}: </b><TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br>
+        <b>{{ $t('id') }}: </b>{{ track.gpsTrack.id }}
       </div>
     </div>
   </div>
@@ -62,9 +62,9 @@ export default class AppTrack extends BaseComponent {
     this.track.gpsTrack.color = this.color;
     axios.put(this.$store.state.appHost + `api/tracks/${this.track.gpsTrack.id}/`, this.track.gpsTrack)
       .then((response: object) => {
-        this.createAlert(AlertStatus.success, 'Color saved!', 2000);
+        this.createAlert(AlertStatus.success, this.$t('colorSaved').toString(), 2000);
       }).catch((response: object) => {
-        this.createAlert(AlertStatus.danger, 'Error during color saving!', 2000);
+        this.createAlert(AlertStatus.danger, this.$t('colorError').toString(), 2000);
       });
   }
 

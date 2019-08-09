@@ -57,8 +57,21 @@ import Verte from 'verte';
 import 'verte/dist/verte.css';
 Vue.component('verte', Verte);
 
+// @ts-ignore
+import i18n from '@/plugins/i18n';
+
+// @ts-ignore
+import FlagIcon from 'vue-flag-icon';
+Vue.use(FlagIcon);
+
+// @ts-ignore
+import vSelect from 'vue-select';
+Vue.component('v-select', vSelect);
+import 'vue-select/dist/vue-select.css';
 
 new Vue({
+  // @ts-ignore
+  i18n,
   router,
   store,
   render: (h) => h(App),
