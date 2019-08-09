@@ -6,7 +6,7 @@ import Alert from './Alert';
 
 Vue.use(Vuex);
 
-interface RootState {
+export interface RootState {
   map: L.Map | undefined;
   alerts: Alert[];
   appHost: string;
@@ -21,7 +21,7 @@ const store: StoreOptions<RootState> = {
     tracks: Array<Track>(),
   },
   getters: {
-    selectedTracks: (state) => {
+    selectedTracks: (state): Track[] => {
       const tracks = [];
       for (const track of state.tracks) {
         if (track.checked) {

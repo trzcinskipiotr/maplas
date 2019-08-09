@@ -16,7 +16,7 @@ export function roundTrackDistance(value: number) {
 export function sumTracksDistance(tracks: Track[]) {
   let distance = 0;
   for (const track of tracks) {
-    distance = distance + track.gpstrack.distance;
+    distance = distance + track.gpsTrack.distance;
   }
   return distance;
 }

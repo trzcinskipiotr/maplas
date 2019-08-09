@@ -52,6 +52,7 @@ Vue.filter('formatDate', formatDate);
 Vue.filter('roundTrackDistance', roundTrackDistance);
 Vue.filter('sumTracksDistance', sumTracksDistance);
 
+// @ts-ignore
 import Verte from 'verte';
 import 'verte/dist/verte.css';
 Vue.component('verte', Verte);

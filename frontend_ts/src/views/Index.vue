@@ -24,7 +24,7 @@
                   <div class="card-body">
                     Selected {{ $store.getters.selectedTracks.length }} of {{ $store.state.tracks.length }} tracks<br>
                     Selected tracks distance {{ $store.getters.selectedTracks|sumTracksDistance|roundTrackDistance }}<br><br>
-                    <div v-for="track in $store.state.tracks" :key="track.gpstrack.id">
+                    <div v-for="track in $store.state.tracks" :key="track.gpsTrack.id">
                       <AppTrack :track="track"></AppTrack>
                     </div>
                   </div>
@@ -233,11 +233,23 @@ export default class Index extends BaseComponent {
       }
     }
 
+    let availableLayers: string = '';
+    for (const layer in layers) {
+      if (layers.hasOwnProperty(layer)) {
+        availableLayers = availableLayers + layer + ', ';
+      }
+    }
+    /* tslint:disable-next-line */
+    console.log(`Available layers: ${availableLayers}`);
+
     const maplayer: string = (typeof this.$route.query.maplayer === 'string') ? this.$route.query.maplayer : '';
     L.control.layers(baseMaps).addTo(this.$store.state.map);
     if (layers.hasOwnProperty(maplayer)) {
       layers[maplayer].addTo(this.$store.state.map);
     } else {
+      if (maplayer.length > 0) {
+        this.createAlert(AlertStatus.danger, `Param maplayer ${maplayer} provided, but layer not found in avaliable layers`, 2000);
+      }
       layers['openStreetMap'].addTo(this.$store.state.map);
     }
   }
@@ -287,7 +299,6 @@ export default class Index extends BaseComponent {
     axios.get(this.$store.state.appHost + 'api/tracks/').then(
       (response) => {
         const tracks = [];
-        this.createAlert(AlertStatus.success, response.data.results.length + ' tracks downloaded', 2000);
         for (const gpstrack of response.data.results) {
           let checked;
           if (typeof this.$route.query.tracks === 'string') {
@@ -301,22 +312,28 @@ export default class Index extends BaseComponent {
           tracks.push(track);
         }
         this.$store.commit('setTracks', tracks);
-        this.loading = false;
         if (this.$route.query.tracks) {
-          let minLat = 500;
-          let maxLat = -500;
-          let minLon = 500;
-          let maxLon = -500;
-          for (const track of this.$store.getters.selectedTracks) {
-            for (const point of JSON.parse(track.gpstrack.points_json_optimized)) {
-              minLat = point[0] < minLat ? point[0] : minLat;
-              maxLat = point[0] > maxLat ? point[0] : maxLat;
-              minLon = point[1] < minLon ? point[1] : minLon;
-              maxLon = point[1] > maxLon ? point[1] : maxLon;
+          let trackBounds: L.LatLngBounds | undefined;
+          for (const track of this.$store.getters.selectedTracks as Track[]) {
+            if (trackBounds) {
+              trackBounds.extend(track.mapTrack.getBounds());
+            } else {
+              trackBounds = track.mapTrack.getBounds();
             }
           }
-          this.$store.state.map.fitBounds([[minLat, minLon], [maxLat, maxLon]]);
+          if (trackBounds) {
+            this.$store.state.map.fitBounds(trackBounds);
+          }
         }
+        this.createAlert(AlertStatus.success, response.data.results.length + ' tracks downloaded', 2000);
+      },
+    ).catch(
+      (response) => {
+        this.createAlert(AlertStatus.danger, 'Error during track download', 2000);
+      },
+    ).finally(
+      () => {
+        this.loading = false;
       },
     );
   }

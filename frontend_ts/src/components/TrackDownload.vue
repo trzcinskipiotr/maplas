@@ -12,20 +12,20 @@ import GpsTrack from '@/ts/GpsTrack';
 @Component
 export default class TrackDownload extends BaseComponent {
 
-  @Prop({ required: true }) private gpstrack!: GpsTrack;
+  @Prop({ required: true }) private gpsTrack!: GpsTrack;
   @Prop({ required: true }) private height!: number;
 
   private saveGPX() {
       const gpsPointList = [];
-      for (const point of JSON.parse(this.gpstrack.pointsJsonOptimized)) {
-        const gpsPoint = new BaseBuilder.MODELS.Point(point[0], point[1]);
+      for (const point of this.gpsTrack.pointsArray) {
+        const gpsPoint = new BaseBuilder.MODELS.Point(point.lat, point.lng);
         gpsPointList.push(gpsPoint);
       }
       const gpxData = new BaseBuilder();
-      gpxData.setMetadata(new BaseBuilder.MODELS.Metadata({name: this.gpstrack.name}));
-      gpxData.setTracks([new BaseBuilder.MODELS.Track([new BaseBuilder.MODELS.Segment(gpsPointList)], {name: this.gpstrack.name})]);
+      gpxData.setMetadata(new BaseBuilder.MODELS.Metadata({name: this.gpsTrack.name}));
+      gpxData.setTracks([new BaseBuilder.MODELS.Track([new BaseBuilder.MODELS.Segment(gpsPointList)], {name: this.gpsTrack.name})]);
       const blob = new Blob([buildGPX(gpxData.toObject())], {type: 'text/plain;charset=utf-8'});
-      FileSaver.saveAs(blob, this.gpstrack.name + '.gpx');
+      FileSaver.saveAs(blob, this.gpsTrack.name + '.gpx');
     }
   }
 </script>
