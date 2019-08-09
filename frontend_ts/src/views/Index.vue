@@ -243,14 +243,14 @@ export default class Index extends BaseComponent {
     console.log(`Available layers: ${availableLayers}`);
 
     const maplayer: string = (typeof this.$route.query.maplayer === 'string') ? this.$route.query.maplayer : '';
-    L.control.layers(baseMaps).addTo(this.$store.state.map);
+    L.control.layers(baseMaps).addTo(this.$store.state.map!);
     if (layers.hasOwnProperty(maplayer)) {
-      layers[maplayer].addTo(this.$store.state.map);
+      layers[maplayer].addTo(this.$store.state.map!);
     } else {
       if (maplayer.length > 0) {
         this.createAlert(AlertStatus.danger, `Param maplayer ${maplayer} provided, but layer not found in avaliable layers`, 2000);
       }
-      layers['openStreetMap'].addTo(this.$store.state.map);
+      layers['openStreetMap'].addTo(this.$store.state.map!);
     }
   }
 
@@ -263,12 +263,13 @@ export default class Index extends BaseComponent {
         return document.getElementById('cogsdivinner');
       },
     });
-    this.$store.state.map.addControl(new CogsControl());
+    this.$store.state.map!.addControl(new CogsControl());
   }
 
   private togglePanel() {
     $('#sidebar').toggleClass('active');
     setTimeout(() => {
+      // @ts-ignore
       this.$store.state.map.invalidateSize({pan: false, animate: false});
     }, 1000);
   }
@@ -284,11 +285,11 @@ export default class Index extends BaseComponent {
   }
 
   private addScaleControl() {
-    L.control.scale({metric: true, position: 'topleft', imperial: false, maxWidth: 200}).addTo(this.$store.state.map);
+    L.control.scale({metric: true, position: 'topleft', imperial: false, maxWidth: 200}).addTo(this.$store.state.map!);
   }
 
   private addCurrentLocationControl() {
-    this.$store.state.map.addControl(L.control.locate({
+    this.$store.state.map!.addControl(L.control.locate({
       locateOptions: {
         enableHighAccuracy: true,
       },
@@ -322,7 +323,7 @@ export default class Index extends BaseComponent {
             }
           }
           if (trackBounds) {
-            this.$store.state.map.fitBounds(trackBounds);
+            this.$store.state.map!.fitBounds(trackBounds);
           }
         }
         this.createAlert(AlertStatus.success, response.data.results.length + ' tracks downloaded', 2000);

@@ -69,7 +69,7 @@ export default class AppTrack extends BaseComponent {
   }
 
   private centerTrack() {
-    this.$store.state.map.fitBounds(this.track.mapTrack.getBounds());
+    this.$store.state.map!.fitBounds(this.track.mapTrack.getBounds());
   }
 
   private highlightMapTrack() {
@@ -97,10 +97,10 @@ export default class AppTrack extends BaseComponent {
 
   private showOrHideTrack() {
     if (this.checked) {
-      this.track.mapTrack.addTo(this.$store.state.map);
+      this.track.mapTrack.addTo(this.$store.state.map!);
       this.track.checked = true;
     } else {
-      this.track.mapTrack.removeFrom(this.$store.state.map);
+      this.track.mapTrack.removeFrom(this.$store.state.map!);
       this.track.checked = false;
     }
   }
