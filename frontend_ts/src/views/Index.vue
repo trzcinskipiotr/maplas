@@ -318,7 +318,7 @@ export default class Index extends BaseComponent {
             if (trackBounds) {
               trackBounds.extend(track.mapTrack.getBounds());
             } else {
-              trackBounds = track.mapTrack.getBounds();
+              trackBounds = new L.LatLngBounds(track.mapTrack.getBounds().getNorthEast(), track.mapTrack.getBounds().getSouthWest());
             }
           }
           if (trackBounds) {
