@@ -33,7 +33,7 @@
               <div class="tab-pane show" role="tabpanel" id="tabsettings">
                 <div class="card">
                   <div class="card-body">
-                    {{ $t('language') }}: <v-select v-model="language" :options="languages">
+                    {{ $t('language') }}: <v-select v-model="language" :options="languages" :clearable="false" :searchable="false" >
                       <template slot="option" slot-scope="option">
                         <flag :iso="option.flag" v-bind:squared=false />
                         {{ option.label }}
@@ -66,6 +66,9 @@
       <div v-for="alert in $store.state.alerts" class="alert border border-dark" v-bind:class="{ 'alert-success': isSuccessAlert(alert), 'alert-danger': isDangerAlert(alert) }" v-bind:key="alert.date" role="alert">
         {{ alert.message }}
       </div>
+    </div>
+    <div v-for="language in languages" :key="language.flag" style="position: absolute; left: -10000px">
+      <flag :iso="language.flag" v-bind:squared=false />
     </div>
   </div>  
 </template>
@@ -198,6 +201,11 @@ export default class Index extends BaseComponent {
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
+    layers['openCycleMap'] = L.tileLayer('http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenCycleMap, ' + 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+      errorTileUrl: 'img/tiledownloadfailed.jpg',
+    });
+
     layers['googleRoads'] = L.gridLayer.googleMutant({
       type: 'roadmap',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
@@ -238,6 +246,7 @@ export default class Index extends BaseComponent {
 
     const baseMaps: LayersDictionary = {
       'OpenStreetMap': layers['openStreetMap'],
+      'OpenCycletMap': layers['openCycleMap'],
       'OpenTopoMap': layers['openTopoMap'],
       'Mapbox streets': layers['mapboxStreets'],
       'Mapbox satellite': layers['mapboxSatellite'],
@@ -471,10 +480,6 @@ export default class Index extends BaseComponent {
     -moz-transform: translate(-50%, 0);
     -o-transform: translate(-50%, 0);
     transform: translate(-50%, 0);
-  }
-
-  .vs__clear {
-    display: none;
   }
 
 </style>
