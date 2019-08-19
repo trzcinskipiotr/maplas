@@ -1,5 +1,5 @@
 <template>
-  <font-awesome-icon @click="saveGPX" :style="{height: height + 'px', cursor: 'pointer'}" icon="download"/>
+  <span v-b-tooltip.hover :title="$t('downloadGPX')"><font-awesome-icon @click="saveGPX" :style="{height: height + 'px', cursor: 'pointer'}" icon="download"/></span>
 </template>
 
 <script lang="ts">

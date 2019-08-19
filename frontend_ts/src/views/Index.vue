@@ -55,7 +55,7 @@
       </div>
     </div>
     <div id="cogsdiv" style="display: none;">
-      <div id="cogsdivinner" @click="togglePanel" class="leaflet-touch leaflet-bar cogsbutton">
+      <div id="cogsdivinner" @click="togglePanel" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="menuOpened ? $t('closeMenu') : $t('openMenu')">
         <font-awesome-icon style="cursor: pointer;" icon="cogs" size="lg"/>
       </div>
     </div>
@@ -70,6 +70,18 @@
     <div v-for="language in languages" :key="language.flag" style="position: absolute; left: -10000px">
       <flag :iso="language.flag" v-bind:squared=false />
     </div>
+    <template v-if="document.getElementsByClassName('leaflet-control-locate')[0]">
+      <b-tooltip :target="document.getElementsByClassName('leaflet-control-locate')[0]">{{ $t('showMyLocation') }}</b-tooltip>
+    </template>
+    <template v-if="document.getElementsByClassName('leaflet-control-zoom-fullscreen')[0]">
+      <b-tooltip :target="document.getElementsByClassName('leaflet-control-zoom-fullscreen')[0]">{{ fullscreenOpened ? $t('exitFullscreen') : $t('enterFullscreen') }}</b-tooltip>
+    </template>
+    <template v-if="document.getElementsByClassName('leaflet-control-zoom-in')[0]">
+      <b-tooltip :target="document.getElementsByClassName('leaflet-control-zoom-in')[0]">{{ $t('zoomIn') }}</b-tooltip>
+    </template>
+    <template v-if="document.getElementsByClassName('leaflet-control-zoom-out')[0]">
+      <b-tooltip :target="document.getElementsByClassName('leaflet-control-zoom-out')[0]">{{ $t('zoomOut') }}</b-tooltip>
+    </template>
   </div>  
 </template>
 
@@ -94,6 +106,9 @@ export default class Index extends BaseComponent {
   private googleApiToken: string = 'GOOGLE_API_KEY';
   private loading: boolean = true;
   private tileLoading: boolean = true;
+  private menuOpened = false;
+  private document = document;
+  private fullscreenOpened = false;
 
   private languages = [{flag: 'us', language: 'en', label: 'English'}, {flag: 'pl', language: 'pl', label: 'Polski' }];
   private language: {flag: string, language: string, label: string} | null = null;
@@ -308,6 +323,7 @@ export default class Index extends BaseComponent {
 
   private togglePanel() {
     $('#sidebar').toggleClass('active');
+    this.menuOpened = !this.menuOpened;
     setTimeout(() => {
       // @ts-ignore
       this.$store.state.map.invalidateSize({pan: false, animate: false});
@@ -317,11 +333,14 @@ export default class Index extends BaseComponent {
   private addFullScreenControl() {
     L.control.fullscreen({
       position: 'topleft',
-      title: 'Enter fullscreen',
-      titleCancel: 'Exit fullscreen',
+      title: '',
+      titleCancel: '',
       // @ts-ignore
       fullscreenElement: document.getElementById('appvue'),
     }).addTo(this.$store.state.map);
+    
+    this.$store.state.map!.on('enterFullscreen', () => this.fullscreenOpened = true);
+    this.$store.state.map!.on('exitFullscreen', () => this.fullscreenOpened = false);
   }
 
   private addScaleControl() {
@@ -332,6 +351,9 @@ export default class Index extends BaseComponent {
     this.$store.state.map!.addControl(L.control.locate({
       locateOptions: {
         enableHighAccuracy: true,
+      },
+      strings: {
+        title: '',
       },
     }));
   }

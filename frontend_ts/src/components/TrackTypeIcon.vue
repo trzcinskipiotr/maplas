@@ -1,6 +1,6 @@
 <template>
-  <font-awesome-icon :style="{height: height + 'px'}" v-if="isBicycleTrack(gpsTrack)" icon="biking"/>
-  <font-awesome-icon :style="{height: height + 'px'}" v-else-if="isWalkTrack(gpsTrack)" icon="shoe-prints"/>
+  <span v-if="isBicycleTrack(gpsTrack)" v-b-tooltip.hover :title="$t('bicycleTrack')"><font-awesome-icon :style="{height: height + 'px'}" icon="biking"/></span>
+  <span v-else-if="isWalkTrack(gpsTrack)" v-b-tooltip.hover :title="$t('walkTrack')"><font-awesome-icon :style="{height: height + 'px'}" icon="shoe-prints"/></span>
 </template>
 
 <script lang="ts">

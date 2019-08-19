@@ -5,12 +5,12 @@
       <label class="custom-control-label" :for="'checkbox' + track.gpsTrack.id">{{ track.gpsTrack.name }}</label>
     </div>
     <div style="display: inline">
-      <div style="display: inline-block"><verte v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte></div>
+      <div style="display: inline-block" v-b-tooltip.hover :title="$t('changeColor')"><verte v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte></div>
       <span style='margin-right: 3px;'><TrackTypeIcon :gpsTrack="track.gpsTrack" height=24></TrackTypeIcon></span>
       <span style='margin-right: 3px;'><TrackStatusIcon :gpsTrack="track.gpsTrack" height=24></TrackStatusIcon></span>
       <span style='margin-right: 3px;'><TrackDownload :gpsTrack="track.gpsTrack" height=24></TrackDownload></span>
-      <span style='margin-right: 3px;'><font-awesome-icon @click="centerTrack" style="height: 24px; cursor: pointer" icon="search-location"/></span>
-      <span><font-awesome-icon @click="saveColor" style="height: 24px; cursor: pointer" icon="save"/></span>
+      <span style='margin-right: 3px;' v-b-tooltip.hover :title="$t('centerTrack')"><font-awesome-icon @click="centerTrack" style="height: 24px; cursor: pointer" icon="search-location"/></span>
+      <span v-b-tooltip.hover :title="$t('saveTrack')"><font-awesome-icon @click="saveColor" style="height: 24px; cursor: pointer" icon="save"/></span>
     </div>
     <div style="display: none">
       <div :id="'tooltip' + track.gpsTrack.id">
