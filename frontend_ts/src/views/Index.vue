@@ -261,7 +261,7 @@ export default class Index extends BaseComponent {
 
     const baseMaps: LayersDictionary = {
       'OpenStreetMap': layers['openStreetMap'],
-      'OpenCycletMap': layers['openCycleMap'],
+      'OpenCycleMap': layers['openCycleMap'],
       'OpenTopoMap': layers['openTopoMap'],
       'Mapbox streets': layers['mapboxStreets'],
       'Mapbox satellite': layers['mapboxSatellite'],
@@ -338,7 +338,7 @@ export default class Index extends BaseComponent {
       // @ts-ignore
       fullscreenElement: document.getElementById('appvue'),
     }).addTo(this.$store.state.map);
-    
+
     this.$store.state.map!.on('enterFullscreen', () => this.fullscreenOpened = true);
     this.$store.state.map!.on('exitFullscreen', () => this.fullscreenOpened = false);
   }
