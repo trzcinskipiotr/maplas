@@ -74,7 +74,7 @@
       <b-tooltip :target="document.getElementsByClassName('leaflet-control-locate')[0]">{{ $t('showMyLocation') }}</b-tooltip>
     </template>
     <template v-if="document.getElementsByClassName('leaflet-control-zoom-fullscreen')[0]">
-      <b-tooltip :target="document.getElementsByClassName('leaflet-control-zoom-fullscreen')[0]">{{ fullscreenOpened ? $t('exitFullscreen') : $t('enterFullscreen') }}</b-tooltip>
+      <b-tooltip ref="fullscreenTooltip" :target="document.getElementsByClassName('leaflet-control-zoom-fullscreen')[0]">{{ fullscreenOpened ? $t('exitFullscreen') : $t('enterFullscreen') }}</b-tooltip>
     </template>
     <template v-if="document.getElementsByClassName('leaflet-control-zoom-in')[0]">
       <b-tooltip :target="document.getElementsByClassName('leaflet-control-zoom-in')[0]">{{ $t('zoomIn') }}</b-tooltip>
@@ -330,17 +330,22 @@ export default class Index extends BaseComponent {
     }, 1000);
   }
 
+  private closeFullscreenTooltip() {
+    // @ts-ignore
+    this.$refs.fullscreenTooltip.$emit('close');
+  }
+
   private addFullScreenControl() {
     L.control.fullscreen({
       position: 'topleft',
       title: '',
       titleCancel: '',
       // @ts-ignore
-      fullscreenElement: document.getElementById('appvue'),
+      fullscreenElement: document.documentElement,
     }).addTo(this.$store.state.map);
 
-    this.$store.state.map!.on('enterFullscreen', () => this.fullscreenOpened = true);
-    this.$store.state.map!.on('exitFullscreen', () => this.fullscreenOpened = false);
+    this.$store.state.map!.on('enterFullscreen', () => {this.fullscreenOpened = true; this.closeFullscreenTooltip(); });
+    this.$store.state.map!.on('exitFullscreen', () => {this.fullscreenOpened = false; this.closeFullscreenTooltip(); });
   }
 
   private addScaleControl() {
