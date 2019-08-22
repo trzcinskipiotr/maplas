@@ -3,8 +3,11 @@
     <div style="display: inline" class="custom-control custom-checkbox" :id="'trackcheckbox' + track.gpsTrack.id">
       <input type="checkbox" class="custom-control-input" :id="'checkbox' + track.gpsTrack.id" v-model="checked" />
       <label class="custom-control-label" :for="'checkbox' + track.gpsTrack.id">{{ track.gpsTrack.name }}</label>
-    </div>
-    <div style="display: inline">
+      <div style="float: right;">
+        <font-awesome-icon @click="togglePanel" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
+      </div>
+    </div><br>
+    <div ref="icons" style="display: none;">
       <div style="display: inline-block" v-b-tooltip.hover :title="$t('changeColor')"><verte v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte></div>
       <span style='margin-right: 3px;'><TrackTypeIcon :gpsTrack="track.gpsTrack" height=24></TrackTypeIcon></span>
       <span style='margin-right: 3px;'><TrackStatusIcon :gpsTrack="track.gpsTrack" height=24></TrackStatusIcon></span>
@@ -28,6 +31,7 @@
 <script lang="ts">
 import L from 'leaflet';
 import axios from 'axios';
+import $ from 'jquery';
 import BaseComponent from '@/components/Base.vue';
 import Track from '@/ts/Track';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
@@ -38,6 +42,7 @@ export default class AppTrack extends BaseComponent {
 
   public checked: boolean;
   public color: string;
+  private iconsVisible: boolean = false;
 
   @Prop({ required: true }) private track!: Track;
 
@@ -56,6 +61,11 @@ export default class AppTrack extends BaseComponent {
       this.unhighlightMapTrack();
     });
     this.showOrHideTrack();
+  }
+
+  private togglePanel() {
+    $(this.$refs.icons).slideToggle('fast');
+    this.iconsVisible = !this.iconsVisible;
   }
 
   private saveColor() {

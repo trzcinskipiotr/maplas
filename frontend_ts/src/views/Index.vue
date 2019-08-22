@@ -22,10 +22,22 @@
               <div class="tab-pane show active" role="tabpanel" id="tabtracks">
                 <div class="card">
                   <div class="card-body">
+                    {{ $t('groupBy') }}: <v-select v-model="groupBy" :options="groups" :clearable="false" :searchable="false" >
+                      <template slot="option" slot-scope="option">
+                        {{ option.label }}
+                      </template>
+                    </v-select>
+                    <br>
                     {{ $t('tracksSelected', [$store.getters.selectedTracks.length, $store.state.tracks.length]) }}<br>
-                    {{ $t('tracksSelectedDistance') }} {{ $store.getters.selectedTracks|sumTracksDistance|roundTrackDistance }}<br><br>
-                    <div v-for="track in $store.state.tracks" :key="track.gpsTrack.id">
-                      <AppTrack :track="track"></AppTrack>
+                    {{ $t('tracksSelectedDistance') }}: {{ $store.getters.selectedTracks|sumTracksDistance|roundTrackDistance }}
+                    <ul>
+                      <li>{{ $t('tracksSelectedDistanceWalk') }}: {{ $store.getters.selectedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
+                      <li>{{ $t('tracksSelectedDistanceBicycle') }}: {{ $store.getters.selectedTracks|sumTracksDistanceBicycle|roundTrackDistance }}</li>
+                    </ul>
+                    <br>  
+                    <div v-for="trackGroup in trackGroups" :key="trackGroup.label">
+                      <AppTrackGroup :trackGroup="trackGroup"></AppTrackGroup>
+                      <br>
                     </div>
                   </div>
                 </div>
@@ -99,6 +111,11 @@ import { AlertStatus } from '@/ts/types';
 import Track from '@/ts/Track';
 import GpsTrack from '@/ts/GpsTrack';
 import i18n from '@/plugins/i18n';
+import YearTrackGrouper from '@/ts/trackgroupers/year';
+import TypeTrackGrouper from '@/ts/trackgroupers/type';
+import PlaceTrackGrouper from '@/ts/trackgroupers/place';
+import TrackGrouper from '@/ts/TrackGrouper';
+import TrackGroup from '@/ts/TrackGroup';
 
 @Component
 export default class Index extends BaseComponent {
@@ -110,12 +127,21 @@ export default class Index extends BaseComponent {
   private document = document;
   private fullscreenOpened = false;
 
+  private groups = [{label: 'Rok', grouper: new YearTrackGrouper()}, {label: 'Typ', grouper: new TypeTrackGrouper()}, {label: 'Miejsce', grouper: new PlaceTrackGrouper()}];
+  private groupBy = this.groups[0];
+  private trackGroups: TrackGroup[] = [];
+
   private languages = [{flag: 'us', language: 'en', label: 'English'}, {flag: 'pl', language: 'pl', label: 'Polski' }];
   private language: {flag: string, language: string, label: string} | null = null;
 
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
     i18n.locale = this.language!.language;
+  }
+
+  @Watch('groupBy')
+  private onGroupByChanged(value: string, oldValue: string) {
+    this.trackGroups = this.groupBy!.grouper.groupTracks(this.$store.state.tracks);
   }
 
   private mounted() {
@@ -375,9 +401,11 @@ export default class Index extends BaseComponent {
           } else {
             checked = ((!this.isPlannedTrack(gpstrack)) && (this.isBicycleTrack(gpstrack)));
           }
-          const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color, gpstrack.distance, gpstrack.status, gpstrack.type, gpstrack.start_time, gpstrack.end_time);
+          const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color, gpstrack.distance, gpstrack.status, gpstrack.type, new Date(gpstrack.start_time), new Date(gpstrack.end_time), gpstrack.place ? gpstrack.place.name : null);
           const track = new Track(newGpstrack, checked);
-          tracks.push(track);
+          if (newGpstrack.isDoneTrack()) {
+            tracks.push(track);
+          }
         }
         this.$store.commit('setTracks', tracks);
         if (this.$route.query.tracks) {
@@ -394,6 +422,7 @@ export default class Index extends BaseComponent {
           }
         }
         this.createAlert(AlertStatus.success, this.$t('tracksDownloaded', [response.data.results.length]).toString(), 2000);
+        this.trackGroups = this.groupBy!.grouper.groupTracks(this.$store.state.tracks);
       },
     ).catch(
       (response) => {

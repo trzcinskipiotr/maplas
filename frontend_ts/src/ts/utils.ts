@@ -10,6 +10,8 @@ export function formatDate(value: Date) {
 export function roundTrackDistance(value: number) {
   if (value) {
     return String(Math.round(value / 100) / 10) + 'km';
+  } else {
+    return '0km';
   }
 }
 
@@ -20,3 +22,25 @@ export function sumTracksDistance(tracks: Track[]) {
   }
   return distance;
 }
+
+
+export function sumTracksDistanceWalk(tracks: Track[]) {
+  let distance = 0;
+  for (const track of tracks) {
+    if (track.gpsTrack.isWalkTrack()) {
+      distance = distance + track.gpsTrack.distance;
+    }
+  }
+  return distance;
+}
+
+export function sumTracksDistanceBicycle(tracks: Track[]) {
+  let distance = 0;
+  for (const track of tracks) {
+    if (track.gpsTrack.isBicycleTrack()) {
+      distance = distance + track.gpsTrack.distance;
+    }
+  }
+  return distance;
+}
+

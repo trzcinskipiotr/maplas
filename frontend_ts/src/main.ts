@@ -10,7 +10,7 @@ import 'leaflet/dist/leaflet.css';
 
 import '@fortawesome/fontawesome-free/css/all.css';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { faCalendarTimes, faCalendarCheck, faWindowClose, faTimesCircle } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 library.add(faShoePrints);
@@ -25,6 +25,8 @@ library.add(faCogs);
 library.add(faSpinner);
 library.add(faWindowClose);
 library.add(faTimesCircle);
+library.add(faChevronDown);
+library.add(faChevronUp);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 import BootstrapVue from 'bootstrap-vue';
@@ -39,18 +41,22 @@ loadgoogle({key: 'GOOGLE_API_KEY'});
 Vue.config.productionTip = false;
 
 import AppTrack from '@/components/AppTrack.vue';
+import AppTrackGroup from '@/components/AppTrackGroup.vue';
 import TrackStatusIcon from '@/components/TrackStatusIcon.vue';
 import TrackTypeIcon from '@/components/TrackTypeIcon.vue';
 import TrackDownload from '@/components/TrackDownload.vue';
 Vue.component('AppTrack', AppTrack);
+Vue.component('AppTrackGroup', AppTrackGroup);
 Vue.component('TrackStatusIcon', TrackStatusIcon);
 Vue.component('TrackTypeIcon', TrackTypeIcon);
 Vue.component('TrackDownload', TrackDownload);
 
-import {formatDate, roundTrackDistance, sumTracksDistance} from '@/ts/utils';
+import {formatDate, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);
 Vue.filter('roundTrackDistance', roundTrackDistance);
 Vue.filter('sumTracksDistance', sumTracksDistance);
+Vue.filter('sumTracksDistanceWalk', sumTracksDistanceWalk);
+Vue.filter('sumTracksDistanceBicycle', sumTracksDistanceBicycle);
 
 // @ts-ignore
 import Verte from 'verte';

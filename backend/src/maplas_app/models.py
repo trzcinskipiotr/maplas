@@ -2,6 +2,11 @@ from django.db import models
 from colorfield.fields import ColorField
 from djchoices import DjangoChoices, ChoiceItem
 
+class Place(models.Model):
+    name = models.CharField(max_length=100, null=False, blank=True, default='')
+
+    def __str__(self):
+        return self.name
 
 class Track(models.Model):
 
@@ -25,3 +30,4 @@ class Track(models.Model):
     distance = models.IntegerField(null=False)
     status = models.IntegerField(null=False, blank=False)
     type = models.IntegerField(null=False, blank=False)
+    place = models.ForeignKey(Place, on_delete=models.SET_NULL, null=True)
