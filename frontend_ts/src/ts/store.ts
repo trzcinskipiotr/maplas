@@ -47,6 +47,13 @@ const store: StoreOptions<RootState> = {
     removeAlert(state) {
       state.alerts.pop();
     },
+    setTrackChecked(state, options: {track: Track, checked: boolean}) {
+      for (const looptrack of state.tracks) {
+        if (looptrack === options.track) {
+          looptrack.checked = options.checked;
+        }
+      }
+    },
   },
   actions: {
   },

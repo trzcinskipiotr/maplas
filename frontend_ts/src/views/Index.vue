@@ -34,7 +34,6 @@
                       <li>{{ $t('tracksSelectedDistanceWalk') }}: {{ $store.getters.selectedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
                       <li>{{ $t('tracksSelectedDistanceBicycle') }}: {{ $store.getters.selectedTracks|sumTracksDistanceBicycle|roundTrackDistance }}</li>
                     </ul>
-                    <br>  
                     <div v-for="trackGroup in trackGroups" :key="trackGroup.label">
                       <AppTrackGroup :trackGroup="trackGroup"></AppTrackGroup>
                       <br>
@@ -164,10 +163,10 @@ export default class Index extends BaseComponent {
         }
       }
       if (! this.language) {
-        this.language = this.languages[0];
+        this.language = this.languages[1];
       }
     } else {
-      this.language = this.languages[0];
+      this.language = this.languages[1];
     }
   }
 
@@ -401,6 +400,7 @@ export default class Index extends BaseComponent {
           } else {
             checked = ((!this.isPlannedTrack(gpstrack)) && (this.isBicycleTrack(gpstrack)));
           }
+          checked = true;
           const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color, gpstrack.distance, gpstrack.status, gpstrack.type, new Date(gpstrack.start_time), new Date(gpstrack.end_time), gpstrack.place ? gpstrack.place.name : null);
           const track = new Track(newGpstrack, checked);
           if (newGpstrack.isDoneTrack()) {

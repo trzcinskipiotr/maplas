@@ -115,6 +115,11 @@ export default class AppTrack extends BaseComponent {
     }
   }
 
+  @Watch('track.checked')
+  private onPropCheckedChanged(value: boolean, oldValue: boolean) {
+    this.checked = this.track.checked;
+  }
+
   @Watch('checked')
   private onCheckedChanged(value: boolean, oldValue: boolean) {
     this.showOrHideTrack();
