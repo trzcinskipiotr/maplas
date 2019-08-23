@@ -48,6 +48,8 @@ en: {
   poznan: 'Poznań surroundings',
   sweden: 'Sweden',
   wielkopolskiparknarodowy: 'Wielkopolski National Park',
+  year: 'Year',
+  place: 'Place',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte!',
@@ -94,6 +96,8 @@ pl: {
   poznan: 'Okolice Poznania',
   sweden: 'Szwecja',
   wielkopolskiparknarodowy: 'Wielkopolski Park Narodowy',
+  year: 'Rok',
+  place: 'Miejsce',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'es', messages});

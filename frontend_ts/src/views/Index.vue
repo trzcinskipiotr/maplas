@@ -399,8 +399,8 @@ export default class Index extends BaseComponent {
             checked = tracksIds.includes(String(gpstrack.id));
           } else {
             checked = ((!this.isPlannedTrack(gpstrack)) && (this.isBicycleTrack(gpstrack)));
+            checked = true;
           }
-          checked = true;
           const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color, gpstrack.distance, gpstrack.status, gpstrack.type, new Date(gpstrack.start_time), new Date(gpstrack.end_time), gpstrack.place ? gpstrack.place.name : null);
           const track = new Track(newGpstrack, checked);
           if (newGpstrack.isDoneTrack()) {
