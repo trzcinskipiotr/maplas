@@ -2,7 +2,8 @@ import Vue from 'vue';
 import App from './App.vue';
 import router from './ts/router';
 import store from './ts/store';
-import './registerServiceWorker';
+// import './registerServiceWorker';
+import './unregisterServiceWorker';
 
 import 'leaflet.gridlayer.googlemutant';
 import 'leaflet.locatecontrol';
