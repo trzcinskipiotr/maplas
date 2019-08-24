@@ -86,11 +86,15 @@ export default class AppTrack extends BaseComponent {
     document.getElementById('trackcheckbox' + this.track.gpsTrack.id)!.style.fontWeight = 'bold';
     this.changeWidth(6);
     this.track.mapTrack.bringToFront();
+    this.track.startMarker.addTo(this.$store.state.map!);
+    this.track.finishMarker.addTo(this.$store.state.map!);
   }
 
   private unhighlightMapTrack() {
     document.getElementById('trackcheckbox' + this.track.gpsTrack.id)!.style.fontWeight = 'normal';
     this.changeWidth(3);
+    this.track.finishMarker.removeFrom(this.$store.state.map!);
+    this.track.startMarker.removeFrom(this.$store.state.map!);
   }
 
   private changeWidth(width: number) {
