@@ -15,11 +15,11 @@ export default class Track {
       smoothFactor: 1,
     });
     const startIcon = L.icon({
-      iconUrl: 'img/startflag.png',
+      iconUrl: 'img/startflag2.png',
       iconAnchor: [5, 32],
     });
     const finishIcon = L.icon({
-      iconUrl: 'img/finishflag.png',
+      iconUrl: 'img/finishflag2.png',
       iconAnchor: [5, 32],
     });
     const tmpArray = this.gpsTrack.pointsArray;
