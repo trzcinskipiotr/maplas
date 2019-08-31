@@ -1,6 +1,6 @@
 <template>
   <div class="card">
-    <div class="card-header">
+    <div class="card-header py-2">
       <b-form-checkbox style="display: inline;" v-model="checkedAll" :indeterminate="indeterminate" :disabled="trackGroup.tracks.length == 0">
       </b-form-checkbox>
       {{ trackGroup.translate ? $t(trackGroup.translate) : trackGroup.label }}
@@ -8,7 +8,7 @@
         <font-awesome-icon @click="togglePanel" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
       </div>
     </div>
-    <div ref="tracks" class="card-body">
+    <div ref="tracks" class="card-body p-2">
       {{ $t('tracksSelectedDistance') }}: {{ checkedTracks|sumTracksDistance|roundTrackDistance }}
       <ul>
         <li>{{ $t('tracksSelectedDistanceWalk') }}: {{ checkedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
@@ -40,7 +40,7 @@ export default class AppTrackGroup extends BaseComponent {
     super();
     let oneChecked = false;
     let oneUnChecked = false;
-    for (let track of this.trackGroup.tracks) {
+    for (const track of this.trackGroup.tracks) {
       if (track.checked) {
         oneChecked = true;
       } else {
@@ -57,12 +57,12 @@ export default class AppTrackGroup extends BaseComponent {
   @Watch('checkedAll')
   private onCheckedAllChanged(value: boolean, oldValue: boolean) {
     if (this.checkedAll) {
-      for (let track of this.trackGroup.tracks) {
-        this.$store.commit('setTrackChecked', {track: track, checked: true});
+      for (const track of this.trackGroup.tracks) {
+        this.$store.commit('setTrackChecked', {track, checked: true});
       }
     } else {
-      for (let track of this.trackGroup.tracks) {
-        this.$store.commit('setTrackChecked', {track: track, checked: false});
+      for (const track of this.trackGroup.tracks) {
+        this.$store.commit('setTrackChecked', {track, checked: false});
       }
     }
   }
@@ -70,7 +70,7 @@ export default class AppTrackGroup extends BaseComponent {
   get allChecked() {
     let oneChecked = false;
     let oneUnChecked = false;
-    for (let track of this.trackGroup.tracks) {
+    for (const track of this.trackGroup.tracks) {
       if (track.checked) {
         oneChecked = true;
       } else {
@@ -85,7 +85,7 @@ export default class AppTrackGroup extends BaseComponent {
   get allUnChecked() {
     let oneChecked = false;
     let oneUnChecked = false;
-    for (let track of this.trackGroup.tracks) {
+    for (const track of this.trackGroup.tracks) {
       if (track.checked) {
         oneChecked = true;
       } else {
@@ -112,8 +112,8 @@ export default class AppTrackGroup extends BaseComponent {
   }
 
   get checkedTracks() {
-    let tracks: Track[] = [];
-    for (let track of this.trackGroup.tracks) {
+    const tracks: Track[] = [];
+    for (const track of this.trackGroup.tracks) {
       if (track.checked) {
         tracks.push(track);
       }
@@ -124,7 +124,7 @@ export default class AppTrackGroup extends BaseComponent {
   get indeterminate() {
     let oneChecked = false;
     let oneUnChecked = false;
-    for (let track of this.trackGroup.tracks) {
+    for (const track of this.trackGroup.tracks) {
       if (track.checked) {
         oneChecked = true;
       } else {

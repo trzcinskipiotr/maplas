@@ -31,3 +31,4 @@ class Track(models.Model):
     status = models.IntegerField(null=False, blank=False)
     type = models.IntegerField(null=False, blank=False)
     place = models.ForeignKey(Place, on_delete=models.SET_NULL, null=True)
+    gpx_file = models.TextField(null=False, default='', blank=True)

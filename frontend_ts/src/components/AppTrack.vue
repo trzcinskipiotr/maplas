@@ -7,8 +7,8 @@
         <font-awesome-icon @click="togglePanel" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
       </div>
     </div><br>
-    <div ref="icons" style="display: none;">
-      <div style="display: inline-block" v-b-tooltip.hover :title="$t('changeColor')"><verte v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte></div>
+    <div ref="icons" style="display: block;">
+      <div style="display: inline-block; margin-right: 3px;" v-b-tooltip.hover :title="$t('changeColor')"><verte :enableAlpha="false" menuPosition="left" v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte></div>
       <span style='margin-right: 3px;'><TrackTypeIcon :gpsTrack="track.gpsTrack" height=24></TrackTypeIcon></span>
       <span style='margin-right: 3px;'><TrackStatusIcon :gpsTrack="track.gpsTrack" height=24></TrackStatusIcon></span>
       <span style='margin-right: 3px;'><TrackDownload :gpsTrack="track.gpsTrack" height=24></TrackDownload></span>
@@ -42,7 +42,7 @@ export default class AppTrack extends BaseComponent {
 
   public checked: boolean;
   public color: string;
-  private iconsVisible: boolean = false;
+  private iconsVisible: boolean = true;
 
   @Prop({ required: true }) private track!: Track;
 
@@ -61,6 +61,7 @@ export default class AppTrack extends BaseComponent {
       this.unhighlightMapTrack();
     });
     this.showOrHideTrack();
+    this.togglePanel();
   }
 
   private togglePanel() {
@@ -136,3 +137,13 @@ export default class AppTrack extends BaseComponent {
 
 }
 </script>
+
+<style>
+  .verte__guide {
+    width: 16px !important;
+  }
+  .verte__menu-origin--left {
+    bottom: 25px !important;
+    left: 0 !important;
+  }
+</style>

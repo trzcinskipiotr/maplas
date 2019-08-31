@@ -12,6 +12,8 @@ def create_track_from_gpx(filename):
     gpx_file = open(filename, 'r')
     gpx = gpxpy.parse(gpx_file)
 
+    gpx_file2 = open(filename, 'r')
+    gpx_file_content = gpx_file2.read()
     points = []
     distance = 0
     for track in gpx.tracks:
@@ -21,7 +23,7 @@ def create_track_from_gpx(filename):
             for point in segment.points:
                 points.append([point.latitude, point.longitude])
     database_track = Track.objects.create(name=gpx.name or Path(filename).stem, points_json=json.dumps(points), distance=distance, status=Track.Status.done,
-                         type=Track.Type.bicycle, start_time=start_time, end_time=end_time)
+                         type=Track.Type.bicycle, start_time=start_time, end_time=end_time, gpx_file=gpx_file_content)
     optimize_track(database_track)
 
 def optimize_points(points_json):

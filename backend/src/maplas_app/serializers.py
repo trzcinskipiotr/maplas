@@ -9,7 +9,7 @@ class PlaceSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class TrackSerializer(serializers.ModelSerializer):
-    place = PlaceSerializer()
+    place = PlaceSerializer(read_only=True)
 
     class Meta:
         model = Track

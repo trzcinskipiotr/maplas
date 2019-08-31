@@ -21,7 +21,7 @@
             <div class="tab-content" id="tab_content_tracks">
               <div class="tab-pane show active" role="tabpanel" id="tabtracks">
                 <div class="card">
-                  <div class="card-body">
+                  <div class="card-body p-2">
                     {{ $t('groupBy') }}: <v-select v-model="groupBy" :options="groups" :clearable="false" :searchable="false" >
                       <template slot="option" slot-scope="option">
                         {{ option.label }}
@@ -34,16 +34,15 @@
                       <li>{{ $t('tracksSelectedDistanceWalk') }}: {{ $store.getters.selectedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
                       <li>{{ $t('tracksSelectedDistanceBicycle') }}: {{ $store.getters.selectedTracks|sumTracksDistanceBicycle|roundTrackDistance }}</li>
                     </ul>
-                    <div v-for="trackGroup in trackGroups" :key="trackGroup.label">
+                    <div v-for="trackGroup in trackGroups" :key="trackGroup.label" class="mb-2">
                       <AppTrackGroup :trackGroup="trackGroup"></AppTrackGroup>
-                      <br>
                     </div>
                   </div>
                 </div>
               </div>
               <div class="tab-pane show" role="tabpanel" id="tabsettings">
                 <div class="card">
-                  <div class="card-body">
+                  <div class="card-body p-2">
                     {{ $t('language') }}: <v-select v-model="language" :options="languages" :clearable="false" :searchable="false" >
                       <template slot="option" slot-scope="option">
                         <flag :iso="option.flag" v-bind:squared=false />
@@ -108,6 +107,7 @@ import $ from 'jquery';
 import BaseComponent from '@/components/Base.vue';
 import { AlertStatus } from '@/ts/types';
 import Track from '@/ts/Track';
+import Place from '@/ts/Place';
 import GpsTrack from '@/ts/GpsTrack';
 import i18n from '@/plugins/i18n';
 import YearTrackGrouper from '@/ts/trackgroupers/year';
@@ -401,7 +401,8 @@ export default class Index extends BaseComponent {
             checked = ((!this.isPlannedTrack(gpstrack)) && (this.isBicycleTrack(gpstrack)));
             checked = true;
           }
-          const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color, gpstrack.distance, gpstrack.status, gpstrack.type, new Date(gpstrack.start_time), new Date(gpstrack.end_time), gpstrack.place ? gpstrack.place.name : null);
+          const place: Place | undefined = gpstrack.place ? new Place(gpstrack.place.id, gpstrack.place.name) : undefined;
+          const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color, gpstrack.distance, gpstrack.status, gpstrack.type, new Date(gpstrack.start_time), new Date(gpstrack.end_time), place);
           const track = new Track(newGpstrack, checked);
           if (newGpstrack.isDoneTrack()) {
             tracks.push(track);

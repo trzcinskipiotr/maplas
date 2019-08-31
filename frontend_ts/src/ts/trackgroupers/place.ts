@@ -8,7 +8,7 @@ export default class PlaceTrackGrouper implements TrackGrouper {
         const trackGroups: TrackGroup[] = [];
         const trackGroupsArray = {};
         for (const track of tracks) {
-            const place = track.gpsTrack.place ? track.gpsTrack.place : 'unassigned';
+            const place = track.gpsTrack.place ? track.gpsTrack.place.name : 'unassigned';
             if (! trackGroupsArray.hasOwnProperty(place)) {
                 trackGroupsArray[place] = new TrackGroup();
                 if (place === 'unassigned') {
