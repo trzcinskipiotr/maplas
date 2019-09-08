@@ -13,6 +13,8 @@
       <span style='margin-right: 3px;'><TrackStatusIcon :gpsTrack="track.gpsTrack" height=24></TrackStatusIcon></span>
       <span style='margin-right: 3px;'><TrackDownload :gpsTrack="track.gpsTrack" height=24></TrackDownload></span>
       <span style='margin-right: 3px;' v-b-tooltip.hover :title="$t('centerTrack')"><font-awesome-icon @click="centerTrack" style="height: 24px; cursor: pointer" icon="search-location"/></span>
+      <span ref="tooltipSpan" style='margin-right: 3px;'><font-awesome-icon @click="playTrack" style="height: 24px; cursor: pointer" :icon="playing ? 'stop-circle' : 'play'"/></span>
+      <b-tooltip :target="$refs.tooltipSpan">{{ playing ? $t('stopTrack') : $t('playTrack') }}</b-tooltip>
       <span v-b-tooltip.hover :title="$t('saveTrack')"><font-awesome-icon @click="saveColor" style="height: 24px; cursor: pointer" icon="save"/></span>
     </div>
     <div style="display: none">
@@ -43,6 +45,7 @@ export default class AppTrack extends BaseComponent {
   public checked: boolean;
   public color: string;
   private iconsVisible: boolean = true;
+  private playing: boolean = false;
 
   @Prop({ required: true }) private track!: Track;
 
@@ -62,6 +65,15 @@ export default class AppTrack extends BaseComponent {
     });
     this.showOrHideTrack();
     this.togglePanel();
+    this.track.animateTrack.on(L.Motion.Event.Ended, (event) => {
+      if (this.playing) {
+        this.playing = false;
+        this.track.animateTrack.removeFrom(this.$store.state.map!);
+        if (this.checked) {
+          this.track.mapTrack.addTo(this.$store.state.map!);
+        }
+      }
+    });
   }
 
   private togglePanel() {
@@ -81,6 +93,22 @@ export default class AppTrack extends BaseComponent {
 
   private centerTrack() {
     this.$store.state.map!.fitBounds(this.track.mapTrack.getBounds());
+  }
+
+  private playTrack() {
+    if (! this.playing) {
+      this.track.mapTrack.removeFrom(this.$store.state.map!);
+      this.track.animateTrack.motionOptions.duration = (this.track.gpsTrack.distance / this.$store.state.playingSpeed);
+      if (this.track.gpsTrack.isWalkTrack()) {
+        this.track.animateTrack.motionOptions.duration = this.track.animateTrack.motionOptions.duration * 10;
+      }
+      this.track.animateTrack.options.color = this.color;
+      this.track.animateTrack.addTo(this.$store.state.map!);
+      this.track.animateTrack.motionStart();
+      this.playing = true;
+    } else {
+      this.track.animateTrack.motionStop();
+    }
   }
 
   private highlightMapTrack() {

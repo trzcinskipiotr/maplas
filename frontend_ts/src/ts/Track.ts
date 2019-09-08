@@ -4,6 +4,7 @@ import L from 'leaflet';
 export default class Track {
 
   public mapTrack: L.Polyline;
+  public animateTrack: any;
   public startMarker: L.Marker;
   public finishMarker: L.Marker;
 
@@ -18,6 +19,19 @@ export default class Track {
       iconUrl: 'img/startflag3.png',
       iconAnchor: [30, 45],
     });
+    const animateTrackHtml = this.gpsTrack.isBicycleTrack() ? '<i class="fa fa-bicycle fa-2x" style="color: black"></i>' : '<i class="fa fa-shoe-prints fa-2x" style="color: black"></i>';
+    this.animateTrack = L.motion.polyline(this.gpsTrack.pointsArray, {
+      weight: 3,
+      opacity: 1,
+      smoothFactor: 1,
+    }, {
+      auto: false,
+      easing: L.Motion.Ease.linear
+    }, {removeOnEnd: true, icon: L.divIcon({
+      html: animateTrackHtml,
+      iconSize: [32, 32],
+      className: 'animateTrackIcon',
+    })});
     const finishIcon = L.icon({
       iconUrl: 'img/finishflag3.png',
       iconAnchor: [17, 45],

@@ -49,6 +49,11 @@
                         {{ option.label }}
                       </template>
                     </v-select>
+                    <br>
+                    {{ $t('playingSpeed') }}:
+                    <font-awesome-icon icon="biking"/> {{ playingSpeed }} km/s&nbsp;&nbsp;
+                    <font-awesome-icon icon="shoe-prints"/> {{ playingSpeed / 10 }} km/s 
+                    <b-form-slider style="width: 100%;" v-model="playingSpeed" :min=1 :max=20></b-form-slider>
                   </div>
                 </div>
               </div>
@@ -125,6 +130,7 @@ export default class Index extends BaseComponent {
   private menuOpened = false;
   private document = document;
   private fullscreenOpened = false;
+  private playingSpeed = this.$store.state.playingSpeed;
 
   private groups = [{label: 'Rok', grouper: new YearTrackGrouper()}, {label: 'Typ', grouper: new TypeTrackGrouper()}, {label: 'Miejsce', grouper: new PlaceTrackGrouper()}];
   private groupBy = this.groups[0];
@@ -136,6 +142,11 @@ export default class Index extends BaseComponent {
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
     i18n.locale = this.language!.language;
+  }
+
+  @Watch('playingSpeed')
+  private onPlayingSpeedChanged(value: string, oldValue: string) {
+    this.$store.commit('setPlayingSpeed', this.playingSpeed);
   }
 
   @Watch('groupBy')
@@ -537,6 +548,10 @@ export default class Index extends BaseComponent {
     -moz-transform: translate(-50%, 0);
     -o-transform: translate(-50%, 0);
     transform: translate(-50%, 0);
+  }
+
+  .slider {
+    width: 98% !important;
   }
 
 </style>

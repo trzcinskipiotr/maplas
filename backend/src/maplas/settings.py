@@ -131,3 +131,5 @@ STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesSto
 CORS_ORIGIN_ALLOW_ALL = True
 
 OPTIMIZE_EPSILON = float(os.environ.get('OPTIMIZE_EPSILON') or 0.00002)
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600

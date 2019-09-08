@@ -11,6 +11,7 @@ export interface RootState {
   alerts: Alert[];
   appHost: string;
   tracks: Track[];
+  playingSpeed: number;
 }
 
 const store: StoreOptions<RootState> = {
@@ -19,6 +20,7 @@ const store: StoreOptions<RootState> = {
     alerts: Array<Alert>(),
     appHost: '',
     tracks: Array<Track>(),
+    playingSpeed: 10,
   },
   getters: {
     selectedTracks: (state): Track[] => {
@@ -40,6 +42,9 @@ const store: StoreOptions<RootState> = {
     },
     setTracks(state, tracks: Track[]) {
       state.tracks = tracks;
+    },
+    setPlayingSpeed(state, playingSpeed: number) {
+      state.playingSpeed = playingSpeed;
     },
     addAlert(state, alert: Alert) {
       state.alerts.push(alert);

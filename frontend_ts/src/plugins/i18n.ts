@@ -50,6 +50,11 @@ en: {
   wielkopolskiparknarodowy: 'Wielkopolski National Park',
   year: 'Year',
   place: 'Place',
+  playTrack: 'Play track',
+  stopTrack: 'Stop playing',
+  karkonosze: 'Krkonoše',
+  sudety: 'Sudetes',
+  playingSpeed: 'Playing speed',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte!',
@@ -98,6 +103,11 @@ pl: {
   wielkopolskiparknarodowy: 'Wielkopolski Park Narodowy',
   year: 'Rok',
   place: 'Miejsce',
+  playTrack: 'Odtwarzaj trasę',
+  stopTrack: 'Zatrzymaj odtwarzanie',
+  karkonosze: 'Karkonosze',
+  sudety: 'Sudety',
+  playingSpeed: 'Prędkość odtwarzania',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'es', messages});

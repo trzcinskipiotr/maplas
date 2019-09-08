@@ -8,10 +8,11 @@ import './unregisterServiceWorker';
 import 'leaflet.gridlayer.googlemutant';
 import 'leaflet.locatecontrol';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.motion/dist/leaflet.motion.min';
 
 import '@fortawesome/fontawesome-free/css/all.css';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle } from '@fortawesome/free-solid-svg-icons';
 import { faCalendarTimes, faCalendarCheck, faWindowClose, faTimesCircle } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 library.add(faShoePrints);
@@ -28,6 +29,8 @@ library.add(faWindowClose);
 library.add(faTimesCircle);
 library.add(faChevronDown);
 library.add(faChevronUp);
+library.add(faPlay);
+library.add(faStopCircle);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 import BootstrapVue from 'bootstrap-vue';
@@ -70,6 +73,11 @@ import i18n from '@/plugins/i18n';
 // @ts-ignore
 import FlagIcon from 'vue-flag-icon';
 Vue.use(FlagIcon);
+
+// @ts-ignore
+import bFormSlider from 'vue-bootstrap-slider';
+Vue.use(bFormSlider);
+import 'bootstrap-slider/dist/css/bootstrap-slider.css';
 
 // @ts-ignore
 import vSelect from 'vue-select';
