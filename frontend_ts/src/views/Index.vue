@@ -295,6 +295,12 @@ export default class Index extends BaseComponent {
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
+    layers['mapaTurystycznaPL'] = L.tileLayer('https://m0.mapa-turystyczna.pl/map-xhdpi/{z}/{x}/{y}.v2224.png', {
+      maxZoom: 18,
+      attribution: '<a target="_blank" href="https://mapa-turystyczna.pl" title="Serwis mapa-turystyczna.pl"><img alt="Serwis mapa-turystyczna.pl" src="https://mapa-turystyczna.pl/images/mapa-turystyczna-baner.png" width="100" height="36" /></a>',
+      errorTileUrl: 'img/tiledownloadfailed.jpg',
+    });
+
     const baseMaps: LayersDictionary = {
       'OpenStreetMap': layers['openStreetMap'],
       'OpenCycleMap': layers['openCycleMap'],
@@ -311,6 +317,7 @@ export default class Index extends BaseComponent {
       'Google terrain': layers['googleTerrain'],
       'Google hybrid': layers['googleHybrid'],
       'Hydda base': layers['hyddaBase'],
+      'mapa-turystyczna.pl': layers['mapaTurystycznaPL'],
     };
 
     for (const layer in baseMaps) {
