@@ -8,7 +8,7 @@ export default class Track {
   public startMarker: L.Marker;
   public finishMarker: L.Marker;
 
-  constructor(public gpsTrack: GpsTrack, public checked: boolean) {
+  constructor(public gpsTrack: GpsTrack, public checked: boolean, public onServer: boolean) {
     this.mapTrack = new L.Polyline(this.gpsTrack.pointsArray, {
       color: this.gpsTrack.color,
       weight: 3,

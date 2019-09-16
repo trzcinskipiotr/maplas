@@ -34,6 +34,9 @@
                       <li>{{ $t('tracksSelectedDistanceWalk') }}: {{ $store.getters.selectedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
                       <li>{{ $t('tracksSelectedDistanceBicycle') }}: {{ $store.getters.selectedTracks|sumTracksDistanceBicycle|roundTrackDistance }}</li>
                     </ul>
+                    <div v-if="$store.state.imports.length" class="mb-2">
+                      <AppTrackGroup :trackGroup="importGroup"></AppTrackGroup>
+                    </div>  
                     <div v-for="trackGroup in trackGroups" :key="trackGroup.label" class="mb-2">
                       <AppTrackGroup :trackGroup="trackGroup"></AppTrackGroup>
                     </div>
@@ -70,8 +73,14 @@
       </div>
     </div>
     <div id="cogsdiv" style="display: none;">
-      <div id="cogsdivinner" @click="togglePanel" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="menuOpened ? $t('closeMenu') : $t('openMenu')">
-        <font-awesome-icon style="cursor: pointer;" icon="cogs" size="lg"/>
+      <div id="cogsdivinner" style="width: 48px; height: 48px;" @click="togglePanel" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="menuOpened ? $t('closeMenu') : $t('openMenu')">
+        <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="bars" size="lg"/>
+      </div>
+    </div>
+    <div id="importdiv" style="display: none;">
+      <div id="importdivinner" style="width: 48px; height: 48px;" @click="openImportFileInput" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="$t('importGpxFile')">
+        <input id="importFileInput" multiple type="file" style="display:none;" accept=".gpx" v-on:change="importGpxFile" />
+        <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="file-upload"/>
       </div>
     </div>
     <div class="alertmessage">
@@ -110,7 +119,7 @@ import 'leaflet.locatecontrol';
 import axios from 'axios';
 import $ from 'jquery';
 import BaseComponent from '@/components/Base.vue';
-import { AlertStatus } from '@/ts/types';
+import { AlertStatus, TrackStatus, TrackType } from '@/ts/types';
 import Track from '@/ts/Track';
 import Place from '@/ts/Place';
 import GpsTrack from '@/ts/GpsTrack';
@@ -120,6 +129,7 @@ import TypeTrackGrouper from '@/ts/trackgroupers/type';
 import PlaceTrackGrouper from '@/ts/trackgroupers/place';
 import TrackGrouper from '@/ts/TrackGrouper';
 import TrackGroup from '@/ts/TrackGroup';
+import gpxParse from 'gpx-parse';
 
 @Component
 export default class Index extends BaseComponent {
@@ -135,6 +145,7 @@ export default class Index extends BaseComponent {
   private groups = [{label: 'Rok', grouper: new YearTrackGrouper()}, {label: 'Typ', grouper: new TypeTrackGrouper()}, {label: 'Miejsce', grouper: new PlaceTrackGrouper()}];
   private groupBy = this.groups[0];
   private trackGroups: TrackGroup[] = [];
+  private importGroup: TrackGroup = new TrackGroup();
 
   private languages = [{flag: 'us', language: 'en', label: 'English'}, {flag: 'pl', language: 'pl', label: 'Polski' }];
   private language: {flag: string, language: string, label: string} | null = null;
@@ -162,6 +173,7 @@ export default class Index extends BaseComponent {
     this.addScaleControl();
     this.addFullScreenControl();
     this.addCogsButton();
+    this.addImportButton();
     this.addCurrentLocationControl();
     this.downloadTracks();
   }
@@ -355,13 +367,26 @@ export default class Index extends BaseComponent {
   private addCogsButton() {
     const CogsControl = L.Control.extend({
       options: {
-        position: 'topleft',
+        position: 'topright',
       },
       onAdd: (map: L.Map) => {
         return document.getElementById('cogsdivinner');
       },
     });
     this.$store.state.map!.addControl(new CogsControl());
+  }
+
+  private addImportButton() {
+    const ImportControl = L.Control.extend({
+      options: {
+        position: 'topright',
+      },
+      onAdd: (map: L.Map) => {
+        return document.getElementById('importdivinner');
+      },
+    });
+    this.$store.state.map!.addControl(new ImportControl());
+    this.importGroup.translate = 'imports';
   }
 
   private togglePanel() {
@@ -406,6 +431,65 @@ export default class Index extends BaseComponent {
     }));
   }
 
+  private openImportFileInput() {
+    $('#importFileInput')!.click();
+  }
+
+  private importGpxFile(event : Event) {
+    let trackIndex = 0;
+    let startIndex = new Date().getTime();
+    var files = event.target.files;
+    if (!files.length) {
+      this.createAlert(AlertStatus.danger, this.$t('importNoFiles').toString(), 2000);
+      return;
+    }
+    for(const file of files) {
+      const reader = new FileReader();
+      reader.readAsText(file)
+      reader.onload = (event : Event) => {
+        gpxParse.parseGpx(event.target!.result, (error, data) => {
+          if (error) {
+            this.createAlert(AlertStatus.danger, this.$t('importError').toString(), 2000);
+          } else {
+            let atLeasyOneTrack = false;
+            for(const fileTrack of data.tracks) {
+              atLeasyOneTrack = true;
+              trackIndex = trackIndex + 1;
+              const distance = fileTrack.length() * 1000;
+              const pointsArray = [];
+              let startTime = '';
+              let endTime = '';
+              for (const segment of fileTrack.segments) {
+                for (const point of segment) {
+                  pointsArray.push([point.lat, point.lon]);
+                  if (! startTime) {
+                    startTime = point.time;
+                  }
+                  endTime = point.time;
+                }
+              }
+              const newGpstrack: GpsTrack = new GpsTrack(startIndex + trackIndex, fileTrack.name, data.metadata.description, JSON.stringify(pointsArray), '#FF0000', distance, TrackStatus.done, TrackType.bicycle, new Date(startTime), new Date(endTime));
+              const track = new Track(newGpstrack, true, false);
+              this.$store.commit('addImportedTrack', track);
+              this.importGroup.tracks.push(track);
+              this.$store.state.map!.fitBounds(track.mapTrack.getBounds());
+            }
+            $('#importFileInput')!.val('');
+            if (atLeasyOneTrack) {
+              this.createAlert(AlertStatus.success, this.$t('importSuccess').toString(), 2000);
+            } else {
+              this.createAlert(AlertStatus.danger, this.$t('importNoTracks').toString(), 2000);
+            }
+          }
+        });
+      }
+      reader.onerror = (event: Event) => {
+        $('#importFileInput')!.val('');
+        this.createAlert(AlertStatus.danger, this.$t('importError').toString(), 2000);
+      }
+    }  
+  }
+
   private downloadTracks() {
     axios.get(this.$store.state.appHost + 'api/tracks/').then(
       (response) => {
@@ -421,7 +505,7 @@ export default class Index extends BaseComponent {
           }
           const place: Place | undefined = gpstrack.place ? new Place(gpstrack.place.id, gpstrack.place.name) : undefined;
           const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color, gpstrack.distance, gpstrack.status, gpstrack.type, new Date(gpstrack.start_time), new Date(gpstrack.end_time), place);
-          const track = new Track(newGpstrack, checked);
+          const track = new Track(newGpstrack, checked, true);
           if (newGpstrack.isDoneTrack()) {
             tracks.push(track);
           }

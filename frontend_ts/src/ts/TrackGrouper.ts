@@ -3,6 +3,6 @@ import TrackGroup from './TrackGroup';
 
 export default interface TrackGrouper {
 
-    groupTracks(tracks: Track[]): TrackGroup[];
+  groupTracks(tracks: Track[]): TrackGroup[];
 
 }

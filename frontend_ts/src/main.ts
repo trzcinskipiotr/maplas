@@ -12,7 +12,7 @@ import 'leaflet.motion/dist/leaflet.motion.min';
 
 import '@fortawesome/fontawesome-free/css/all.css';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle } from '@fortawesome/free-solid-svg-icons';
+import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle, faFileUpload, faBars } from '@fortawesome/free-solid-svg-icons';
 import { faCalendarTimes, faCalendarCheck, faWindowClose, faTimesCircle } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 library.add(faShoePrints);
@@ -31,6 +31,8 @@ library.add(faChevronDown);
 library.add(faChevronUp);
 library.add(faPlay);
 library.add(faStopCircle);
+library.add(faFileUpload);
+library.add(faBars);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 import BootstrapVue from 'bootstrap-vue';

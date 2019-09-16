@@ -15,7 +15,7 @@
       <span style='margin-right: 3px;' v-b-tooltip.hover :title="$t('centerTrack')"><font-awesome-icon @click="centerTrack" style="height: 24px; cursor: pointer" icon="search-location"/></span>
       <span ref="tooltipSpan" style='margin-right: 3px;'><font-awesome-icon @click="playTrack" style="height: 24px; cursor: pointer" :icon="playing ? 'stop-circle' : 'play'"/></span>
       <b-tooltip :target="$refs.tooltipSpan">{{ playing ? $t('stopTrack') : $t('playTrack') }}</b-tooltip>
-      <span v-b-tooltip.hover :title="$t('saveTrack')"><font-awesome-icon @click="saveColor" style="height: 24px; cursor: pointer" icon="save"/></span>
+      <span v-if="track.onServer" v-b-tooltip.hover :title="$t('saveTrack')"><font-awesome-icon @click="saveColor" style="height: 24px; cursor: pointer" icon="save"/></span>
     </div>
     <div style="display: none">
       <div :id="'tooltip' + track.gpsTrack.id">

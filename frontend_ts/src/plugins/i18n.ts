@@ -55,6 +55,12 @@ en: {
   karkonosze: 'Krkonoše',
   sudety: 'Sudetes',
   playingSpeed: 'Playing speed',
+  imports: 'Imports',
+  importGpxFile: 'Import GPX files',
+  importError: 'Import GPX file error',
+  importNoTracks: 'No tracks in GPX file',
+  importSuccess: 'GPX file imported successfully',
+  importNoFiles: 'No files selected',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte!',
@@ -108,6 +114,12 @@ pl: {
   karkonosze: 'Karkonosze',
   sudety: 'Sudety',
   playingSpeed: 'Prędkość odtwarzania',
+  imports: 'Importy',
+  importGpxFile: 'Importuj pliki GPX',
+  importError: 'Błąd podczas importu pliku GPX',
+  importNoTracks: 'Brak tras w pliku GPX',
+  importSuccess: 'Plik GPX zaimportowany poprawnie',
+  importNoFiles: 'Nie wybrano plików',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'es', messages});

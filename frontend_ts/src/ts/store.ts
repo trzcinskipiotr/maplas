@@ -11,6 +11,7 @@ export interface RootState {
   alerts: Alert[];
   appHost: string;
   tracks: Track[];
+  imports: Track[];
   playingSpeed: number;
 }
 
@@ -20,6 +21,7 @@ const store: StoreOptions<RootState> = {
     alerts: Array<Alert>(),
     appHost: '',
     tracks: Array<Track>(),
+    imports: Array<Track>(),
     playingSpeed: 10,
   },
   getters: {
@@ -52,8 +54,16 @@ const store: StoreOptions<RootState> = {
     removeAlert(state) {
       state.alerts.pop();
     },
+    addImportedTrack(state, track) {
+      state.imports.push(track);
+    },
     setTrackChecked(state, options: {track: Track, checked: boolean}) {
       for (const looptrack of state.tracks) {
+        if (looptrack === options.track) {
+          looptrack.checked = options.checked;
+        }
+      }
+      for (const looptrack of state.imports) {
         if (looptrack === options.track) {
           looptrack.checked = options.checked;
         }

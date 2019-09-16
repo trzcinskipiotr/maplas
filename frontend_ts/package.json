@@ -26,6 +26,7 @@
     "core-js": "^2.6.5",
     "file-saver": "^2.0.2",
     "gpx-builder": "^2.0.1",
+    "gpx-parse": "github:trzcinskipiotr/gpx-parse",
     "jquery": "^3.4.1",
     "leaflet": "^1.5.1",
     "leaflet-providers": "^1.8.0",
