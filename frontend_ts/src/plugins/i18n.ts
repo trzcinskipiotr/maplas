@@ -4,8 +4,8 @@ Vue.use(VueI18n);
 
 const messages = {
 en: {
-  tracksDownloaded: '{0} tracks downloaded!',
-  tracksError: 'Error during track download',
+  tracksDownloaded: '{0} tracks downloaded',
+  tracksError: 'Error during tracks download',
   mainMenu: 'Main menu',
   tracks: 'Tracks',
   settings: 'Settings',
@@ -14,8 +14,8 @@ en: {
   tracksSelectedDistanceWalk: 'walk',
   tracksSelectedDistanceBicycle: 'bicycle',
   tracksSelected: 'Selected {0} of {1} tracks',
-  colorSaved: 'Color saved!',
-  colorError: 'Error during color saving!',
+  colorSaved: 'Color saved',
+  colorError: 'Error during color saving',
   name: 'Name',
   distance: 'Distance',
   type: 'Type',
@@ -61,9 +61,17 @@ en: {
   importNoTracks: 'No tracks in GPX file',
   importSuccess: 'GPX file imported successfully',
   importNoFiles: 'No files selected',
+  placesDownloaded: '{0} locations downloaded',
+  oneTrackError: 'Track has errors',
+  placesError: 'Error during locations download',
+  trackSaveTitle: 'Track save',
+  uploadTrack: 'Save track',
+  trackSaved: 'Track saved',
+  trackSavedError: 'Error during track saving',
+  description: 'Description',
 },
 pl: {
-  tracksDownloaded: '{0} trasy ściągnięte!',
+  tracksDownloaded: '{0} trasy ściągnięte',
   tracksError: 'Błąd podczas ściągania tras',
   mainMenu: 'Menu główne',
   tracks: 'Trasy',
@@ -73,8 +81,8 @@ pl: {
   tracksSelectedDistanceWalk: 'piesze',
   tracksSelectedDistanceBicycle: 'rowerowe',
   tracksSelected: 'Wybrano {0} z {1} tras',
-  colorSaved: 'Kolor zapisany!',
-  colorError: 'Błąd zapisywania koloru!',
+  colorSaved: 'Kolor zapisany',
+  colorError: 'Błąd zapisywania koloru',
   name: 'Nazwa',
   distance: 'Dystans',
   type: 'Rodzaj',
@@ -120,6 +128,14 @@ pl: {
   importNoTracks: 'Brak tras w pliku GPX',
   importSuccess: 'Plik GPX zaimportowany poprawnie',
   importNoFiles: 'Nie wybrano plików',
+  placesDownloaded: '{0} lokalizacje sciągnięte',
+  oneTrackError: 'Trasa zawiera błędy',
+  placesError: 'Błąd podczas ściągania lokalizacji',
+  trackSaveTitle: 'Zapisywanie trasy',
+  uploadTrack: 'Zapisz trasę',
+  trackSaved: 'Trasa zapisana',
+  trackSavedError: 'Błąd podczas zapisywania trasy',
+  description: 'Opis',
 }};
 
-export default new VueI18n({locale: 'en', fallbackLocale: 'es', messages});
+export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

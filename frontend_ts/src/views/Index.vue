@@ -129,7 +129,13 @@ import TypeTrackGrouper from '@/ts/trackgroupers/type';
 import PlaceTrackGrouper from '@/ts/trackgroupers/place';
 import TrackGrouper from '@/ts/TrackGrouper';
 import TrackGroup from '@/ts/TrackGroup';
+// @ts-ignore
 import gpxParse from 'gpx-parse';
+import listTranslator from '@/ts/list_translator';
+
+interface FileReaderEventTarget extends EventTarget {
+  result: string;
+}
 
 @Component
 export default class Index extends BaseComponent {
@@ -142,7 +148,7 @@ export default class Index extends BaseComponent {
   private fullscreenOpened = false;
   private playingSpeed = this.$store.state.playingSpeed;
 
-  private groups = [{label: 'Rok', grouper: new YearTrackGrouper()}, {label: 'Typ', grouper: new TypeTrackGrouper()}, {label: 'Miejsce', grouper: new PlaceTrackGrouper()}];
+  private groups = [{translate: 'year', label: '', grouper: new YearTrackGrouper()}, {translate: 'type', label: '', grouper: new TypeTrackGrouper()}, {translate: 'place', label: '', grouper: new PlaceTrackGrouper()}];
   private groupBy = this.groups[0];
   private trackGroups: TrackGroup[] = [];
   private importGroup: TrackGroup = new TrackGroup();
@@ -153,6 +159,9 @@ export default class Index extends BaseComponent {
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
     i18n.locale = this.language!.language;
+    for (const list of listTranslator) {
+      this.translateArray(list);
+    }
   }
 
   @Watch('playingSpeed')
@@ -162,6 +171,11 @@ export default class Index extends BaseComponent {
 
   @Watch('groupBy')
   private onGroupByChanged(value: string, oldValue: string) {
+    this.trackGroups = this.groupBy!.grouper.groupTracks(this.$store.state.tracks);
+  }
+
+  @Watch('$store.state.tracks')
+  private onStoreTracksChanged(value: string, oldValue: string) {
     this.trackGroups = this.groupBy!.grouper.groupTracks(this.$store.state.tracks);
   }
 
@@ -176,6 +190,7 @@ export default class Index extends BaseComponent {
     this.addImportButton();
     this.addCurrentLocationControl();
     this.downloadTracks();
+    this.downloadPlaces();
   }
 
   private setLanguage() {
@@ -191,6 +206,7 @@ export default class Index extends BaseComponent {
     } else {
       this.language = this.languages[1];
     }
+    this.translateAndAddArrayToTranslator(this.groups);
   }
 
   private setAppHost() {
@@ -435,27 +451,39 @@ export default class Index extends BaseComponent {
     $('#importFileInput')!.click();
   }
 
-  private importGpxFile(event : Event) {
+  private updated() {
+    for (const alert of this.$store.state.alerts) {
+      if (! alert.startTimeout) {
+        alert.startTimeout = true;
+        window.setTimeout(() => {
+          this.$store.commit('removeAlert', alert.id);
+        }, alert.timeout);
+      }
+    }
+  }
+
+  private importGpxFile(event: Event) {
     let trackIndex = 0;
-    let startIndex = new Date().getTime();
-    var files = event.target.files;
-    if (!files.length) {
+    const startIndex = new Date().getTime();
+    const files = (event.target! as HTMLInputElement).files;
+    if (!files || !files.length) {
       this.createAlert(AlertStatus.danger, this.$t('importNoFiles').toString(), 2000);
       return;
     }
-    for(const file of files) {
+    for (const file of files) {
       const reader = new FileReader();
-      reader.readAsText(file)
-      reader.onload = (event : Event) => {
-        gpxParse.parseGpx(event.target!.result, (error, data) => {
+      reader.readAsText(file);
+      reader.onload = (onLoadEvent: Event) => {
+        const gpxFileString = (onLoadEvent.target! as FileReaderEventTarget).result;
+        gpxParse.parseGpx(gpxFileString, (error: string, data: any) => {
           if (error) {
             this.createAlert(AlertStatus.danger, this.$t('importError').toString(), 2000);
           } else {
             let atLeasyOneTrack = false;
-            for(const fileTrack of data.tracks) {
+            for (const fileTrack of data.tracks) {
               atLeasyOneTrack = true;
               trackIndex = trackIndex + 1;
-              const distance = fileTrack.length() * 1000;
+              const distance = Math.round(fileTrack.length() * 1000);
               const pointsArray = [];
               let startTime = '';
               let endTime = '';
@@ -468,7 +496,7 @@ export default class Index extends BaseComponent {
                   endTime = point.time;
                 }
               }
-              const newGpstrack: GpsTrack = new GpsTrack(startIndex + trackIndex, fileTrack.name, data.metadata.description, JSON.stringify(pointsArray), '#FF0000', distance, TrackStatus.done, TrackType.bicycle, new Date(startTime), new Date(endTime));
+              const newGpstrack: GpsTrack = new GpsTrack(startIndex + trackIndex, fileTrack.name, data.metadata.description, JSON.stringify(pointsArray), '#FF0000', distance, TrackStatus.done, TrackType.bicycle, new Date(startTime), new Date(endTime), gpxFileString, undefined);
               const track = new Track(newGpstrack, true, false);
               this.$store.commit('addImportedTrack', track);
               this.importGroup.tracks.push(track);
@@ -482,12 +510,30 @@ export default class Index extends BaseComponent {
             }
           }
         });
-      }
-      reader.onerror = (event: Event) => {
+      };
+      reader.onerror = (onErrorEvent: Event) => {
         $('#importFileInput')!.val('');
         this.createAlert(AlertStatus.danger, this.$t('importError').toString(), 2000);
-      }
-    }  
+      };
+    }
+  }
+
+  private downloadPlaces() {
+    axios.get(this.$store.state.appHost + 'api/places/').then(
+      (response) => {
+        const places = [];
+        for (const responsePlace of response.data.results) {
+          const place = new Place(responsePlace.id, responsePlace.name);
+          places.push(place);
+        }
+        this.$store.commit('setPlaces', places);
+        this.createAlert(AlertStatus.success, this.$t('placesDownloaded', [response.data.results.length]).toString(), 2000);
+      },
+    ).catch(
+      (response) => {
+        this.createAlert(AlertStatus.danger, this.$t('placesError').toString(), 2000);
+      },
+    );
   }
 
   private downloadTracks() {
@@ -503,11 +549,15 @@ export default class Index extends BaseComponent {
             checked = ((!this.isPlannedTrack(gpstrack)) && (this.isBicycleTrack(gpstrack)));
             checked = true;
           }
-          const place: Place | undefined = gpstrack.place ? new Place(gpstrack.place.id, gpstrack.place.name) : undefined;
-          const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color, gpstrack.distance, gpstrack.status, gpstrack.type, new Date(gpstrack.start_time), new Date(gpstrack.end_time), place);
-          const track = new Track(newGpstrack, checked, true);
-          if (newGpstrack.isDoneTrack()) {
-            tracks.push(track);
+          try {
+            const place: Place = gpstrack.place ? new Place(gpstrack.place.id, gpstrack.place.name) : undefined;
+            const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color, gpstrack.distance, gpstrack.status, gpstrack.type, new Date(gpstrack.start_time), new Date(gpstrack.end_time), '', place);
+            const track = new Track(newGpstrack, checked, true);
+            if (newGpstrack.isDoneTrack()) {
+              tracks.push(track);
+            }
+          } catch (error) {
+            this.createAlert(AlertStatus.danger, this.$t('oneTrackError').toString(), 2000);
           }
         }
         this.$store.commit('setTracks', tracks);

@@ -12,7 +12,7 @@ import 'leaflet.motion/dist/leaflet.motion.min';
 
 import '@fortawesome/fontawesome-free/css/all.css';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle, faFileUpload, faBars } from '@fortawesome/free-solid-svg-icons';
+import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle, faFileUpload, faBars, faUpload } from '@fortawesome/free-solid-svg-icons';
 import { faCalendarTimes, faCalendarCheck, faWindowClose, faTimesCircle } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 library.add(faShoePrints);
@@ -33,6 +33,7 @@ library.add(faPlay);
 library.add(faStopCircle);
 library.add(faFileUpload);
 library.add(faBars);
+library.add(faUpload);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 import BootstrapVue from 'bootstrap-vue';
@@ -51,11 +52,13 @@ import AppTrackGroup from '@/components/AppTrackGroup.vue';
 import TrackStatusIcon from '@/components/TrackStatusIcon.vue';
 import TrackTypeIcon from '@/components/TrackTypeIcon.vue';
 import TrackDownload from '@/components/TrackDownload.vue';
+import InfoModal from '@/components/InfoModal.vue';
 Vue.component('AppTrack', AppTrack);
 Vue.component('AppTrackGroup', AppTrackGroup);
 Vue.component('TrackStatusIcon', TrackStatusIcon);
 Vue.component('TrackTypeIcon', TrackTypeIcon);
 Vue.component('TrackDownload', TrackDownload);
+Vue.component('InfoModal', InfoModal);
 
 import {formatDate, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);

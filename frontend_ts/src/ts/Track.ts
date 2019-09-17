@@ -20,13 +20,15 @@ export default class Track {
       iconAnchor: [30, 45],
     });
     const animateTrackHtml = this.gpsTrack.isBicycleTrack() ? '<i class="fa fa-bicycle fa-2x" style="color: black"></i>' : '<i class="fa fa-shoe-prints fa-2x" style="color: black"></i>';
+    // @ts-ignore
     this.animateTrack = L.motion.polyline(this.gpsTrack.pointsArray, {
       weight: 3,
       opacity: 1,
       smoothFactor: 1,
     }, {
       auto: false,
-      easing: L.Motion.Ease.linear
+      // @ts-ignore
+      easing: L.Motion.Ease.linear,
     }, {removeOnEnd: true, icon: L.divIcon({
       html: animateTrackHtml,
       iconSize: [32, 32],

@@ -16,17 +16,68 @@
       <span ref="tooltipSpan" style='margin-right: 3px;'><font-awesome-icon @click="playTrack" style="height: 24px; cursor: pointer" :icon="playing ? 'stop-circle' : 'play'"/></span>
       <b-tooltip :target="$refs.tooltipSpan">{{ playing ? $t('stopTrack') : $t('playTrack') }}</b-tooltip>
       <span v-if="track.onServer" v-b-tooltip.hover :title="$t('saveTrack')"><font-awesome-icon @click="saveColor" style="height: 24px; cursor: pointer" icon="save"/></span>
+      <span v-else v-b-tooltip.hover :title="$t('uploadTrack')"><font-awesome-icon @click="showUploadModal" style="height: 24px; cursor: pointer" icon="upload"/></span>
     </div>
     <div style="display: none">
       <div :id="'tooltip' + track.gpsTrack.id">
         <b>{{ $t('name') }}: </b>{{ track.gpsTrack.name }}<br>
-        <b>{{ $t('startTime') }}: </b>{{ track.gpsTrack.startTime|formatDate }}<br>
+        <b>{{ $t('startTime') }}: </b>{{ track.gpsTrack.start_time|formatDate }}<br>
         <b>{{ $t('distance') }}: </b>{{ track.gpsTrack.distance|roundTrackDistance }}<br>
         <b>{{ $t('type') }}: </b><TrackTypeIcon :gpsTrack="track.gpsTrack" height=12></TrackTypeIcon><br>
         <b>{{ $t('status') }}: </b><TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br>
         <b>{{ $t('id') }}: </b>{{ track.gpsTrack.id }}
       </div>
     </div>
+    <div ref="uploadTrackModal" class="modal fade" tabindex="-1" role="dialog">
+      <info-modal :title="$t('trackSaveTitle')">
+        <table class="table">
+          <thead></thead>
+          <tbody>
+            <tr>
+              <th scope="row">{{ $t('name') }}</th>
+              <td>
+                <input style="width: 500px" v-model="uploadName" type="text" class="form-control" />
+              </td>  
+            </tr>
+            <tr>
+              <th scope="row">{{ $t('description') }}</th>
+              <td>
+                <textarea v-model="description" class="form-control" rows="2" style="width: 500px"></textarea>
+              </td>  
+            </tr>
+            <tr>
+              <th scope="row">{{ $t('type')}}</th>
+              <td>
+                <v-select style="width: 500px" v-model="uploadTrackType" :options="uploadTrackTypes" :clearable="false" :searchable="false" >
+                  <template slot="option" slot-scope="option">
+                    <font-awesome-icon :icon="option.icon"/>
+                    {{ option.label }}
+                  </template>
+                </v-select>
+              </td>
+            </tr>
+            <tr>
+              <th scope="row">{{ $t('place')}}</th>
+              <td>
+                <v-select style="width: 500px" v-model="uploadPlace" :options="uploadPlaces" :clearable="true" :searchable="false" >
+                  <template slot="option" slot-scope="option">
+                    {{ option.label }}
+                  </template>
+                </v-select>
+              </td>
+            </tr>
+          </tbody>    
+        </table>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-success" @click="saveUploadTrackModal">
+            <strong><template v-if="trackSaving"><font-awesome-icon class="fa-spin" icon="spinner" />&nbsp;</template>Save</strong>
+          </button>
+          <button type="button" class="btn btn-primary" @click="closeUploadTrackModal">
+            <strong>Close</strong>
+          </button>
+        </div>
+      </info-modal>
+    </div>    
   </div>
 </template>
 
@@ -37,7 +88,8 @@ import $ from 'jquery';
 import BaseComponent from '@/components/Base.vue';
 import Track from '@/ts/Track';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
-import { AlertStatus } from '@/ts/types';
+import { AlertStatus, TrackType, TrackStatus } from '@/ts/types';
+import Place from '@/ts/Place';
 
 @Component
 export default class AppTrack extends BaseComponent {
@@ -46,8 +98,18 @@ export default class AppTrack extends BaseComponent {
   public color: string;
   private iconsVisible: boolean = true;
   private playing: boolean = false;
+  private uploadTrackTypes = [{translate: 'bicycleTrack', label: '', icon: 'biking', value: TrackType.bicycle},
+                              {translate: 'walkTrack', label: '', icon: 'shoe-prints', value: TrackType.walk}];
+  private uploadTrackType = this.uploadTrackTypes[0];
+  private uploadPlace: {translate: string, label: string, value: Place} = null;
+  private uploadPlaces: Array<{translate: string, label: string, value: Place}> = [];
+
+  private trackSaving: boolean = false;
 
   @Prop({ required: true }) private track!: Track;
+
+  private uploadName = this.track!.gpsTrack.name;
+  private description = '';
 
   public constructor() {
     super();
@@ -65,7 +127,8 @@ export default class AppTrack extends BaseComponent {
     });
     this.showOrHideTrack();
     this.togglePanel();
-    this.track.animateTrack.on(L.Motion.Event.Ended, (event) => {
+    // @ts-ignore
+    this.track.animateTrack.on(L.Motion.Event.Ended, (event: Event) => {
       if (this.playing) {
         this.playing = false;
         this.track.animateTrack.removeFrom(this.$store.state.map!);
@@ -74,6 +137,12 @@ export default class AppTrack extends BaseComponent {
         }
       }
     });
+    for (const place of this.$store.state.places) {
+      // @ts-ignore
+      this.uploadPlaces.push({translate: place.name, label: '', value: place});
+    }
+    this.translateAndAddArrayToTranslator(this.uploadPlaces);
+    this.translateAndAddArrayToTranslator(this.uploadTrackTypes);
   }
 
   private togglePanel() {
@@ -82,12 +151,53 @@ export default class AppTrack extends BaseComponent {
   }
 
   private saveColor() {
-    this.track.gpsTrack.color = this.color;
-    axios.put(this.$store.state.appHost + `api/tracks/${this.track.gpsTrack.id}/`, this.track.gpsTrack)
+    const obj = this.track.gpsTrack.convertToApiColorSave();
+    obj.color = this.color;
+    axios.put(this.$store.state.appHost + `api/tracks/${this.track.gpsTrack.id}/`, obj)
       .then((response: object) => {
+        this.track.gpsTrack.color = this.color;
         this.createAlert(AlertStatus.success, this.$t('colorSaved').toString(), 2000);
       }).catch((response: object) => {
         this.createAlert(AlertStatus.danger, this.$t('colorError').toString(), 2000);
+      });
+  }
+
+  private showUploadModal() {
+    this.openModal(this.$refs.uploadTrackModal);
+  }
+
+  private closeUploadTrackModal() {
+    this.closeModal(this.$refs.uploadTrackModal);
+  }
+
+  private saveUploadTrackModal() {
+    const obj = this.track.gpsTrack.convertToApiGpxFileSave();
+    obj.name = this.uploadName;
+    obj.place = this.uploadPlace ? this.uploadPlace.value.id : undefined;
+    obj.type = this.uploadTrackType.value;
+    obj.color = this.color;
+    obj.description = this.description;
+    this.trackSaving = true;
+    axios.post(this.$store.state.appHost + `api/tracks/`, obj)
+      .then((response: any) => {
+        this.track.gpsTrack.distance = response.data.distance;
+        this.track.gpsTrack.id = response.data.id;
+        this.track.gpsTrack.points_json_optimized = response.data.points_json_optimized;
+        this.track.gpsTrack.place = this.uploadPlace ? this.uploadPlace.value : undefined;
+        this.track.gpsTrack.name = obj.name;
+        this.track.gpsTrack.description = obj.description;
+        this.track.gpsTrack.color = obj.color;
+        this.track.gpsTrack.type = obj.type;
+        this.$store.commit('removeImportedTrack', this.track);
+        this.$store.commit('addTrack', this.track);
+        this.$store.commit('sortTracks');
+        this.track.onServer = true;
+        this.createAlert(AlertStatus.success, this.$t('trackSaved').toString(), 2000);
+        this.closeUploadTrackModal();
+      }).catch((response: object) => {
+        this.createAlert(AlertStatus.danger, this.$t('trackSavedError').toString(), 2000);
+      }).finally(() => {
+        this.trackSaving = false;
       });
   }
 
