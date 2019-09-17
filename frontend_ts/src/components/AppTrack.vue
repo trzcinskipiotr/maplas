@@ -40,6 +40,24 @@
               </td>  
             </tr>
             <tr>
+              <th scope="row">{{ $t('startTime') }}</th>
+              <td>
+                {{ track.gpsTrack.start_time|formatDate }}
+              </td>  
+            </tr>
+            <tr>
+              <th scope="row">{{ $t('endTime') }}</th>
+              <td>
+                {{ track.gpsTrack.end_time|formatDate }}
+              </td>  
+            </tr>
+            <tr>
+              <th scope="row">{{ $t('distance') }}</th>
+              <td>
+                {{ track.gpsTrack.distance|roundTrackDistance }}
+              </td>  
+            </tr>
+            <tr>
               <th scope="row">{{ $t('description') }}</th>
               <td>
                 <textarea v-model="description" class="form-control" rows="2" style="width: 500px"></textarea>
