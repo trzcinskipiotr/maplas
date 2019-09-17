@@ -84,9 +84,7 @@
       </div>
     </div>
     <div class="alertmessage">
-      <font-awesome-icon v-if="loading" class="fa-spin" icon="spinner" size="3x"/>
-    </div>
-    <div class="alertmessage">
+      <div class="flexcenter"><font-awesome-icon v-if="loading" class="fa-spin" icon="spinner" size="3x"/></div>
       <div v-for="alert in $store.state.alerts" class="alert border border-dark" v-bind:class="{ 'alert-success': isSuccessAlert(alert), 'alert-danger': isDangerAlert(alert) }" v-bind:key="alert.date" role="alert">
         {{ alert.message }}
       </div>
@@ -689,6 +687,11 @@ export default class Index extends BaseComponent {
     -moz-transform: translate(-50%, 0);
     -o-transform: translate(-50%, 0);
     transform: translate(-50%, 0);
+  }
+
+  .flexcenter {
+    justify-content: center;
+    display: flex;
   }
 
   .slider {
