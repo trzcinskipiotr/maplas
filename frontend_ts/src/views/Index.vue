@@ -36,10 +36,14 @@
                     </ul>
                     <div v-if="$store.state.imports.length" class="mb-2">
                       <AppTrackGroup :trackGroup="importGroup"></AppTrackGroup>
-                    </div>  
-                    <div v-for="trackGroup in trackGroups" :key="trackGroup.label" class="mb-2">
-                      <AppTrackGroup :trackGroup="trackGroup"></AppTrackGroup>
                     </div>
+                    <div v-for="(trackGroupGroup, key) in trackGroupsDict" :key="key">
+                      <div v-show="groupBy.id === key">
+                        <div v-for="trackGroup in trackGroupGroup" :key="trackGroup.label" class="mb-2">
+                          <AppTrackGroup :trackGroup="trackGroup"></AppTrackGroup>
+                        </div>
+                      </div>    
+                    </div>  
                   </div>
                 </div>
               </div>
@@ -146,9 +150,9 @@ export default class Index extends BaseComponent {
   private fullscreenOpened = false;
   private playingSpeed = this.$store.state.playingSpeed;
 
-  private groups = [{translate: 'year', label: '', grouper: new YearTrackGrouper()}, {translate: 'type', label: '', grouper: new TypeTrackGrouper()}, {translate: 'place', label: '', grouper: new PlaceTrackGrouper()}];
+  private groups = [{id: 'year', translate: 'year', label: '', grouper: new YearTrackGrouper()}, {id: 'type', translate: 'type', label: '', grouper: new TypeTrackGrouper()}, {id: 'place', translate: 'place', label: '', grouper: new PlaceTrackGrouper()}];
   private groupBy = this.groups[0];
-  private trackGroups: TrackGroup[] = [];
+  private trackGroupsDict: { [key: string]: TrackGroup[] } = {};
   private importGroup: TrackGroup = new TrackGroup();
 
   private languages = [{flag: 'us', language: 'en', label: 'English'}, {flag: 'pl', language: 'pl', label: 'Polski' }];
@@ -167,14 +171,11 @@ export default class Index extends BaseComponent {
     this.$store.commit('setPlayingSpeed', this.playingSpeed);
   }
 
-  @Watch('groupBy')
-  private onGroupByChanged(value: string, oldValue: string) {
-    this.trackGroups = this.groupBy!.grouper.groupTracks(this.$store.state.tracks);
-  }
-
   @Watch('$store.state.tracks')
   private onStoreTracksChanged(value: string, oldValue: string) {
-    this.trackGroups = this.groupBy!.grouper.groupTracks(this.$store.state.tracks);
+    for (const group of this.groups) {
+      this.trackGroupsDict[group.id] = group.grouper.groupTracks(this.$store.state.tracks);
+    }
   }
 
   private mounted() {
@@ -573,7 +574,6 @@ export default class Index extends BaseComponent {
           }
         }
         this.createAlert(AlertStatus.success, this.$t('tracksDownloaded', [response.data.results.length]).toString(), 2000);
-        this.trackGroups = this.groupBy!.grouper.groupTracks(this.$store.state.tracks);
       },
     ).catch(
       (response) => {
