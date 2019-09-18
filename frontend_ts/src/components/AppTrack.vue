@@ -4,20 +4,9 @@
       <input type="checkbox" class="custom-control-input" :id="'checkbox' + track.gpsTrack.id" v-model="checked" />
       <label class="custom-control-label" :for="'checkbox' + track.gpsTrack.id">{{ track.gpsTrack.name }}</label>
       <div style="float: right;">
-        <font-awesome-icon @click="togglePanel" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
+        <font-awesome-icon @click="togglePanel(); renderComponent = true;" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
       </div>
     </div><br>
-    <div ref="icons" style="display: block;">
-      <div style="display: inline-block; margin-right: 3px;" v-b-tooltip.hover :title="$t('changeColor')"><verte :enableAlpha="false" menuPosition="left" v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte></div>
-      <span style='margin-right: 3px;'><TrackTypeIcon :gpsTrack="track.gpsTrack" height=24></TrackTypeIcon></span>
-      <span style='margin-right: 3px;'><TrackStatusIcon :gpsTrack="track.gpsTrack" height=24></TrackStatusIcon></span>
-      <span style='margin-right: 3px;'><TrackDownload :gpsTrack="track.gpsTrack" height=24></TrackDownload></span>
-      <span style='margin-right: 3px;' v-b-tooltip.hover :title="$t('centerTrack')"><font-awesome-icon @click="centerTrack" style="height: 24px; cursor: pointer" icon="search-location"/></span>
-      <span ref="tooltipSpan" style='margin-right: 3px;'><font-awesome-icon @click="playTrack" style="height: 24px; cursor: pointer" :icon="playing ? 'stop-circle' : 'play'"/></span>
-      <b-tooltip :target="$refs.tooltipSpan">{{ playing ? $t('stopTrack') : $t('playTrack') }}</b-tooltip>
-      <span v-if="track.onServer" v-b-tooltip.hover :title="$t('saveTrack')"><font-awesome-icon @click="saveColor" style="height: 24px; cursor: pointer" icon="save"/></span>
-      <span v-else v-b-tooltip.hover :title="$t('uploadTrack')"><font-awesome-icon @click="showUploadModal" style="height: 24px; cursor: pointer" icon="upload"/></span>
-    </div>
     <div style="display: none">
       <div :id="'tooltip' + track.gpsTrack.id">
         <b>{{ $t('name') }}: </b>{{ track.gpsTrack.name }}<br>
@@ -28,74 +17,87 @@
         <b>{{ $t('id') }}: </b>{{ track.gpsTrack.id }}
       </div>
     </div>
-    <div ref="uploadTrackModal" class="modal fade" tabindex="-1" role="dialog">
-      <info-modal :title="$t('trackSaveTitle')">
-        <table class="table">
-          <thead></thead>
-          <tbody>
-            <tr>
-              <th scope="row">{{ $t('name') }}</th>
-              <td>
-                <input style="width: 500px" v-model="uploadName" type="text" class="form-control" />
-              </td>  
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('startTime') }}</th>
-              <td>
-                {{ track.gpsTrack.start_time|formatDate }}
-              </td>  
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('endTime') }}</th>
-              <td>
-                {{ track.gpsTrack.end_time|formatDate }}
-              </td>  
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('distance') }}</th>
-              <td>
-                {{ track.gpsTrack.distance|roundTrackDistance }}
-              </td>  
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('description') }}</th>
-              <td>
-                <textarea v-model="description" class="form-control" rows="2" style="width: 500px"></textarea>
-              </td>  
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('type')}}</th>
-              <td>
-                <v-select style="width: 500px" v-model="uploadTrackType" :options="uploadTrackTypes" :clearable="false" :searchable="false" >
-                  <template slot="option" slot-scope="option">
-                    <font-awesome-icon :icon="option.icon"/>
-                    {{ option.label }}
-                  </template>
-                </v-select>
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('place')}}</th>
-              <td>
-                <v-select style="width: 500px" v-model="uploadPlace" :options="uploadPlaces" :clearable="true" :searchable="false" >
-                  <template slot="option" slot-scope="option">
-                    {{ option.label }}
-                  </template>
-                </v-select>
-              </td>
-            </tr>
-          </tbody>    
-        </table>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-success" @click="saveUploadTrackModal">
-            <strong><template v-if="trackSaving"><font-awesome-icon class="fa-spin" icon="spinner" />&nbsp;</template>Save</strong>
-          </button>
-          <button type="button" class="btn btn-primary" @click="closeUploadTrackModal">
-            <strong>Close</strong>
-          </button>
-        </div>
-      </info-modal>
-    </div>    
+    <div v-if="renderComponent">
+      <div ref="icons" style="display: block;">
+        <div style="display: inline-block; margin-right: 3px;" v-b-tooltip.hover :title="$t('changeColor')"><verte :enableAlpha="false" menuPosition="left" v-model="color" :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte></div>
+        <span style='margin-right: 3px;'><TrackTypeIcon :gpsTrack="track.gpsTrack" height=24></TrackTypeIcon></span>
+        <span style='margin-right: 3px;'><TrackStatusIcon :gpsTrack="track.gpsTrack" height=24></TrackStatusIcon></span>
+        <span style='margin-right: 3px;'><TrackDownload :gpsTrack="track.gpsTrack" height=24></TrackDownload></span>
+        <span style='margin-right: 3px;' v-b-tooltip.hover :title="$t('centerTrack')"><font-awesome-icon @click="centerTrack" style="height: 24px; cursor: pointer" icon="search-location"/></span>
+        <span ref="tooltipSpan" style='margin-right: 3px;'><font-awesome-icon @click="playTrack" style="height: 24px; cursor: pointer" :icon="playing ? 'stop-circle' : 'play'"/></span>
+        <b-tooltip v-if="renderedComponent" :target="$refs.tooltipSpan">{{ playing ? $t('stopTrack') : $t('playTrack') }}</b-tooltip>
+        <span v-if="track.onServer" v-b-tooltip.hover :title="$t('saveTrack')"><font-awesome-icon @click="saveColor" style="height: 24px; cursor: pointer" icon="save"/></span>
+        <span v-else v-b-tooltip.hover :title="$t('uploadTrack')"><font-awesome-icon @click="showUploadModal" style="height: 24px; cursor: pointer" icon="upload"/></span>
+      </div>
+      <div ref="uploadTrackModal" class="modal fade" tabindex="-1" role="dialog">
+        <info-modal :title="$t('trackSaveTitle')">
+          <table class="table">
+            <thead></thead>
+            <tbody>
+              <tr>
+                <th scope="row">{{ $t('name') }}</th>
+                <td>
+                  <input style="width: 500px" v-model="uploadName" type="text" class="form-control" />
+                </td>  
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('startTime') }}</th>
+                <td>
+                  {{ track.gpsTrack.start_time|formatDate }}
+                </td>  
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('endTime') }}</th>
+                <td>
+                  {{ track.gpsTrack.end_time|formatDate }}
+                </td>  
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('distance') }}</th>
+                <td>
+                  {{ track.gpsTrack.distance|roundTrackDistance }}
+                </td>  
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('description') }}</th>
+                <td>
+                  <textarea v-model="description" class="form-control" rows="2" style="width: 500px"></textarea>
+                </td>  
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('type')}}</th>
+                <td>
+                  <v-select style="width: 500px" v-model="uploadTrackType" :options="uploadTrackTypes" :clearable="false" :searchable="false" >
+                    <template slot="option" slot-scope="option">
+                      <font-awesome-icon :icon="option.icon"/>
+                      {{ option.label }}
+                    </template>
+                  </v-select>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('place')}}</th>
+                <td>
+                  <v-select style="width: 500px" v-model="uploadPlace" :options="uploadPlaces" :clearable="true" :searchable="false" >
+                    <template slot="option" slot-scope="option">
+                      {{ option.label }}
+                    </template>
+                  </v-select>
+                </td>
+              </tr>
+            </tbody>    
+          </table>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-success" @click="saveUploadTrackModal">
+              <strong><template v-if="trackSaving"><font-awesome-icon class="fa-spin" icon="spinner" />&nbsp;</template>Save</strong>
+            </button>
+            <button type="button" class="btn btn-primary" @click="closeUploadTrackModal">
+              <strong>Close</strong>
+            </button>
+          </div>
+        </info-modal>
+      </div>
+    </div>      
   </div>
 </template>
 
@@ -115,6 +117,8 @@ export default class AppTrack extends BaseComponent {
   public checked: boolean;
   public color: string;
   private iconsVisible: boolean = true;
+  private renderComponent: boolean = false;
+  private renderedComponent: boolean = false;
   private playing: boolean = false;
   private uploadTrackTypes = [{translate: 'bicycleTrack', label: '', icon: 'biking', value: TrackType.bicycle},
                               {translate: 'walkTrack', label: '', icon: 'shoe-prints', value: TrackType.walk}];
@@ -159,6 +163,7 @@ export default class AppTrack extends BaseComponent {
       // @ts-ignore
       this.uploadPlaces.push({translate: place.name, label: '', value: place});
     }
+    this.changeColor();
     this.translateAndAddArrayToTranslator(this.uploadPlaces);
     this.translateAndAddArrayToTranslator(this.uploadTrackTypes);
   }
@@ -166,6 +171,12 @@ export default class AppTrack extends BaseComponent {
   private togglePanel() {
     $(this.$refs.icons).slideToggle('fast');
     this.iconsVisible = !this.iconsVisible;
+  }
+
+  private updated() {
+    if (this.renderComponent) {
+      this.renderedComponent = true;
+    }
   }
 
   private saveColor() {
