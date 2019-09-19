@@ -2,7 +2,9 @@
   <div v-on:mouseover="highlightMapTrack()" v-on:mouseleave="unhighlightMapTrack()">
     <div style="display: inline" class="custom-control custom-checkbox" :id="'trackcheckbox' + track.gpsTrack.id">
       <input type="checkbox" class="custom-control-input" :id="'checkbox' + track.gpsTrack.id" v-model="checked" />
-      <label class="custom-control-label" :for="'checkbox' + track.gpsTrack.id">{{ track.gpsTrack.name }}</label>
+      <label style="margin-right: 2px;" class="custom-control-label" :for="'checkbox' + track.gpsTrack.id">{{ track.gpsTrack.name }}</label>
+      <span class="badge badge-dark" style="margin-right: 2px;">{{ track.gpsTrack.start_time|formatDateDay }}</span>
+      <span class="badge badge-success">{{ track.gpsTrack.distance|roundTrackDistance }}</span>
       <div style="float: right;">
         <font-awesome-icon @click="togglePanel(); renderComponent = true;" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
       </div>
@@ -128,7 +130,8 @@ export default class AppTrack extends BaseComponent {
 
   private trackSaving: boolean = false;
 
-  @Prop({ required: true }) private track!: Track;
+  @Prop({ required: true }) private track: Track;
+  @Prop({ required: true }) private highlightOnStart: boolean;
 
   private uploadName = this.track!.gpsTrack.name;
   private description = '';
@@ -166,6 +169,9 @@ export default class AppTrack extends BaseComponent {
     this.changeColor();
     this.translateAndAddArrayToTranslator(this.uploadPlaces);
     this.translateAndAddArrayToTranslator(this.uploadTrackTypes);
+    if (this.highlightOnStart) {
+      this.highlightMapTrack();
+    }
   }
 
   private togglePanel() {
@@ -254,15 +260,15 @@ export default class AppTrack extends BaseComponent {
     document.getElementById('trackcheckbox' + this.track.gpsTrack.id)!.style.fontWeight = 'bold';
     this.changeWidth(6);
     this.track.mapTrack.bringToFront();
-    this.track.startMarker.addTo(this.$store.state.map!);
-    this.track.finishMarker.addTo(this.$store.state.map!);
+    this.track.startMarker.addTo(this.$store.state.map);
+    this.track.finishMarker.addTo(this.$store.state.map);
   }
 
   private unhighlightMapTrack() {
     document.getElementById('trackcheckbox' + this.track.gpsTrack.id)!.style.fontWeight = 'normal';
     this.changeWidth(3);
-    this.track.finishMarker.removeFrom(this.$store.state.map!);
-    this.track.startMarker.removeFrom(this.$store.state.map!);
+    this.track.finishMarker.removeFrom(this.$store.state.map);
+    this.track.startMarker.removeFrom(this.$store.state.map);
   }
 
   private changeWidth(width: number) {

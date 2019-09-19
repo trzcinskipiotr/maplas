@@ -7,6 +7,12 @@ export function formatDate(value: Date) {
   }
 }
 
+export function formatDateDay(value: Date) {
+  if (value) {
+    return moment(String(value)).format('DD.MM.YYYY');
+  }
+}
+
 export function roundTrackDistance(value: number) {
   if (value) {
     return String(Math.round(value / 100) / 10) + 'km';

@@ -22,7 +22,7 @@
               <div class="tab-pane show active" role="tabpanel" id="tabtracks">
                 <div class="card">
                   <div class="card-body p-2">
-                    {{ $t('groupBy') }}: <v-select v-model="groupBy" :options="groups" :clearable="false" :searchable="false" >
+                    {{ $t('groupBy') }}: <v-select style="display: inline-block; width: 200px; margin-bottom: 15px;" v-model="groupBy" :options="groups" :clearable="false" :searchable="false" >
                       <template slot="option" slot-scope="option">
                         {{ option.label }}
                       </template>
@@ -34,16 +34,18 @@
                       <li>{{ $t('tracksSelectedDistanceWalk') }}: {{ $store.getters.selectedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
                       <li>{{ $t('tracksSelectedDistanceBicycle') }}: {{ $store.getters.selectedTracks|sumTracksDistanceBicycle|roundTrackDistance }}</li>
                     </ul>
-                    <div v-if="$store.state.imports.length" class="mb-2">
-                      <AppTrackGroup :trackGroup="importGroup"></AppTrackGroup>
-                    </div>
-                    <div v-for="(trackGroupGroup, key) in trackGroupsDict" :key="key">
-                      <div v-show="groupBy.id === key">
-                        <div v-for="trackGroup in trackGroupGroup" :key="trackGroup.label" class="mb-2">
-                          <AppTrackGroup :trackGroup="trackGroup"></AppTrackGroup>
+                    <div style="font-size: 0.95rem">
+                      <div v-if="$store.state.imports.length" class="mb-2">
+                        <AppTrackGroup :trackGroup="importGroup"></AppTrackGroup>
+                      </div>
+                      <div v-for="(trackGroupGroup, key) in trackGroupsDict" :key="key">
+                        <div v-show="groupBy.id === key">
+                          <div v-for="trackGroup in trackGroupGroup" :key="trackGroup.label" class="mb-2">
+                            <AppTrackGroup :trackGroup="trackGroup"></AppTrackGroup>
+                          </div>
                         </div>
-                      </div>    
-                    </div>  
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -495,7 +497,7 @@ export default class Index extends BaseComponent {
                   endTime = point.time;
                 }
               }
-              const newGpstrack: GpsTrack = new GpsTrack(startIndex + trackIndex, fileTrack.name, data.metadata.description, JSON.stringify(pointsArray), '#FF0000', distance, TrackStatus.done, TrackType.bicycle, new Date(startTime), new Date(endTime), gpxFileString, undefined);
+              const newGpstrack: GpsTrack = new GpsTrack(startIndex + trackIndex, fileTrack.name, data.metadata.description, JSON.stringify(pointsArray), '#FF0000', distance, TrackStatus.done, TrackType.bicycle, startTime ? new Date(startTime) : null, endTime ? new Date(endTime) : null, gpxFileString, undefined);
               const track = new Track(newGpstrack, true, false);
               this.$store.commit('addImportedTrack', track);
               this.importGroup.tracks.push(track);
@@ -550,7 +552,7 @@ export default class Index extends BaseComponent {
           }
           try {
             const place: Place = gpstrack.place ? new Place(gpstrack.place.id, gpstrack.place.name) : undefined;
-            const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color, gpstrack.distance, gpstrack.status, gpstrack.type, new Date(gpstrack.start_time), new Date(gpstrack.end_time), '', place);
+            const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color, gpstrack.distance, gpstrack.status, gpstrack.type, gpstrack.start_time ? new Date(gpstrack.start_time) : null, gpstrack.end_time ? new Date(gpstrack.end_time) : null, '', place);
             const track = new Track(newGpstrack, checked, true);
             if (newGpstrack.isDoneTrack()) {
               tracks.push(track);

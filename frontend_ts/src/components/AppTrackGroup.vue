@@ -15,7 +15,7 @@
         <li>{{ $t('tracksSelectedDistanceBicycle') }}: {{ checkedTracks|sumTracksDistanceBicycle|roundTrackDistance }}</li>
       </ul>
       <div v-for="track in trackGroup.tracks" :key="track.gpsTrack.id">
-        <AppTrack :track="track"></AppTrack>
+        <AppTrack :track="track" :highlightOnStart="highlightOnStart(track)"></AppTrack>
       </div>
     </div>  
   </div>
@@ -137,6 +137,10 @@ export default class AppTrackGroup extends BaseComponent {
   private togglePanel() {
     $(this.$refs.tracks).slideToggle('slow');
     this.iconsVisible = !this.iconsVisible;
+  }
+
+  private highlightOnStart(track: Track) {
+    return ! track.onServer;
   }
 
 }

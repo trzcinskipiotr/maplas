@@ -60,8 +60,9 @@ Vue.component('TrackTypeIcon', TrackTypeIcon);
 Vue.component('TrackDownload', TrackDownload);
 Vue.component('InfoModal', InfoModal);
 
-import {formatDate, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle} from '@/ts/utils';
+import {formatDate, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);
+Vue.filter('formatDateDay', formatDateDay);
 Vue.filter('roundTrackDistance', roundTrackDistance);
 Vue.filter('sumTracksDistance', sumTracksDistance);
 Vue.filter('sumTracksDistanceWalk', sumTracksDistanceWalk);
