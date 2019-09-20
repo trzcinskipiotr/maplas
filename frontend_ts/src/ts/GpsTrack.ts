@@ -15,12 +15,13 @@ export default class GpsTrack {
       }
     }
 
-    public convertToApiColorSave() {
-      return {id: this.id, name: this.name, color: this.color, distance: this.distance, status: this.status, type: this.type};
+    public convertToApiTrackSave() {
+      return {id: this.id, name: this.name, description: this.description, color: this.color, distance: this.distance, status: this.status, type: this.type, place: this.place ? this.place.id : undefined};
     }
 
     public convertToApiGpxFileSave() {
-      return {name: this.name, description: this.description, color: this.color, distance: this.distance, status: this.status, type: this.type, start_time: this.start_time, end_time: this.end_time, gpx_file: this.gpx_file, place: this.place ? this.place.id : undefined};
+      const uploadUser: number = null;
+      return {name: this.name, description: this.description, color: this.color, distance: this.distance, status: this.status, type: this.type, start_time: this.start_time, end_time: this.end_time, gpx_file: this.gpx_file, place: this.place ? this.place.id : undefined, upload_user: uploadUser};
     }
 
     public isBicycleTrack() {

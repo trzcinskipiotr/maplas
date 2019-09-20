@@ -1,3 +1,4 @@
+from django.contrib.auth.models import User
 from django.db import models
 from colorfield.fields import ColorField
 from djchoices import DjangoChoices, ChoiceItem
@@ -32,3 +33,4 @@ class Track(models.Model):
     type = models.IntegerField(null=False, blank=False)
     place = models.ForeignKey(Place, on_delete=models.SET_NULL, null=True)
     gpx_file = models.TextField(null=False, default='', blank=True)
+    upload_user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)

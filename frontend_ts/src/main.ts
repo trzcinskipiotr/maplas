@@ -53,12 +53,14 @@ import TrackStatusIcon from '@/components/TrackStatusIcon.vue';
 import TrackTypeIcon from '@/components/TrackTypeIcon.vue';
 import TrackDownload from '@/components/TrackDownload.vue';
 import InfoModal from '@/components/InfoModal.vue';
+import ColorPopover from '@/components/ColorPopover.vue';
 Vue.component('AppTrack', AppTrack);
 Vue.component('AppTrackGroup', AppTrackGroup);
 Vue.component('TrackStatusIcon', TrackStatusIcon);
 Vue.component('TrackTypeIcon', TrackTypeIcon);
 Vue.component('TrackDownload', TrackDownload);
 Vue.component('InfoModal', InfoModal);
+Vue.component('ColorPopover', ColorPopover);
 
 import {formatDate, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);
@@ -68,10 +70,8 @@ Vue.filter('sumTracksDistance', sumTracksDistance);
 Vue.filter('sumTracksDistanceWalk', sumTracksDistanceWalk);
 Vue.filter('sumTracksDistanceBicycle', sumTracksDistanceBicycle);
 
-// @ts-ignore
-import Verte from 'verte';
-import 'verte/dist/verte.css';
-Vue.component('verte', Verte);
+import { Sketch } from 'vue-color';
+Vue.component('sketch-picker', Sketch);
 
 // @ts-ignore
 import i18n from '@/plugins/i18n';
@@ -89,6 +89,10 @@ import 'bootstrap-slider/dist/css/bootstrap-slider.css';
 import vSelect from 'vue-select';
 Vue.component('v-select', vSelect);
 import 'vue-select/dist/vue-select.css';
+
+// @ts-ignore
+import VueSession from 'vue-session';
+Vue.use(VueSession, {persist: true});
 
 new Vue({
   // @ts-ignore

@@ -1,6 +1,6 @@
 <template>
 <div>
-  <verte :showHistory="null" model="hex"><font-awesome-icon icon="circle"></font-awesome-icon></verte>
+  
 </div>
 </template>
 

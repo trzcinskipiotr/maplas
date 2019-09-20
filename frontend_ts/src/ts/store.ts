@@ -4,6 +4,7 @@ import L from 'leaflet';
 import Track from './Track';
 import Alert from './Alert';
 import Place from './Place';
+import axios from 'axios';
 
 Vue.use(Vuex);
 
@@ -15,6 +16,8 @@ export interface RootState {
   imports: Track[];
   playingSpeed: number;
   places: Place[];
+  token: string;
+  user: any;
 }
 
 const store: StoreOptions<RootState> = {
@@ -26,6 +29,8 @@ const store: StoreOptions<RootState> = {
     imports: Array<Track>(),
     playingSpeed: 10,
     places: Array<Place>(),
+    token: '',
+    user: null,
   },
   getters: {
     selectedTracks: (state): Track[] => {
@@ -44,6 +49,19 @@ const store: StoreOptions<RootState> = {
     },
     setAppHost(state, appHost: string) {
       state.appHost = appHost;
+    },
+    setToken(state, payload: any) {
+      state.token = payload.token;
+      if (payload.token) {
+        axios.defaults.headers.common['Authorization'] = 'Token ' + payload.token;
+        payload.vue.$session.set('token', payload.token);
+      } else {
+        delete axios.defaults.headers.common['Authorization'];
+        payload.vue.$session.remove('token');
+      }
+    },
+    setUser(state, user: any) {
+      state.user = user;
     },
     setTracks(state, tracks: Track[]) {
       state.tracks = tracks;

@@ -52,6 +52,33 @@
               <div class="tab-pane show" role="tabpanel" id="tabsettings">
                 <div class="card">
                   <div class="card-body p-2">
+                    <div class="card mb-2">
+                      <div class="card-header py-2">
+                        {{ $t('loginForm' )}}
+                      </div>
+                      <div class="card-body p-2">        
+                        <div v-if="$store.state.user">
+                          <form @submit.prevent="logOutFromApi" class="form-inline">
+                            <div style="width: 100%" class="form-group">
+                              <div style="width: 66%;">
+                                {{ $t('welcome') }}: {{ $store.state.user.username }}
+                             </div>
+                             <button type="submit" class="btn btn-primary">{{ $t('logOut') }}</button>
+                            </div>
+                          </form>    
+                        </div>
+                        <div v-else>
+                          <form @submit.prevent="logInToApi" class="form-inline">
+                            <div style="width: 100%" class="form-group">
+                              <input style="width: 33%" type="text" v-model="login" class="form-control mr-2" :placeholder="$t('login')">
+                              <input style="width: 33%" type="password" v-model="password" class="form-control mr-2" :placeholder="$t('password')">
+                              <button type="submit" class="btn btn-primary">{{ $t('logIn') }}</button>
+                            </div>
+                          </form> 
+                        </div>
+                      </div>
+                    </div>
+                    
                     {{ $t('language') }}: <v-select v-model="language" :options="languages" :clearable="false" :searchable="false" >
                       <template slot="option" slot-scope="option">
                         <flag :iso="option.flag" v-bind:squared=false />
@@ -160,6 +187,9 @@ export default class Index extends BaseComponent {
   private languages = [{flag: 'us', language: 'en', label: 'English'}, {flag: 'pl', language: 'pl', label: 'Polski' }];
   private language: {flag: string, language: string, label: string} | null = null;
 
+  private login: string = '';
+  private password: string = '';
+
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
     i18n.locale = this.language!.language;
@@ -180,9 +210,70 @@ export default class Index extends BaseComponent {
     }
   }
 
+  private logInToApi() {
+    axios.post(this.$store.state.appHost + 'api/auth/token/login/', {username: this.login, password: this.password}).then(
+      (response) => {
+        this.createAlert(AlertStatus.success, this.$t('logInSuccess').toString(), 2000);
+        this.$store.commit('setToken', {token: response.data.auth_token, vue: this});
+        this.refreshLoginInfo(false);
+      },
+    ).catch(
+      (response) => {
+        this.createAlert(AlertStatus.danger, this.$t('logInError').toString(), 2000);
+      },
+    ).finally(() => {
+      this.login = '';
+      this.password = '';
+    });
+  }
+
+  private logOutFromApi() {
+    axios.post(this.$store.state.appHost + 'api/auth/token/logout/').then(
+      (response) => {
+        /* empty */
+      },
+    ).catch(
+      (response) => {
+        /* empty */
+      },
+    ).finally(
+      () => {
+        this.createAlert(AlertStatus.success, this.$t('logOutSuccess').toString(), 2000);
+        this.$store.commit('setToken', {token: '', vue: this});
+        this.$store.commit('setUser', null);
+      },
+    );
+  }
+
+  private setStoreToken() {
+    // @ts-ignore
+    const token = this.$session.get('token');
+    if (token) {
+      this.$store.commit('setToken', {token, vue: this});
+      this.refreshLoginInfo(true);
+    }
+  }
+
+  private refreshLoginInfo(showAllerts: boolean) {
+    axios.get(this.$store.state.appHost + 'api/auth/users/me/').then(
+      (response) => {
+        if (showAllerts) {
+          this.createAlert(AlertStatus.success, this.$t('welcome').toString() + ': ' + response.data.username, 2000);
+        }
+        this.$store.commit('setUser', response.data);
+      },
+    ).catch(
+      (response) => {
+        this.$store.commit('setToken', {token: '', vue: this});
+        this.createAlert(AlertStatus.danger, this.$t('logInSessionExpired').toString(), 2000);
+      },
+    );
+  }
+
   private mounted() {
     this.setLanguage();
     this.setAppHost();
+    this.setStoreToken();
     this.createMap([52.743682, 16.273668], 11);
     this.addLayers();
     this.addScaleControl();
@@ -552,7 +643,7 @@ export default class Index extends BaseComponent {
           }
           try {
             const place: Place = gpstrack.place ? new Place(gpstrack.place.id, gpstrack.place.name) : undefined;
-            const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color, gpstrack.distance, gpstrack.status, gpstrack.type, gpstrack.start_time ? new Date(gpstrack.start_time) : null, gpstrack.end_time ? new Date(gpstrack.end_time) : null, '', place);
+            const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color ? gpstrack.color : '#ff0000', gpstrack.distance, gpstrack.status, gpstrack.type, gpstrack.start_time ? new Date(gpstrack.start_time) : null, gpstrack.end_time ? new Date(gpstrack.end_time) : null, '', place);
             const track = new Track(newGpstrack, checked, true);
             if (newGpstrack.isDoneTrack()) {
               tracks.push(track);

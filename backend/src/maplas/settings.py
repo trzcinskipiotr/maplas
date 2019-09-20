@@ -41,9 +41,18 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'colorfield',
+    'djoser',
+    'rest_framework.authtoken',
 
     'maplas_app'
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.TokenAuthentication',
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+}
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',

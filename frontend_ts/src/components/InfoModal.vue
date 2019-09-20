@@ -16,9 +16,9 @@ import BaseComponent from './Base.vue';
 import { Component, Prop } from 'vue-property-decorator';
 
 @Component
-export default class TrackDownload extends BaseComponent {
+export default class InfoModal extends BaseComponent {
 
-  @Prop({ required: true }) private title!: string;
+  @Prop({ required: true }) private title: string;
 
 }
 
