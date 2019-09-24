@@ -2,6 +2,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from colorfield.fields import ColorField
 from djchoices import DjangoChoices, ChoiceItem
+import json
 
 class Place(models.Model):
     name = models.CharField(max_length=100, null=False, blank=True, default='')
@@ -31,6 +32,25 @@ class Track(models.Model):
     distance = models.IntegerField(null=False)
     status = models.IntegerField(null=False, blank=False)
     type = models.IntegerField(null=False, blank=False)
-    place = models.ForeignKey(Place, on_delete=models.SET_NULL, null=True)
+    place = models.ForeignKey(Place, on_delete=models.SET_NULL, null=True, blank=True)
     gpx_file = models.TextField(null=False, default='', blank=True)
     upload_user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+
+    def get_points_json_counts(self):
+        segments = 0
+        points = 0
+        for segment in json.loads(self.points_json):
+            segments = segments + 1
+            points = points + len(segment)
+        return "Segments: {}, Points: {}".format(segments, points)
+
+    def get_points_json_optimized_counts(self):
+        segments = 0
+        points = 0
+        for segment in json.loads(self.points_json_optimized):
+            segments = segments + 1
+            points = points + len(segment)
+        return "Segments: {}, Points: {}".format(segments, points)
+
+    get_points_json_counts.short_description = 'points json'
+    get_points_json_optimized_counts.short_description = 'points json optimized'
