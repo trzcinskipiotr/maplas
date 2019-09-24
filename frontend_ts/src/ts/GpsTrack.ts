@@ -1,17 +1,18 @@
 import {TrackType, TrackStatus} from './types';
 import L from 'leaflet';
 import Place from '@/ts/Place';
+import Segment from '@/ts/Segment';
 
 export default class GpsTrack {
 
-    public pointsArray: L.LatLng[];
+    public segments: Segment[];
 
     /* tslint:disable-next-line */
     constructor(public id: number, public name: string, public description: string, public points_json_optimized: string, public color: string, public distance: number, public status: TrackStatus, public type: TrackType, public start_time: Date, public end_time: Date, public gpx_file: string, public place: Place) {
-      this.pointsArray = [];
-      for (const point of JSON.parse(this.points_json_optimized)) {
-        const gpsPoint = new L.LatLng(point[0], point[1]);
-        this.pointsArray.push(gpsPoint);
+      this.segments = [];
+      for (const segment of JSON.parse(this.points_json_optimized)) {
+        const segmentObj = new Segment(segment);
+        this.segments.push(segmentObj);
       }
     }
 

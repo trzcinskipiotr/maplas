@@ -149,25 +149,41 @@ export default class AppTrack extends BaseComponent {
   }
 
   private mounted() {
-    this.track.mapTrack.bindTooltip(document.getElementById('tooltip' + this.track.gpsTrack.id)!, {sticky: true, opacity: 0.95});
-    this.track.mapTrack.on('mouseover', (e) => {
-      this.highlightMapTrack();
-    });
-    this.track.mapTrack.on('mouseout', (e) => {
-      this.unhighlightMapTrack();
-    });
+    for (const mapTrack of this.track.mapTracks) {
+      mapTrack.bindTooltip(document.getElementById('tooltip' + this.track.gpsTrack.id)!, {sticky: true, opacity: 0.95});
+      mapTrack.on('mouseover', (e) => {
+        this.highlightMapTrack();
+      });
+      mapTrack.on('mouseout', (e) => {
+        this.unhighlightMapTrack();
+      });
+    }
     this.showOrHideTrack();
     this.togglePanel();
-    // @ts-ignore
-    this.track.animateTrack.on(L.Motion.Event.Ended, (event: Event) => {
-      if (this.playing) {
-        this.playing = false;
-        this.track.animateTrack.removeFrom(this.$store.state.map!);
-        if (this.checked) {
-          this.track.mapTrack.addTo(this.$store.state.map!);
+    for (const animateTrack of this.track.animateTracks) {
+      // @ts-ignore
+      animateTrack.on(L.Motion.Event.Ended, (event: Event) => {
+        if (this.playing) {
+          // @ts-ignore
+          if (event.target.animateTrackIndex === this.track.animateTracks.length - 1) {
+            this.playing = false;
+            for (const animateTrackIn of this.track.animateTracks) {
+              animateTrackIn.removeFrom(this.$store.state.map);
+            }
+            if (this.checked) {
+              for (const mapTrack of this.track.mapTracks) {
+                mapTrack.addTo(this.$store.state.map);
+              }
+            }
+          } else {
+            // @ts-ignore
+            this.track.animateTracks[event.target.animateTrackIndex + 1].addTo(this.$store.state.map);
+            // @ts-ignore
+            this.track.animateTracks[event.target.animateTrackIndex + 1].motionStart();
+          }
         }
-      }
-    });
+      });
+    }
     for (const place of this.$store.state.places) {
       // @ts-ignore
       this.uploadPlaces.push({translate: place.name, label: '', value: place});
@@ -256,29 +272,45 @@ export default class AppTrack extends BaseComponent {
   }
 
   private centerTrack() {
-    this.$store.state.map!.fitBounds(this.track.mapTrack.getBounds());
+    const trackBounds = new L.LatLngBounds(this.track.mapTracks[0].getBounds().getNorthEast(), this.track.mapTracks[0].getBounds().getSouthWest());
+    for (const mapTrack of this.track.mapTracks) {
+      trackBounds.extend(mapTrack.getBounds());
+    }
+    this.$store.state.map.fitBounds(trackBounds);
   }
 
   private playTrack() {
     if (! this.playing) {
-      this.track.mapTrack.removeFrom(this.$store.state.map!);
-      this.track.animateTrack.motionOptions.duration = (this.track.gpsTrack.distance / this.$store.state.playingSpeed);
-      if (this.track.gpsTrack.isWalkTrack()) {
-        this.track.animateTrack.motionOptions.duration = this.track.animateTrack.motionOptions.duration * 10;
+      for (const mapTrack of this.track.mapTracks) {
+        mapTrack.removeFrom(this.$store.state.map);
       }
-      this.track.animateTrack.options.color = this.track.gpsTrack.color;
-      this.track.animateTrack.addTo(this.$store.state.map!);
-      this.track.animateTrack.motionStart();
+      let index = 0;
+      for (const loopIndex in Object.keys(this.track.animateTracks)) {
+        if (this.track.animateTracks.hasOwnProperty(loopIndex)) {
+          const animateTrack = this.track.animateTracks[loopIndex];
+          animateTrack.motionOptions.duration = (this.track.gpsTrack.distance / this.$store.state.playingSpeed) * (this.track.gpsTrack.segments[loopIndex].distance / this.track.gpsTrack.distance);
+          if (this.track.gpsTrack.isWalkTrack()) {
+            animateTrack.motionOptions.duration = animateTrack.motionOptions.duration * 10;
+          }
+          animateTrack.animateTrackIndex = index;
+          index = index + 1;
+          animateTrack.options.color = this.track.gpsTrack.color;
+        }
+      }
+      this.track.animateTracks[0].addTo(this.$store.state.map);
+      this.track.animateTracks[0].motionStart();
       this.playing = true;
     } else {
-      this.track.animateTrack.motionStop();
+      this.track.animateTracks[this.track.animateTracks.length - 1].motionStop();
     }
   }
 
   private highlightMapTrack() {
     document.getElementById('trackcheckbox' + this.track.gpsTrack.id)!.style.fontWeight = 'bold';
     this.changeWidth(6);
-    this.track.mapTrack.bringToFront();
+    for (const mapTrack of this.track.mapTracks) {
+      mapTrack.bringToFront();
+    }
     this.track.startMarker.addTo(this.$store.state.map);
     this.track.finishMarker.addTo(this.$store.state.map);
   }
@@ -291,23 +323,31 @@ export default class AppTrack extends BaseComponent {
   }
 
   private changeWidth(width: number) {
-    this.track.mapTrack.setStyle({
-      weight: width,
-    });
+    for (const mapTrack of this.track.mapTracks) {
+      mapTrack.setStyle({
+        weight: width,
+      });
+    }
   }
 
   private changeColor() {
-    this.track.mapTrack.setStyle({
-      color: this.track.gpsTrack.color,
-    });
+    for (const mapTrack of this.track.mapTracks) {
+      mapTrack.setStyle({
+        color: this.track.gpsTrack.color,
+      });
+    }
   }
 
   private showOrHideTrack() {
     if (this.checked) {
-      this.track.mapTrack.addTo(this.$store.state.map!);
+      for (const mapTrack of this.track.mapTracks) {
+        mapTrack.addTo(this.$store.state.map);
+      }
       this.track.checked = true;
     } else {
-      this.track.mapTrack.removeFrom(this.$store.state.map!);
+      for (const mapTrack of this.track.mapTracks) {
+        mapTrack.removeFrom(this.$store.state.map);
+      }
       this.track.checked = false;
     }
   }

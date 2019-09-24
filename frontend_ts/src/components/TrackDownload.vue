@@ -16,16 +16,21 @@ export default class TrackDownload extends BaseComponent {
   @Prop({ required: true }) private height!: number;
 
   private saveGPX() {
+    const segments = [];
+    for (const segment of this.gpsTrack.segments) {
       const gpsPointList = [];
-      for (const point of this.gpsTrack.pointsArray) {
+      for (const point of segment.pointsArray) {
         const gpsPoint = new BaseBuilder.MODELS.Point(point.lat, point.lng);
         gpsPointList.push(gpsPoint);
       }
-      const gpxData = new BaseBuilder();
-      gpxData.setMetadata(new BaseBuilder.MODELS.Metadata({name: this.gpsTrack.name}));
-      gpxData.setTracks([new BaseBuilder.MODELS.Track([new BaseBuilder.MODELS.Segment(gpsPointList)], {name: this.gpsTrack.name})]);
-      const blob = new Blob([buildGPX(gpxData.toObject())], {type: 'text/plain;charset=utf-8'});
-      FileSaver.saveAs(blob, this.gpsTrack.name + '.gpx');
+      const gpxSegment = new BaseBuilder.MODELS.Segment(gpsPointList);
+      segments.push(gpxSegment);
     }
+    const gpxData = new BaseBuilder();
+    gpxData.setMetadata(new BaseBuilder.MODELS.Metadata({name: this.gpsTrack.name}));
+    gpxData.setTracks([new BaseBuilder.MODELS.Track(segments, {name: this.gpsTrack.name})]);
+    const blob = new Blob([buildGPX(gpxData.toObject())], {type: 'text/plain;charset=utf-8'});
+    FileSaver.saveAs(blob, this.gpsTrack.name + '.gpx');
   }
+}
 </script>

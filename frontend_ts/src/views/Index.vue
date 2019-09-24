@@ -588,11 +588,15 @@ export default class Index extends BaseComponent {
                   endTime = point.time;
                 }
               }
-              const newGpstrack: GpsTrack = new GpsTrack(startIndex + trackIndex, fileTrack.name, data.metadata.description, JSON.stringify(pointsArray), '#FF0000', distance, TrackStatus.done, TrackType.bicycle, startTime ? new Date(startTime) : null, endTime ? new Date(endTime) : null, gpxFileString, undefined);
+              const newGpstrack: GpsTrack = new GpsTrack(startIndex + trackIndex, fileTrack.name, data.metadata.description, JSON.stringify([pointsArray]), '#FF0000', distance, TrackStatus.done, TrackType.bicycle, startTime ? new Date(startTime) : null, endTime ? new Date(endTime) : null, gpxFileString, undefined);
               const track = new Track(newGpstrack, true, false);
               this.$store.commit('addImportedTrack', track);
               this.importGroup.tracks.push(track);
-              this.$store.state.map!.fitBounds(track.mapTrack.getBounds());
+              const trackBounds = new L.LatLngBounds(track.mapTracks[0].getBounds().getNorthEast(), track.mapTracks[0].getBounds().getSouthWest());
+              for (const mapTrack of track.mapTracks) {
+                trackBounds.extend(mapTrack.getBounds());
+              }
+              this.$store.state.map.fitBounds(trackBounds);
             }
             $('#importFileInput')!.val('');
             if (atLeasyOneTrack) {
@@ -657,9 +661,14 @@ export default class Index extends BaseComponent {
           let trackBounds: L.LatLngBounds | undefined;
           for (const track of this.$store.getters.selectedTracks as Track[]) {
             if (trackBounds) {
-              trackBounds.extend(track.mapTrack.getBounds());
+              for (const mapTrack of track.mapTracks) {
+                trackBounds.extend(mapTrack.getBounds());
+              }
             } else {
-              trackBounds = new L.LatLngBounds(track.mapTrack.getBounds().getNorthEast(), track.mapTrack.getBounds().getSouthWest());
+              trackBounds = new L.LatLngBounds(track.mapTracks[0].getBounds().getNorthEast(), track.mapTracks[0].getBounds().getSouthWest());
+              for (const mapTrack of track.mapTracks) {
+                trackBounds.extend(mapTrack.getBounds());
+              }
             }
           }
           if (trackBounds) {

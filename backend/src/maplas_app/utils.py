@@ -24,21 +24,20 @@ def create_track_from_gpx(filename):
     gpx_file = open(filename, 'r')
     gpx_file_string = gpx_file.read()
     gpx_name, distance, start_time, end_time, points = convert_gpx_to_array(gpx_file_string)
-    database_track = Track.objects.create(name=gpx_name or Path(filename).stem, points_json=json.dumps(points), distance=distance, status=Track.Status.done,
+    database_track = Track.objects.create(name=gpx_name or Path(filename).stem, points_json='[' + json.dumps(points) + ']', distance=distance, status=Track.Status.done,
                          type=Track.Type.bicycle, start_time=start_time, end_time=end_time, gpx_file=gpx_file_string)
     optimize_track(database_track)
 
 def fill_array_from_gpx_file(track):
-    gpx_name, distance, start_time, end_time, points = convert_gpx_to_array(track.gpx_file);
-    track.points_json = json.dumps(points)
+    gpx_name, distance, start_time, end_time, points = convert_gpx_to_array(track.gpx_file)
+    track.points_json = '[' + json.dumps(points) + ']'
     optimize_track(track)
 
 def optimize_points(points_json):
-    points = json.loads(points_json)
-    return rdp.rdp(points, epsilon=settings.OPTIMIZE_EPSILON, algo='iter', return_mask=False)
+    return rdp.rdp(points_json, epsilon=settings.OPTIMIZE_EPSILON, algo='iter', return_mask=False)
 
 def optimize_track(track):
-    track.points_json_optimized = optimize_points(track.points_json)
+    track.points_json_optimized = '[' + json.dumps(optimize_points(json.loads(track.points_json)[0])) + ']'
     track.save()
 
 def optimize_tracks():
