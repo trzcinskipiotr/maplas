@@ -3,6 +3,7 @@ from django.db import models
 from colorfield.fields import ColorField
 from djchoices import DjangoChoices, ChoiceItem
 import json
+import gpxpy
 
 class Place(models.Model):
     name = models.CharField(max_length=100, null=False, blank=True, default='')
@@ -54,3 +55,18 @@ class Track(models.Model):
 
     get_points_json_counts.short_description = 'points json'
     get_points_json_optimized_counts.short_description = 'points json optimized'
+
+    def get_gpx_file_counts(self):
+        segments = 0
+        points = 0
+        if self.gpx_file:
+            gpx = gpxpy.parse(self.gpx_file)
+            for track in gpx.tracks:
+                for segment in track.segments:
+                    segments = segments + 1
+                    points = points + len(segment.points)
+            return "Segments: {}, Points: {}".format(segments, points)
+        else:
+            return 'No file'
+
+    get_gpx_file_counts.short_description = 'gpx file'
