@@ -331,7 +331,7 @@ export default class AppTrack extends BaseComponent {
         if (this.track.animateTracks.hasOwnProperty(loopIndex)) {
           const animateTrack = this.track.animateTracks[loopIndex];
           animateTrack.motionOptions.duration = (this.track.gpsTrack.distance / this.$store.state.playingSpeed) * (this.track.gpsTrack.segments[loopIndex].distance / this.track.gpsTrack.distance);
-          if (this.track.gpsTrack.isWalkTrack()) {
+          if (this.track.gpsTrack.isWalkTrack() || this.track.gpsTrack.isMushroomTrack()) {
             animateTrack.motionOptions.duration = animateTrack.motionOptions.duration * 10;
           }
           animateTrack.animateTrackIndex = index;
