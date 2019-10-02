@@ -18,6 +18,7 @@ class Track(models.Model):
         bicycle = ChoiceItem(2)
         walk = ChoiceItem(3)
         other = ChoiceItem(4)
+        mushroom = ChoiceItem(5)
 
     class Status(DjangoChoices):
         done = ChoiceItem(1)

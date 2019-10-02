@@ -11,6 +11,8 @@ export default class TypeTrackGrouper implements TrackGrouper {
     trackGroupWalk.translate = 'walkTracks';
     const trackGroupBicycle = new TrackGroup();
     trackGroupBicycle.translate = 'bicycleTracks';
+    const trackGroupMushroom = new TrackGroup();
+    trackGroupMushroom.translate = 'mushroomTracks';
     for (const track of tracks) {
       if (track.gpsTrack.type === TrackType.walk) {
         trackGroupWalk.tracks.push(track);
@@ -18,9 +20,19 @@ export default class TypeTrackGrouper implements TrackGrouper {
       if (track.gpsTrack.type === TrackType.bicycle) {
         trackGroupBicycle.tracks.push(track);
       }
+      if (track.gpsTrack.type === TrackType.mushroom) {
+        trackGroupMushroom.tracks.push(track);
+      }
     }
-    trackGroups.push(trackGroupBicycle);
-    trackGroups.push(trackGroupWalk);
+    if (trackGroupBicycle.tracks.length > 0) {
+      trackGroups.push(trackGroupBicycle);
+    }
+    if (trackGroupWalk.tracks.length > 0) {
+      trackGroups.push(trackGroupWalk);
+    }
+    if (trackGroupMushroom.tracks.length > 0) {
+      trackGroups.push(trackGroupMushroom);
+    }
     return trackGroups;
   }
 

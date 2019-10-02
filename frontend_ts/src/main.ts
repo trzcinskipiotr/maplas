@@ -13,7 +13,7 @@ import 'leaflet.motion/dist/leaflet.motion.min';
 import '@fortawesome/fontawesome-free/css/all.css';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle, faFileUpload, faBars, faUpload } from '@fortawesome/free-solid-svg-icons';
-import { faCalendarTimes, faCalendarCheck, faWindowClose, faTimesCircle } from '@fortawesome/free-regular-svg-icons';
+import { faCalendarTimes, faCalendarCheck, faWindowClose, faTimesCircle, faWindowMaximize } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 library.add(faShoePrints);
 library.add(faBiking);
@@ -34,6 +34,7 @@ library.add(faStopCircle);
 library.add(faFileUpload);
 library.add(faBars);
 library.add(faUpload);
+library.add(faWindowMaximize);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 import BootstrapVue from 'bootstrap-vue';
@@ -62,13 +63,14 @@ Vue.component('TrackDownload', TrackDownload);
 Vue.component('InfoModal', InfoModal);
 Vue.component('ColorPopover', ColorPopover);
 
-import {formatDate, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle} from '@/ts/utils';
+import {formatDate, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);
 Vue.filter('formatDateDay', formatDateDay);
 Vue.filter('roundTrackDistance', roundTrackDistance);
 Vue.filter('sumTracksDistance', sumTracksDistance);
 Vue.filter('sumTracksDistanceWalk', sumTracksDistanceWalk);
 Vue.filter('sumTracksDistanceBicycle', sumTracksDistanceBicycle);
+Vue.filter('sumTracksDistanceMushroom', sumTracksDistanceMushroom);
 
 import { Sketch } from 'vue-color';
 Vue.component('sketch-picker', Sketch);

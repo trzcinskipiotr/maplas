@@ -28,9 +28,15 @@ export default class GpsTrack {
     public isBicycleTrack() {
       return this.type === TrackType.bicycle;
     }
+
     public isWalkTrack() {
       return this.type === TrackType.walk;
     }
+
+    public isMushroomTrack() {
+      return this.type === TrackType.mushroom;
+    }
+
     public isDoneTrack() {
         return this.status === TrackStatus.done;
     }

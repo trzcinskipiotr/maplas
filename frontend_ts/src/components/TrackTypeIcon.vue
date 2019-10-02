@@ -1,6 +1,7 @@
 <template>
-  <span v-if="isBicycleTrack(gpsTrack)" v-b-tooltip.hover :title="$t('bicycleTrack')"><font-awesome-icon :style="{height: height + 'px'}" icon="biking"/></span>
-  <span v-else-if="isWalkTrack(gpsTrack)" v-b-tooltip.hover :title="$t('walkTrack')"><font-awesome-icon :style="{height: height + 'px'}" icon="shoe-prints"/></span>
+  <span v-if="gpsTrack.isBicycleTrack()" v-b-tooltip.hover :title="$t('bicycleTrack')"><font-awesome-icon :style="{height: height + 'px'}" icon="biking"/></span>
+  <span v-else-if="gpsTrack.isWalkTrack()" v-b-tooltip.hover :title="$t('walkTrack')"><font-awesome-icon :style="{height: height + 'px'}" icon="shoe-prints"/></span>
+  <span v-else-if="gpsTrack.isMushroomTrack()" v-b-tooltip.hover :title="$t('mushroomTrack')"><img :style="{height: imgheight + 'px', verticalAlign: verticalAlign}" src="img/mushroom.svg" /></span>
 </template>
 
 <script lang="ts">
@@ -10,7 +11,9 @@ import { Component, Prop } from 'vue-property-decorator';
 
 @Component
 export default class TrackTypeIcon extends BaseComponent {
-  @Prop({ required: true }) private gpsTrack!: GpsTrack;
-  @Prop({ required: true }) private height!: number;
+  @Prop({ required: true }) private gpsTrack: GpsTrack;
+  @Prop({ required: true }) private height: number;
+  @Prop({ required: true }) private imgheight: number;
+  @Prop({ required: true }) private verticalAlign: string;
 }
 </script>

@@ -11,8 +11,9 @@
     <div ref="tracks" class="card-body p-2">
       {{ $t('tracksSelectedDistance') }}: {{ checkedTracks|sumTracksDistance|roundTrackDistance }}
       <ul>
-        <li>{{ $t('tracksSelectedDistanceWalk') }}: {{ checkedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
-        <li>{{ $t('tracksSelectedDistanceBicycle') }}: {{ checkedTracks|sumTracksDistanceBicycle|roundTrackDistance }}</li>
+        <li v-if="countTracksByType(checkedTracks, TrackType.walk) > 0">{{ $t('tracksSelectedDistanceWalk') }}: {{ checkedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
+        <li v-if="countTracksByType(checkedTracks, TrackType.bicycle) > 0">{{ $t('tracksSelectedDistanceBicycle') }}: {{ checkedTracks|sumTracksDistanceBicycle|roundTrackDistance }}</li>
+        <li v-if="countTracksByType(checkedTracks, TrackType.mushroom) > 0">{{ $t('tracksSelectedDistanceMushroom') }}: {{ checkedTracks|sumTracksDistanceMushroom|roundTrackDistance }}</li>
       </ul>
       <div v-for="track in trackGroup.tracks" :key="track.gpsTrack.id">
         <AppTrack :track="track" :highlightOnStart="highlightOnStart(track)"></AppTrack>
@@ -27,12 +28,15 @@ import BaseComponent from './Base.vue';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import $ from 'jquery';
 import Track from '@/ts/Track';
+import {TrackType} from '@/ts/types';
 
 @Component
 export default class AppTrackGroup extends BaseComponent {
 
   private checkedAll: boolean;
   private iconsVisible: boolean = true;
+  // @ts-ignore
+  private TrackType = TrackType;
 
   @Prop({ required: true }) private trackGroup!: TrackGroup;
 

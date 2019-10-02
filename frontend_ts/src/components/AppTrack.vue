@@ -1,4 +1,5 @@
 <template>
+  <div>
   <div v-on:mouseover="highlightMapTrack()" v-on:mouseleave="unhighlightMapTrack()">
     <div style="display: inline" class="custom-control custom-checkbox" :id="'trackcheckbox' + track.gpsTrack.id">
       <input type="checkbox" class="custom-control-input" :id="'checkbox' + track.gpsTrack.id" v-model="checked" />
@@ -14,7 +15,7 @@
         <b>{{ $t('name') }}: </b>{{ track.gpsTrack.name }}<br>
         <b>{{ $t('startTime') }}: </b>{{ track.gpsTrack.start_time|formatDate }}<br>
         <b>{{ $t('distance') }}: </b>{{ track.gpsTrack.distance|roundTrackDistance }}<br>
-        <b>{{ $t('type') }}: </b><TrackTypeIcon :gpsTrack="track.gpsTrack" height=12></TrackTypeIcon><br>
+        <b>{{ $t('type') }}: </b><TrackTypeIcon :gpsTrack="track.gpsTrack" height=12 imgheight=12 verticalAlign="-2px"></TrackTypeIcon><br>
         <b>{{ $t('status') }}: </b><TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br>
         <b>{{ $t('id') }}: </b>{{ track.gpsTrack.id }}
       </div>
@@ -22,11 +23,12 @@
     <div v-if="renderComponent">
       <div ref="icons" style="display: block;">
         <div style="display: inline-block; margin-right: 3px;" v-b-tooltip.hover :title="$t('changeColor')"><color-popover :track="track"></color-popover></div>
-        <span style='margin-right: 3px;'><TrackTypeIcon :gpsTrack="track.gpsTrack" height=24></TrackTypeIcon></span>
+        <span style='margin-right: 3px;'><TrackTypeIcon :gpsTrack="track.gpsTrack" height=24 imgheight=16 verticalAlign="2px"></TrackTypeIcon></span>
         <span style='margin-right: 3px;'><TrackStatusIcon :gpsTrack="track.gpsTrack" height=24></TrackStatusIcon></span>
         <span style='margin-right: 3px;'><TrackDownload :gpsTrack="track.gpsTrack" height=24></TrackDownload></span>
         <span style='margin-right: 3px;' v-b-tooltip.hover :title="$t('centerTrack')"><font-awesome-icon @click="centerTrack" style="height: 24px; cursor: pointer" icon="search-location"/></span>
         <span ref="tooltipSpan" style='margin-right: 3px;'><font-awesome-icon @click="playTrack" style="height: 24px; cursor: pointer" :icon="playing ? 'stop-circle' : 'play'"/></span>
+        <span style='margin-right: 3px;' v-b-tooltip.hover :title="$t('maximizeTrack')"><font-awesome-icon @click="maximizeTrack" style="height: 24px; cursor: pointer" :icon="['far', 'window-maximize']" /></span>
         <b-tooltip v-if="renderedComponent" :target="$refs.tooltipSpan">{{ playing ? $t('stopTrack') : $t('playTrack') }}</b-tooltip>
         <span v-if="$store.state.user">
           <span v-if="track.onServer" v-b-tooltip.hover :title="$t('saveTrack')"><font-awesome-icon @click="showUploadModal" style="height: 24px; cursor: pointer" icon="save"/></span>
@@ -73,7 +75,8 @@
                 <td>
                   <v-select style="width: 500px" v-model="uploadTrackType" :options="uploadTrackTypes" :clearable="false" :searchable="false" >
                     <template slot="option" slot-scope="option">
-                      <font-awesome-icon :icon="option.icon"/>
+                      <font-awesome-icon v-if="option.icon" :icon="option.icon"/>
+                      <img v-if="option.imgsrc" style="height: 20px;" :src="option.imgsrc"/>
                       {{ option.label }}
                     </template>
                   </v-select>
@@ -107,7 +110,27 @@
           </div>
         </info-modal>
       </div>
-    </div>      
+    </div>    
+  </div>
+  <div ref="detailsWindow" class="detailsWindow card" v-show="maximized">
+    <div ref="detailsWindowHeader" class="detailsWindowHeader card-header" style="width: 500px">
+      {{ track.gpsTrack.name }}
+      <span class="badge badge-dark" style="margin-right: 2px; margin-left: 2px;">{{ track.gpsTrack.start_time|formatDateDay }}</span>
+      <span class="badge badge-success">{{ track.gpsTrack.distance|roundTrackDistance }}</span>
+      <div style="float: right;">
+        <font-awesome-icon @click="toggleMaximizedDetails" style="cursor: pointer;" :icon="maximizedDetails ? 'chevron-up' : 'chevron-down'"/>&nbsp;
+        <font-awesome-icon @click="maximized = false" style="cursor: pointer;" :icon="['far', 'times-circle']"/>
+      </div>
+    </div>
+    <div ref="maximizedBody" class="card-body">
+      <b>{{ $t('name') }}: </b>{{ track.gpsTrack.name }}<br>
+      <b>{{ $t('startTime') }}: </b>{{ track.gpsTrack.start_time|formatDate }}<br>
+      <b>{{ $t('distance') }}: </b>{{ track.gpsTrack.distance|roundTrackDistance }}<br>
+      <b>{{ $t('type') }}: </b><TrackTypeIcon :gpsTrack="track.gpsTrack" height=12 imgheight=12 verticalAlign="-2px"></TrackTypeIcon><br>
+      <b>{{ $t('status') }}: </b><TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br>
+      <b>{{ $t('id') }}: </b>{{ track.gpsTrack.id }}
+    </div>  
+  </div>
   </div>
 </template>
 
@@ -120,6 +143,7 @@ import Track from '@/ts/Track';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import { AlertStatus, TrackType, TrackStatus } from '@/ts/types';
 import Place from '@/ts/Place';
+import {dragElement} from '@/ts/utils';
 
 @Component
 export default class AppTrack extends BaseComponent {
@@ -130,12 +154,15 @@ export default class AppTrack extends BaseComponent {
   private renderedComponent: boolean = false;
   private playing: boolean = false;
   private uploadTrackTypes = [{translate: 'bicycleTrack', label: '', icon: 'biking', value: TrackType.bicycle},
-                              {translate: 'walkTrack', label: '', icon: 'shoe-prints', value: TrackType.walk}];
+                              {translate: 'walkTrack', label: '', icon: 'shoe-prints', value: TrackType.walk},
+                              {translate: 'mushroomTrack', label: '', imgsrc: 'img/mushroom.svg', value: TrackType.mushroom}];
   private uploadTrackType = this.uploadTrackTypes[0];
   private uploadPlace: {translate: string, label: string, value: Place} = null;
   private uploadPlaces: Array<{translate: string, label: string, value: Place}> = [];
 
   private trackSaving: boolean = false;
+  private maximized: boolean = false;
+  private maximizedDetails: boolean = true;
 
   @Prop({ required: true }) private track: Track;
   @Prop({ required: true }) private highlightOnStart: boolean;
@@ -194,11 +221,17 @@ export default class AppTrack extends BaseComponent {
     if (this.highlightOnStart) {
       this.highlightMapTrack();
     }
+    dragElement(this.$refs.detailsWindow, this.$refs.detailsWindowHeader);
   }
 
   private togglePanel() {
     $(this.$refs.icons).slideToggle('fast');
     this.iconsVisible = !this.iconsVisible;
+  }
+
+  private toggleMaximizedDetails() {
+    $(this.$refs.maximizedBody).slideToggle('fast');
+    this.maximizedDetails = !this.maximizedDetails;
   }
 
   private updated() {
@@ -228,6 +261,15 @@ export default class AppTrack extends BaseComponent {
       }).finally(() => {
         this.trackSaving = false;
       });
+  }
+
+  private maximizeTrack(e: Event) {
+    this.maximized = true;
+    // @ts-ignore
+    this.$refs.detailsWindow.style.left = (15 + document.getElementById('map').getBoundingClientRect().left) + 'px';
+    // @ts-ignore
+    this.$refs.detailsWindow.style.top = '15px';
+    this.maximizedDetails = true;
   }
 
   private showUploadModal() {
@@ -369,3 +411,14 @@ export default class AppTrack extends BaseComponent {
 
 }
 </script>
+
+<style scoped>
+.detailsWindow {
+  position: fixed;
+  z-index: 1000000;
+}
+
+.detailsWindowHeader {
+  cursor: move;
+}
+</style>

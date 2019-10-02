@@ -3,6 +3,7 @@ export const enum TrackType {
   bicycle = 2,
   walk = 3,
   other = 4,
+  mushroom = 5,
 }
 
 export const enum TrackStatus {

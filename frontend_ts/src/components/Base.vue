@@ -6,6 +6,7 @@ import { Component, Prop, Vue } from 'vue-property-decorator';
 import {AlertStatus, TrackType, TrackStatus} from '@/ts/types';
 import Alert from '@/ts/Alert';
 import GpsTrack from '@/ts/GpsTrack';
+import Track from '@/ts/Track';
 import listTranslator, {Transaltor} from '@/ts/list_translator';
 import $ from 'jquery';
 
@@ -62,6 +63,17 @@ export default class BaseComponent extends Vue {
   private translateEntry(entry: Transaltor) {
     entry.label = this.$t(entry.translate).toString();
   }
+
+  private countTracksByType(tracks: Track[], type: number) {
+    let count = 0;
+    for (const track of tracks) {
+      if (track.gpsTrack.type === type) {
+        count = count + 1;
+      }
+    }
+    return count;
+  }
+
 }
 </script>
 

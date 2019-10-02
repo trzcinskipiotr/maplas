@@ -31,8 +31,9 @@
                     {{ $t('tracksSelected', [$store.getters.selectedTracks.length, $store.state.tracks.length]) }}<br>
                     {{ $t('tracksSelectedDistance') }}: {{ $store.getters.selectedTracks|sumTracksDistance|roundTrackDistance }}
                     <ul>
-                      <li>{{ $t('tracksSelectedDistanceWalk') }}: {{ $store.getters.selectedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
-                      <li>{{ $t('tracksSelectedDistanceBicycle') }}: {{ $store.getters.selectedTracks|sumTracksDistanceBicycle|roundTrackDistance }}</li>
+                      <li v-if="countTracksByType($store.getters.selectedTracks, TrackType.walk) > 0">{{ $t('tracksSelectedDistanceWalk') }}: {{ $store.getters.selectedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
+                      <li v-if="countTracksByType($store.getters.selectedTracks, TrackType.bicycle) > 0">{{ $t('tracksSelectedDistanceBicycle') }}: {{ $store.getters.selectedTracks|sumTracksDistanceBicycle|roundTrackDistance }}</li>
+                      <li v-if="countTracksByType($store.getters.selectedTracks, TrackType.mushroom) > 0">{{ $t('tracksSelectedDistanceMushroom') }}: {{ $store.getters.selectedTracks|sumTracksDistanceMushroom|roundTrackDistance }}</li>
                     </ul>
                     <div style="font-size: 0.95rem">
                       <div v-if="$store.state.imports.length" class="mb-2">
@@ -189,6 +190,8 @@ export default class Index extends BaseComponent {
 
   private login: string = '';
   private password: string = '';
+  // @ts-ignore
+  private TrackType = TrackType;
 
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
