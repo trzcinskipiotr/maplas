@@ -1,4 +1,3 @@
-from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin, CreateModelMixin
 from rest_framework.pagination import PageNumberPagination
