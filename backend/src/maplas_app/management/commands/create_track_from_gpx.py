@@ -8,4 +8,4 @@ class Command(BaseCommand):
         parser.add_argument('gpx_file', type=str)
 
     def handle(self, *args, **options):
-        utils.create_track_from_gpx(options['gpx_file'])
+        utils.create_track_from_gpx_file(options['gpx_file'])

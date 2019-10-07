@@ -1,3 +1,4 @@
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import viewsets, permissions
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin, CreateModelMixin
 from rest_framework.pagination import PageNumberPagination
@@ -20,6 +21,16 @@ class TrackViewSet(ListModelMixin, UpdateModelMixin, CreateModelMixin, viewsets.
     permission_classes = (permissions.AllowAny,)
     authentication_classes = ()
 
+    def get_queryset(self):
+        bicycle = self.request.query_params.get('bicycle', None)
+        mushroom = self.request.query_params.get('mushroom', None)
+        queryset = None
+        if bicycle is not None:
+            queryset = self.queryset.filter(type__in=[Track.Type.bicycle, Track.Type.walk])
+        elif mushroom is not None:
+            queryset = self.queryset.filter(type=Track.Type.mushroom)
+        return queryset or self.queryset
+
     def get_serializer_class(self):
         if self.action == 'retrieve' or self.action == 'list':
             return self.retrieve_serializer_class
@@ -33,5 +44,3 @@ class PlaceViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = Place.objects.all().order_by('id')
     serializer_class = serializers.PlaceSerializer
     pagination_class = LargeResultsSetPagination
-    permission_classes = (permissions.AllowAny,)
-    authentication_classes = ()

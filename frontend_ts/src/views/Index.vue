@@ -579,10 +579,11 @@ export default class Index extends BaseComponent {
               atLeasyOneTrack = true;
               trackIndex = trackIndex + 1;
               const distance = Math.round(fileTrack.length() * 1000);
-              const pointsArray = [];
               let startTime = '';
               let endTime = '';
+              const segments = [];
               for (const segment of fileTrack.segments) {
+                const pointsArray = [];
                 for (const point of segment) {
                   pointsArray.push([point.lat, point.lon]);
                   if (! startTime) {
@@ -590,8 +591,9 @@ export default class Index extends BaseComponent {
                   }
                   endTime = point.time;
                 }
+                segments.push(pointsArray);
               }
-              const newGpstrack: GpsTrack = new GpsTrack(startIndex + trackIndex, fileTrack.name, data.metadata.description, JSON.stringify([pointsArray]), '#FF0000', distance, TrackStatus.done, TrackType.bicycle, startTime ? new Date(startTime) : null, endTime ? new Date(endTime) : null, gpxFileString, undefined);
+              const newGpstrack: GpsTrack = new GpsTrack(startIndex + trackIndex, fileTrack.name, data.metadata.description, JSON.stringify(segments), '#FF0000', distance, TrackStatus.done, TrackType.bicycle, startTime ? new Date(startTime) : null, endTime ? new Date(endTime) : null, gpxFileString, undefined);
               const track = new Track(newGpstrack, true, false);
               this.$store.commit('addImportedTrack', track);
               this.importGroup.tracks.push(track);
@@ -636,7 +638,7 @@ export default class Index extends BaseComponent {
   }
 
   private downloadTracks() {
-    axios.get(this.$store.state.appHost + 'api/tracks/').then(
+    axios.get(this.$store.state.appHost + 'api/tracks/' + (process.env.VUE_APP_TRACKS_QUERY || '')).then(
       (response) => {
         const tracks = [];
         for (const gpstrack of response.data.results) {

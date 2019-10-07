@@ -269,7 +269,9 @@ export default class AppTrack extends BaseComponent {
     this.$refs.detailsWindow.style.left = (15 + document.getElementById('map').getBoundingClientRect().left) + 'px';
     // @ts-ignore
     this.$refs.detailsWindow.style.top = '15px';
-    this.maximizedDetails = true;
+    if (! this.maximizedDetails) {
+      this.toggleMaximizedDetails();
+    }
   }
 
   private showUploadModal() {
