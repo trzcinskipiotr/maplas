@@ -70,7 +70,7 @@
                   <textarea v-model="description" class="form-control" rows="2" style="width: 500px"></textarea>
                 </td>  
               </tr>
-              <tr v-if="! track.onServer">
+              <tr>
                 <th scope="row">{{ $t('type')}}</th>
                 <td>
                   <v-select style="width: 500px" v-model="uploadTrackType" :options="uploadTrackTypes" :clearable="false" :searchable="false" >
@@ -82,7 +82,7 @@
                   </v-select>
                 </td>
               </tr>
-              <tr v-if="! track.onServer">
+              <tr>
                 <th scope="row">{{ $t('place')}}</th>
                 <td>
                   <v-select style="width: 500px" v-model="uploadPlace" :options="uploadPlaces" :clearable="true" :searchable="false" >
@@ -312,6 +312,13 @@ export default class AppTrack extends BaseComponent {
   private showUploadModal() {
     this.description = this.track.gpsTrack.description;
     this.uploadName = this.track.gpsTrack.name;
+    if (this.track.onServer) {
+      for (const uploadPlace of this.uploadPlaces) {
+        if (this.track.gpsTrack.place && this.track.gpsTrack.place.id === uploadPlace.value.id) {
+          this.uploadPlace = uploadPlace;
+        }
+      }
+    }
     this.openModal(this.$refs.uploadTrackModal);
   }
 
