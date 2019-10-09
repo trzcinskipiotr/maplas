@@ -21,6 +21,16 @@ export function roundTrackDistance(value: number) {
   }
 }
 
+export function roundFileBytes(value: number) {
+  if (value < 1024) {
+    return String(value) + 'B';
+  } else if (value < 1024 * 1024) {
+    return String(Math.round(value / 1024 * 10) / 10) + 'KB';
+  } else {
+    return String(Math.round(value / (1024 * 1024) * 100) / 100) + 'MB';
+  }
+}
+
 export function sumTracksDistance(tracks: Track[]) {
   let distance = 0;
   for (const track of tracks) {

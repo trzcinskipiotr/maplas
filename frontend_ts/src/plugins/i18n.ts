@@ -6,6 +6,7 @@ const messages = {
 en: {
   tracksDownloaded: '{0} tracks downloaded',
   tracksError: 'Error during tracks download',
+  trackError: 'Error during track download',
   mainMenu: 'Main menu',
   tracks: 'Tracks',
   settings: 'Settings',
@@ -87,10 +88,12 @@ en: {
   close: 'Close',
   save: 'Save',
   maximizeTrack: 'Show details',
+  gpxFile: 'Source GPX file',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
   tracksError: 'Błąd podczas ściągania tras',
+  trackError: 'Błąd podczas ściągania trasy',
   mainMenu: 'Menu główne',
   tracks: 'Trasy',
   settings: 'Ustawienia',
@@ -172,6 +175,7 @@ pl: {
   close: 'Zamknij',
   save: 'Zapisz',
   maximizeTrack: 'Pokaż szczegóły',
+  gpxFile: 'Źrodłowy plik GPX',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

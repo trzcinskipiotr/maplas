@@ -63,10 +63,11 @@ Vue.component('TrackDownload', TrackDownload);
 Vue.component('InfoModal', InfoModal);
 Vue.component('ColorPopover', ColorPopover);
 
-import {formatDate, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom} from '@/ts/utils';
+import {formatDate, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);
 Vue.filter('formatDateDay', formatDateDay);
 Vue.filter('roundTrackDistance', roundTrackDistance);
+Vue.filter('roundFileBytes', roundFileBytes);
 Vue.filter('sumTracksDistance', sumTracksDistance);
 Vue.filter('sumTracksDistanceWalk', sumTracksDistanceWalk);
 Vue.filter('sumTracksDistanceBicycle', sumTracksDistanceBicycle);

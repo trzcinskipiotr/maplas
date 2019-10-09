@@ -1,5 +1,5 @@
 from rest_framework import viewsets, permissions
-from rest_framework.mixins import ListModelMixin, UpdateModelMixin, CreateModelMixin
+from rest_framework.mixins import ListModelMixin, UpdateModelMixin, CreateModelMixin, RetrieveModelMixin
 from rest_framework.pagination import PageNumberPagination
 
 from maplas_app import serializers
@@ -12,10 +12,11 @@ class LargeResultsSetPagination(PageNumberPagination):
     page_size_query_param = 'page_size'
     max_page_size = 1000
 
-class TrackViewSet(ListModelMixin, UpdateModelMixin, CreateModelMixin, viewsets.GenericViewSet):
+class TrackViewSet(ListModelMixin, UpdateModelMixin, RetrieveModelMixin, CreateModelMixin, viewsets.GenericViewSet):
     queryset = Track.objects.all().order_by('-start_time')
-    retrieve_serializer_class = serializers.TrackSerializerPlaceNested
+    list_serializer_class = serializers.TrackSerializerPlaceNested
     create_update_serializer_class = serializers.TrackSerializer
+    retrieve_serializer_class = serializers.TrackSerializerFull
     pagination_class = LargeResultsSetPagination
     permission_classes = (permissions.AllowAny,)
     authentication_classes = ()
@@ -31,7 +32,9 @@ class TrackViewSet(ListModelMixin, UpdateModelMixin, CreateModelMixin, viewsets.
         return queryset or self.queryset
 
     def get_serializer_class(self):
-        if self.action == 'retrieve' or self.action == 'list':
+        if self.action == 'list':
+            return self.list_serializer_class
+        if self.action == 'retrieve':
             return self.retrieve_serializer_class
         return self.create_update_serializer_class
 

@@ -20,3 +20,9 @@ class TrackSerializer(serializers.ModelSerializer):
     class Meta:
         model = Track
         fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'place', 'gpx_file', 'upload_user']
+
+class TrackSerializerFull(serializers.ModelSerializer):
+
+    class Meta:
+        model = Track
+        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'points_json', 'status', 'type', 'start_time', 'end_time', 'distance', 'place', 'gpx_file', 'upload_user']

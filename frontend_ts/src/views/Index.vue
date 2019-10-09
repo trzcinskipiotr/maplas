@@ -652,7 +652,7 @@ export default class Index extends BaseComponent {
           }
           try {
             const place: Place = gpstrack.place ? new Place(gpstrack.place.id, gpstrack.place.name) : undefined;
-            const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color ? gpstrack.color : '#ff0000', gpstrack.distance, gpstrack.status, gpstrack.type, gpstrack.start_time ? new Date(gpstrack.start_time) : null, gpstrack.end_time ? new Date(gpstrack.end_time) : null, '', place);
+            const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color ? gpstrack.color : '#ff0000', gpstrack.distance, gpstrack.status, gpstrack.type, gpstrack.start_time ? new Date(gpstrack.start_time) : null, gpstrack.end_time ? new Date(gpstrack.end_time) : null, undefined, place);
             const track = new Track(newGpstrack, checked, true);
             if (newGpstrack.isDoneTrack()) {
               tracks.push(track);

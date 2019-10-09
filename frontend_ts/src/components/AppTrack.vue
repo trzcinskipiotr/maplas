@@ -123,12 +123,16 @@
       </div>
     </div>
     <div ref="maximizedBody" class="card-body">
-      <b>{{ $t('name') }}: </b>{{ track.gpsTrack.name }}<br>
-      <b>{{ $t('startTime') }}: </b>{{ track.gpsTrack.start_time|formatDate }}<br>
-      <b>{{ $t('distance') }}: </b>{{ track.gpsTrack.distance|roundTrackDistance }}<br>
-      <b>{{ $t('type') }}: </b><TrackTypeIcon :gpsTrack="track.gpsTrack" height=12 imgheight=12 verticalAlign="-2px"></TrackTypeIcon><br>
-      <b>{{ $t('status') }}: </b><TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br>
-      <b>{{ $t('id') }}: </b>{{ track.gpsTrack.id }}
+      <center v-if="trackDetailsLoading"><font-awesome-icon class="fa-spin" icon="spinner" size="4x"/></center>
+      <div v-else>
+        <b>{{ $t('name') }}: </b>{{ track.gpsTrack.name }}<br>
+        <b>{{ $t('startTime') }}: </b>{{ track.gpsTrack.start_time|formatDate }}<br>
+        <b>{{ $t('distance') }}: </b>{{ track.gpsTrack.distance|roundTrackDistance }}<br>
+        <b>{{ $t('type') }}: </b><TrackTypeIcon :gpsTrack="track.gpsTrack" height=12 imgheight=12 verticalAlign="-2px"></TrackTypeIcon><br>
+        <b>{{ $t('status') }}: </b><TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br>
+        <b>{{ $t('id') }}: </b>{{ track.gpsTrack.id }}<br>
+        <template v-if="track.gpsTrack.gpx_file"><b>{{ $t('gpxFile') }}: </b>{{ track.gpsTrack.gpx_file.length|roundFileBytes }} <button @click="saveGPX" type="button" class="btn btn-primary btn-sm">Download</button><br></template>
+      </div>  
     </div>  
   </div>
   </div>
@@ -144,6 +148,8 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import { AlertStatus, TrackType, TrackStatus } from '@/ts/types';
 import Place from '@/ts/Place';
 import {dragElement} from '@/ts/utils';
+import FileSaver from 'file-saver';
+import {formatDate, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
 
 @Component
 export default class AppTrack extends BaseComponent {
@@ -163,6 +169,8 @@ export default class AppTrack extends BaseComponent {
   private trackSaving: boolean = false;
   private maximized: boolean = false;
   private maximizedDetails: boolean = true;
+
+  private trackDetailsLoading: boolean = false;
 
   @Prop({ required: true }) private track: Track;
   @Prop({ required: true }) private highlightOnStart: boolean;
@@ -263,7 +271,34 @@ export default class AppTrack extends BaseComponent {
       });
   }
 
+  private saveGPX() {
+    const blob = new Blob([this.track.gpsTrack.gpx_file], {type: 'text/plain;charset=utf-8'});
+    const date = formatDateDay(this.track.gpsTrack.start_time) 
+    if (date) {
+      FileSaver.saveAs(blob, this.track.gpsTrack.name + ' ' + date + ' source.gpx');
+    } else {
+      FileSaver.saveAs(blob, this.track.gpsTrack.name + ' source.gpx');
+    }
+  }
+
   private maximizeTrack(e: Event) {
+    if (this.track.gpsTrack.gpx_file === undefined) {
+      this.trackDetailsLoading = true;
+      axios.get(this.$store.state.appHost + 'api/tracks/' + this.track.gpsTrack.id + '/').then(
+        (response) => {
+          this.track.gpsTrack.points_json = response.data.points_json;
+          this.track.gpsTrack.gpx_file = response.data.gpx_file;
+        }
+      ).catch(
+        (response) => {
+          this.createAlert(AlertStatus.danger, this.$t('trackError').toString(), 2000);
+        },
+      ).finally(
+        () => {
+          this.trackDetailsLoading = false;
+        },
+      );
+    }
     this.maximized = true;
     // @ts-ignore
     this.$refs.detailsWindow.style.left = (15 + document.getElementById('map').getBoundingClientRect().left) + 'px';
