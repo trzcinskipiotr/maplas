@@ -159,10 +159,8 @@ export default class AppTrack extends BaseComponent {
   private renderComponent: boolean = false;
   private renderedComponent: boolean = false;
   private playing: boolean = false;
-  private uploadTrackTypes = [{translate: 'bicycleTrack', label: '', icon: 'biking', value: TrackType.bicycle},
-                              {translate: 'walkTrack', label: '', icon: 'shoe-prints', value: TrackType.walk},
-                              {translate: 'mushroomTrack', label: '', imgsrc: 'img/mushroom.svg', value: TrackType.mushroom}];
-  private uploadTrackType = this.uploadTrackTypes[0];
+  private uploadTrackTypes: Array<{translate: string, label: string, value: number, icon?: string, imgsrc?: string}> = [];
+  private uploadTrackType: {translate: string, label: string, value: number, icon?: string, imgsrc?: string};
   private uploadPlace: {translate: string, label: string, value: Place} = null;
   private uploadPlaces: Array<{translate: string, label: string, value: Place}> = [];
 
@@ -181,6 +179,17 @@ export default class AppTrack extends BaseComponent {
   public constructor() {
     super();
     this.checked = this.track.checked;
+    this.uploadTrackTypes = [{translate: 'bicycleTrack', label: '', icon: 'biking', value: TrackType.bicycle},
+                             {translate: 'walkTrack', label: '', icon: 'shoe-prints', value: TrackType.walk},
+                             {translate: 'mushroomTrack', label: '', imgsrc: 'img/mushroom.svg', value: TrackType.mushroom}];
+    if (process.env.VUE_APP_BICYCLE_WALK_TRACKS_ONLY) {
+      this.uploadTrackTypes = [{translate: 'bicycleTrack', label: '', icon: 'biking', value: TrackType.bicycle},
+                               {translate: 'walkTrack', label: '', icon: 'shoe-prints', value: TrackType.walk}];
+    }
+    if (process.env.VUE_APP_MUSHROOM_TRACKS_ONLY) {
+      this.uploadTrackTypes = [{translate: 'mushroomTrack', label: '', imgsrc: 'img/mushroom.svg', value: TrackType.mushroom}];
+    }
+    this.uploadTrackType = this.uploadTrackTypes[0];
   }
 
   private mounted() {
@@ -273,7 +282,7 @@ export default class AppTrack extends BaseComponent {
 
   private saveGPX() {
     const blob = new Blob([this.track.gpsTrack.gpx_file], {type: 'text/plain;charset=utf-8'});
-    const date = formatDateDay(this.track.gpsTrack.start_time) 
+    const date = formatDateDay(this.track.gpsTrack.start_time);
     if (date) {
       FileSaver.saveAs(blob, this.track.gpsTrack.name + ' ' + date + ' source.gpx');
     } else {
@@ -288,7 +297,7 @@ export default class AppTrack extends BaseComponent {
         (response) => {
           this.track.gpsTrack.points_json = response.data.points_json;
           this.track.gpsTrack.gpx_file = response.data.gpx_file;
-        }
+        },
       ).catch(
         (response) => {
           this.createAlert(AlertStatus.danger, this.$t('trackError').toString(), 2000);
