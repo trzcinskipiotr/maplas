@@ -117,6 +117,7 @@
         <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="file-upload"/>
       </div>
     </div>
+    <photo-upload></photo-upload>
     <div class="alertmessage">
       <div class="flexcenter"><font-awesome-icon v-if="loading" class="fa-spin" icon="spinner" size="3x"/></div>
       <div v-for="alert in $store.state.alerts" class="alert border border-dark" v-bind:class="{ 'alert-success': isSuccessAlert(alert), 'alert-danger': isDangerAlert(alert) }" v-bind:key="alert.date" role="alert">
@@ -496,7 +497,7 @@ export default class Index extends BaseComponent {
         return document.getElementById('importdivinner');
       },
     });
-    this.$store.state.map!.addControl(new ImportControl());
+    this.$store.state.map.addControl(new ImportControl());
     this.importGroup.translate = 'imports';
   }
 
@@ -523,8 +524,8 @@ export default class Index extends BaseComponent {
       fullscreenElement: document.documentElement,
     }).addTo(this.$store.state.map);
 
-    this.$store.state.map!.on('enterFullscreen', () => {this.fullscreenOpened = true; this.closeFullscreenTooltip(); });
-    this.$store.state.map!.on('exitFullscreen', () => {this.fullscreenOpened = false; this.closeFullscreenTooltip(); });
+    this.$store.state.map.on('enterFullscreen', () => {this.fullscreenOpened = true; this.closeFullscreenTooltip(); });
+    this.$store.state.map.on('exitFullscreen', () => {this.fullscreenOpened = false; this.closeFullscreenTooltip(); });
   }
 
   private addScaleControl() {
@@ -543,7 +544,7 @@ export default class Index extends BaseComponent {
   }
 
   private openImportFileInput() {
-    $('#importFileInput')!.click();
+    $('#importFileInput').click();
   }
 
   private updated() {

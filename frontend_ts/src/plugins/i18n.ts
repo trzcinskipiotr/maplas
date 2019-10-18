@@ -89,6 +89,12 @@ en: {
   save: 'Save',
   maximizeTrack: 'Show details',
   gpxFile: 'Source GPX file',
+  importPhotoFile: 'Import photo',
+  thumbnail: 'Thumbnail',
+  photoSaveTitle: 'Add photo',
+  coordinates: 'Coordinates',
+  addPhotoToMap: 'Add photo',
+  photoAdded: 'Photo added',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -176,6 +182,12 @@ pl: {
   save: 'Zapisz',
   maximizeTrack: 'Pokaż szczegóły',
   gpxFile: 'Źrodłowy plik GPX',
+  importPhotoFile: 'Importuj zdjęcie',
+  thumbnail: 'Podgląd',
+  photoSaveTitle: 'Dodaj zdjęcie',
+  coordinates: 'Współrzędne',
+  addPhotoToMap: 'Dodaj zdjęcie',
+  photoAdded: 'Zdjęcie dodane',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});
