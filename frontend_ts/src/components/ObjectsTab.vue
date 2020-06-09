@@ -16,6 +16,7 @@
         {{ $t(placeGroup.name) }}
       </div>
     </div>
+    <MapPlace v-for="place of $store.state.places" :key="place.id" :place="place"></MapPlace>
   </div>
 </template>
 

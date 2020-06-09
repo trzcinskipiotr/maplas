@@ -20,3 +20,7 @@ export function splitCoords(value: string) {
   }
   return null;
 }
+
+export function roundCoord(value: number) {
+  return Math.round(value * 100000) / 100000;
+}

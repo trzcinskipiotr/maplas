@@ -47,7 +47,7 @@ class RegionViewSet(ListModelMixin, viewsets.GenericViewSet):
     serializer_class = serializers.RegionSerializer
     pagination_class = LargeResultsSetPagination
 
-class PlaceViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+class PlaceViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
     queryset = Place.objects.all().order_by('id')
     pagination_class = LargeResultsSetPagination
     list_serializer_class = serializers.PlaceSerializerTypeNested

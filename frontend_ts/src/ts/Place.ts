@@ -13,7 +13,7 @@ export default class Place {
   public marker: L.Marker;
   public photos: Photo[];
 
-  constructor(public id: number, public name: string, public description: string, public lat: number, public lon: number, public type: PlaceType, zoomLevel: number) {
+  constructor(public id: number, public name: string, public description: string, public lat: number, public lon: number, public type: PlaceType, zoomLevel: number, draggable: boolean) {
     const markerSizeClass = this.getMarkerSizeClass(zoomLevel);
     const markerIconClass = this.getMarkerIconClass();
     const iconHtml = '<i style="color: blue" class="fas ' + markerIconClass + ' ' + markerSizeClass + '"></i>';
@@ -21,39 +21,20 @@ export default class Place {
       html: iconHtml,
       className: 'dummy',
     });
-    this.marker = new L.Marker([lat, lon], {icon: markerIcon});
+    this.marker = new L.Marker([lat, lon], {icon: markerIcon, draggable: draggable});
     this.photos = [];
   }
 
-  public makeToolTip() {
-    const div = document.createElement('div');
-    div.style.minWidth = '200px';
-    div.innerHTML = this.id + '<b> ' + this.name + '</b><br>' + this.lat + ', ' + this.lon + '<br>';
-    if (this.photos.length > 0) {
-      const smallImage = document.createElement('img');
-      smallImage.src = this.photos[0].image_thumb;
-      smallImage.style.maxWidth = '300px';
-      smallImage.style.maxHeight = '300px';
-      smallImage.style.cursor = 'pointer';
-      const dynamicEls: any = [];
-      for (const photo of this.photos) {
-        const dynamicEl = {src: photo.image, thumb: photo.image_thumb};
-        dynamicEls.push(dynamicEl);
-      }
-      smallImage.onclick = () => {
-        window.lightGallery(smallImage, {
-          dynamic: true,
-          autoplay: true,
-          pause: 2000,
-          galleryId: new Date().getTime(),
-          dynamicEl: dynamicEls,
-      }); };
-      div.appendChild(smallImage);
+  public convertToApiPlaceSave() {
+    return {id: this.id, name: this.name, description: this.description, lat: this.lat, lon: this.lon, type: this.type.id};
+  }
+
+  public setDraggable(drag: boolean) {
+    if (drag) {
+      this.marker.dragging.enable();
+    } else {
+      this.marker.dragging.disable();
     }
-    const descDiv = document.createElement('div');
-    descDiv.innerHTML = this.description;
-    div.appendChild(descDiv);
-    this.marker.bindPopup(div, {maxWidth: 'auto', maxHeight: 'auto'});
   }
 
   public addPhoto(photo: Photo) {
@@ -72,12 +53,12 @@ export default class Place {
     if (this.type) {
       if (this.type.name === 'camping') {
         return 'fa-campground';
-      }
-      if (this.type.name === 'parking') {
+      } else if (this.type.name === 'parking') {
         return 'fa-parking';
-      }
-      if (this.type.name === 'road') {
+      } else if (this.type.name === 'road') {
         return 'fa-road';
+      } else {
+        return 'fa-question';
       }
     }
   }

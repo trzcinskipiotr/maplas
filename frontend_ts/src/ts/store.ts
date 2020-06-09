@@ -73,6 +73,10 @@ const store: StoreOptions<RootState> = {
     },
     setUser(state, user: any) {
       state.user = user;
+      const markersDraggable = !!user;
+      for (const place of state.places) {
+        place.setDraggable(markersDraggable);
+      }
     },
     setTracks(state, tracks: Track[]) {
       state.tracks = tracks;

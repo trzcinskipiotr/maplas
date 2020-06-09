@@ -381,41 +381,49 @@ export default class Index extends BaseComponent {
     });
 
     layers['esriWorldImagery'] = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
       attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['esriWorldTopoMap'] = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
       attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['openStreetMap'] = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
       attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['openCycleMap'] = L.tileLayer('http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png', {
+      maxZoom: 19,
       attribution: '&copy; OpenCycleMap, ' + 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['googleRoads'] = L.gridLayer.googleMutant({
+      maxZoom: 19,
       type: 'roadmap',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['googleSatellite'] = L.gridLayer.googleMutant({
+      maxZoom: 19,
       type: 'satellite',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['googleTerrain'] = L.gridLayer.googleMutant({
+      maxZoom: 19,
       type: 'terrain',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['googleHybrid'] = L.gridLayer.googleMutant({
+      maxZoom: 19,
       type: 'hybrid',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
@@ -663,12 +671,11 @@ export default class Index extends BaseComponent {
         const places = [];
         for (const responsePlace of response.data.results) {
           const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name);
-          const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, this.$store.state.map.getZoom());
+          const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, this.$store.state.map.getZoom(), !!this.$store.state.user);
           for (const responsePhoto of responsePlace.photo_set) {
             const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
             place.addPhoto(photo);
           }
-          place.makeToolTip();
           places.push(place);
         }
         this.$store.commit('setPlaces', places);

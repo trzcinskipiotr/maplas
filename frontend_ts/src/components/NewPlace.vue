@@ -235,12 +235,11 @@ export default class NewPlace extends BaseComponent {
       (response) => {
         let responsePlace = response.data;
         const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name);
-        const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, this.$store.state.map.getZoom());
+        const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, this.$store.state.map.getZoom(), !!this.$store.state.user);
         for (const responsePhoto of responsePlace.photo_set) {
           const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
           place.addPhoto(photo);
         }
-        place.makeToolTip();
         this.$store.commit('addPlace', place);
       }
     ).catch(

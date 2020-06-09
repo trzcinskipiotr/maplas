@@ -114,6 +114,8 @@ en: {
   photoSavedError: 'Error during saving photos',
   placeRefreshError: 'Error during place download',
   road: 'Road',
+  placeCoordsSave: 'Coordinates saved',
+  placeCoordsSaveError: 'Error during saving coordinates',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -226,6 +228,8 @@ pl: {
   photoSavedError: 'Błąd podczas zapisywania zdjęć',
   placeRefreshError: 'Błąd podczas ściągania miejsca',
   road: 'Droga',
+  placeCoordsSave: 'Współrzędne zapisane',
+  placeCoordsSaveError: 'Błąd zapisu współrzędnych',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});
