@@ -132,7 +132,7 @@
         <b>{{ $t('status') }}: </b><TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br>
         <b>{{ $t('id') }}: </b>{{ track.gpsTrack.id }}<br>
         <template v-if="track.gpsTrack.gpx_file"><b>{{ $t('gpxFile') }}: </b>{{ track.gpsTrack.gpx_file.length|roundFileBytes }} <button @click="saveGPX" type="button" class="btn btn-primary btn-sm">Download</button><br></template>
-        <template v-if="track.gpsTrack.gpx_file"><button @click="showHideTimeLables" type="button" class="btn btn-primary btn-sm">{{ timeLabelsVisible ? $t('hideTimeLables') : $t('showTimeLables') }}</button></template>
+        <template v-if="track.gpsTrack.gpx_file"><button @click="showHideTimeLables" type="button" class="btn btn-primary btn-sm">{{ timeLabelsVisible ? $t('hideTimeLabels') : $t('showTimeLabels') }}</button></template>
       </div>  
     </div>  
   </div>
