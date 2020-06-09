@@ -9,6 +9,8 @@ class Migration(migrations.Migration):
         ('maplas_app', '0011_trackdetails'),
     ]
 
+    atomic = False
+
     operations = [
         migrations.RenameModel(
             old_name='Place',
