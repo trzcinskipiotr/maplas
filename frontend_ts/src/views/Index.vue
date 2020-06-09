@@ -405,25 +405,25 @@ export default class Index extends BaseComponent {
     });
 
     layers['googleRoads'] = L.gridLayer.googleMutant({
-      maxZoom: 19,
+      maxZoom: 20,
       type: 'roadmap',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['googleSatellite'] = L.gridLayer.googleMutant({
-      maxZoom: 19,
+      maxZoom: 20,
       type: 'satellite',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['googleTerrain'] = L.gridLayer.googleMutant({
-      maxZoom: 19,
+      maxZoom: 20,
       type: 'terrain',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['googleHybrid'] = L.gridLayer.googleMutant({
-      maxZoom: 19,
+      maxZoom: 20,
       type: 'hybrid',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });

@@ -260,7 +260,7 @@ export default class NewPlace extends BaseComponent {
   }
 
   private async saveNewPlaceModal() {
-    this.photosToUpload = 0;
+    this.photosToUpload = this.photos.length;
     this.photosUploaded = 0;
     let obj = {}
     obj.name = this.name;
@@ -291,7 +291,6 @@ export default class NewPlace extends BaseComponent {
     try {
       let response = await axios.post(this.$store.state.appHost + `api/places/`, obj);
       placeSaved = true;
-      this.photosToUpload = this.photos.length;
       for(let photo of this.photos) {
         let form_data = new FormData();
         form_data.append('name', '');

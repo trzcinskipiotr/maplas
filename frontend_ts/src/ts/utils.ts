@@ -7,6 +7,12 @@ export function formatDate(value: Date) {
   }
 }
 
+export function formatTimeSeconds(value: Date) {
+  if (value) {
+    return moment(String(value)).format('H:mm:ss');
+  }
+}
+
 export function formatDateDay(value: Date) {
   if (value) {
     return moment(String(value)).format('DD.MM.YYYY');

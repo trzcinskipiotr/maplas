@@ -132,6 +132,7 @@
         <b>{{ $t('status') }}: </b><TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br>
         <b>{{ $t('id') }}: </b>{{ track.gpsTrack.id }}<br>
         <template v-if="track.gpsTrack.gpx_file"><b>{{ $t('gpxFile') }}: </b>{{ track.gpsTrack.gpx_file.length|roundFileBytes }} <button @click="saveGPX" type="button" class="btn btn-primary btn-sm">Download</button><br></template>
+        <template v-if="track.gpsTrack.gpx_file"><button @click="showHideTimeLables" type="button" class="btn btn-primary btn-sm">{{ timeLabelsVisible ? $t('hideTimeLables') : $t('showTimeLables') }}</button></template>
       </div>  
     </div>  
   </div>
@@ -149,7 +150,8 @@ import { AlertStatus, TrackType, TrackStatus } from '@/ts/types';
 import Region from '@/ts/Region';
 import {dragElement} from '@/ts/utils';
 import FileSaver from 'file-saver';
-import {formatDate, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
+import {formatDate, formatTimeSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
+import gpxParse from 'gpx-parse';
 
 @Component
 export default class AppTrack extends BaseComponent {
@@ -175,6 +177,9 @@ export default class AppTrack extends BaseComponent {
 
   private uploadName = this.track.gpsTrack.name;
   private description = '';
+
+  private timeLabelsVisible = false;
+  private timeMarkers = [];
 
   public constructor() {
     super();
@@ -239,6 +244,44 @@ export default class AppTrack extends BaseComponent {
       this.highlightMapTrack();
     }
     dragElement(this.$refs.detailsWindow, this.$refs.detailsWindowHeader);
+  }
+
+  private showHideTimeLables() {
+    if (this.timeLabelsVisible) {
+      for(const marker of this.timeMarkers) {
+        marker.removeFrom(this.$store.state.map);
+      }
+      this.timeMarkers = [];
+    } else {
+      const points = [];
+      let index = 0;
+      gpxParse.parseGpx(this.track.gpsTrack.gpx_file, (error: string, data: any) => {
+        if (error) {
+          this.createAlert(AlertStatus.danger, this.$t('gpxParsingError').toString(), 2000);
+        } else {
+          for (const fileTrack of data.tracks) {
+            for (const segment of fileTrack.segments) {
+              for (const point of segment) {
+                if (index % 10 == 0) {
+                  points.push([point.lat, point.lon, formatTimeSeconds(point.time)]);
+                }
+                index = index + 1;
+              }
+            }
+          }
+        }
+      });
+      for (const point of points) {
+        const icon = new L.Icon({iconUrl: 'img/circle.svg', iconSize: [10, 10]});
+        const marker = new L.Marker([point[0], point[1]], {icon: icon});
+        marker.bindTooltip(String(point[2]), {permanent: true});
+        this.timeMarkers.push(marker);
+      }
+      for(const marker of this.timeMarkers) {
+        marker.addTo(this.$store.state.map);
+      }
+    }
+    this.timeLabelsVisible = !this.timeLabelsVisible;
   }
 
   private togglePanel() {

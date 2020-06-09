@@ -116,6 +116,9 @@ en: {
   road: 'Road',
   placeCoordsSave: 'Coordinates saved',
   placeCoordsSaveError: 'Error during saving coordinates',
+  hideTimeLabels: 'Hide time labels',
+  showTimeLabels: 'Show time labels',
+  gpxParsingError: 'GPX parsing error',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -230,6 +233,9 @@ pl: {
   road: 'Droga',
   placeCoordsSave: 'Współrzędne zapisane',
   placeCoordsSaveError: 'Błąd zapisu współrzędnych',
+  hideTimeLabels: 'Ukryj etykiety czasu',
+  showTimeLabels: 'Pokaż etykiety czasu',
+  gpxParsingError: 'Błąd parsowania GPX',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});
