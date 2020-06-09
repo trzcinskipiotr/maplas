@@ -3,7 +3,9 @@ import Vuex, { StoreOptions } from 'vuex';
 import L from 'leaflet';
 import Track from './Track';
 import Alert from './Alert';
+import Region from './Region';
 import Place from './Place';
+import PlaceType from './PlaceType';
 import axios from 'axios';
 
 Vue.use(Vuex);
@@ -11,26 +13,32 @@ Vue.use(Vuex);
 export interface RootState {
   map: L.Map | undefined;
   alerts: Alert[];
+  zoomLevel: number;
   appHost: string;
   tracks: Track[];
   imports: Track[];
   playingSpeed: number;
-  places: Place[];
+  regions: Region[];
   token: string;
   user: any;
+  places: Place[];
+  placeTypes: PlaceType[];
 }
 
 const store: StoreOptions<RootState> = {
   state: {
     map: undefined,
     alerts: Array<Alert>(),
+    zoomLevel: null,
     appHost: '',
     tracks: Array<Track>(),
     imports: Array<Track>(),
     playingSpeed: 10,
-    places: Array<Place>(),
+    regions: Array<Region>(),
     token: '',
     user: null,
+    places: Array<Place>(),
+    placeTypes: Array<PlaceType>(),
   },
   getters: {
     selectedTracks: (state): Track[] => {
@@ -46,6 +54,9 @@ const store: StoreOptions<RootState> = {
   mutations: {
     setMap(state, map: L.Map) {
       state.map = map;
+    },
+    setZoomLevel(state, zoomLevel: number) {
+      state.zoomLevel = zoomLevel;
     },
     setAppHost(state, appHost: string) {
       state.appHost = appHost;
@@ -66,8 +77,14 @@ const store: StoreOptions<RootState> = {
     setTracks(state, tracks: Track[]) {
       state.tracks = tracks;
     },
+    setRegions(state, regions: Region[]) {
+      state.regions = regions;
+    },
     setPlaces(state, places: Place[]) {
       state.places = places;
+    },
+    setPlaceTypes(state, placeTypes: PlaceType[]) {
+      state.placeTypes = placeTypes;
     },
     setPlayingSpeed(state, playingSpeed: number) {
       state.playingSpeed = playingSpeed;
@@ -84,6 +101,9 @@ const store: StoreOptions<RootState> = {
     },
     addImportedTrack(state, track) {
       state.imports.push(track);
+    },
+    addPlace(state, place) {
+      state.places.push(place);
     },
     removeImportedTrack(state, track) {
       const index = state.imports.indexOf(track);

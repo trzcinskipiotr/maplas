@@ -83,9 +83,9 @@
                 </td>
               </tr>
               <tr>
-                <th scope="row">{{ $t('place')}}</th>
+                <th scope="row">{{ $t('region')}}</th>
                 <td>
-                  <v-select style="width: 500px" v-model="uploadPlace" :options="uploadPlaces" :clearable="true" :searchable="false" >
+                  <v-select style="width: 500px" v-model="uploadRegion" :options="uploadRegions" :clearable="true" :searchable="false" >
                     <template slot="option" slot-scope="option">
                       {{ option.label }}
                     </template>
@@ -146,7 +146,7 @@ import BaseComponent from '@/components/Base.vue';
 import Track from '@/ts/Track';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import { AlertStatus, TrackType, TrackStatus } from '@/ts/types';
-import Place from '@/ts/Place';
+import Region from '@/ts/Region';
 import {dragElement} from '@/ts/utils';
 import FileSaver from 'file-saver';
 import {formatDate, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
@@ -161,8 +161,8 @@ export default class AppTrack extends BaseComponent {
   private playing: boolean = false;
   private uploadTrackTypes: Array<{translate: string, label: string, value: number, icon?: string, imgsrc?: string}> = [];
   private uploadTrackType: {translate: string, label: string, value: number, icon?: string, imgsrc?: string};
-  private uploadPlace: {translate: string, label: string, value: Place} = null;
-  private uploadPlaces: Array<{translate: string, label: string, value: Place}> = [];
+  private uploadRegion: {translate: string, label: string, value: Region} = null;
+  private uploadRegions: Array<{translate: string, label: string, value: Region}> = [];
 
   private trackSaving: boolean = false;
   private maximized: boolean = false;
@@ -194,7 +194,7 @@ export default class AppTrack extends BaseComponent {
 
   private mounted() {
     for (const mapTrack of this.track.mapTracks) {
-      mapTrack.bindTooltip(document.getElementById('tooltip' + this.track.gpsTrack.id)!, {sticky: true, opacity: 0.95});
+      mapTrack.bindTooltip(document.getElementById('tooltip' + this.track.gpsTrack.id), {sticky: true, opacity: 0.95});
       mapTrack.on('mouseover', (e) => {
         this.highlightMapTrack();
       });
@@ -228,12 +228,12 @@ export default class AppTrack extends BaseComponent {
         }
       });
     }
-    for (const place of this.$store.state.places) {
+    for (const region of this.$store.state.regions) {
       // @ts-ignore
-      this.uploadPlaces.push({translate: place.name, label: '', value: place});
+      this.uploadRegions.push({translate: region.name, label: '', value: region});
     }
     this.changeColor();
-    this.translateAndAddArrayToTranslator(this.uploadPlaces);
+    this.translateAndAddArrayToTranslator(this.uploadRegions);
     this.translateAndAddArrayToTranslator(this.uploadTrackTypes);
     if (this.highlightOnStart) {
       this.highlightMapTrack();
@@ -260,13 +260,13 @@ export default class AppTrack extends BaseComponent {
   private saveTrackModal() {
     const obj = this.track.gpsTrack.convertToApiTrackSave();
     obj.name = this.uploadName;
-    obj.place = this.uploadPlace ? this.uploadPlace.value.id : undefined;
+    obj.region = this.uploadRegion ? this.uploadRegion.value.id : undefined;
     obj.type = this.uploadTrackType.value;
     obj.description = this.description;
     this.trackSaving = true;
     axios.put(this.$store.state.appHost + `api/tracks/${this.track.gpsTrack.id}/`, obj)
       .then((response: object) => {
-        this.track.gpsTrack.place = this.uploadPlace ? this.uploadPlace.value : undefined;
+        this.track.gpsTrack.region = this.uploadRegion ? this.uploadRegion.value : undefined;
         this.track.gpsTrack.name = obj.name;
         this.track.gpsTrack.description = obj.description;
         this.track.gpsTrack.color = obj.color;
@@ -322,9 +322,9 @@ export default class AppTrack extends BaseComponent {
     this.description = this.track.gpsTrack.description;
     this.uploadName = this.track.gpsTrack.name;
     if (this.track.onServer) {
-      for (const uploadPlace of this.uploadPlaces) {
-        if (this.track.gpsTrack.place && this.track.gpsTrack.place.id === uploadPlace.value.id) {
-          this.uploadPlace = uploadPlace;
+      for (const uploadRegion of this.uploadRegions) {
+        if (this.track.gpsTrack.region && this.track.gpsTrack.region.id === uploadRegion.value.id) {
+          this.uploadRegion = uploadRegion;
         }
       }
     }
@@ -338,7 +338,7 @@ export default class AppTrack extends BaseComponent {
   private saveUploadTrackModal() {
     const obj = this.track.gpsTrack.convertToApiGpxFileSave();
     obj.name = this.uploadName;
-    obj.place = this.uploadPlace ? this.uploadPlace.value.id : undefined;
+    obj.region = this.uploadRegion ? this.uploadRegion.value.id : undefined;
     obj.type = this.uploadTrackType.value;
     obj.description = this.description;
     obj.upload_user = this.$store.state.user.id;
@@ -348,7 +348,7 @@ export default class AppTrack extends BaseComponent {
         this.track.gpsTrack.distance = response.data.distance;
         this.track.gpsTrack.id = response.data.id;
         this.track.gpsTrack.points_json_optimized = response.data.points_json_optimized;
-        this.track.gpsTrack.place = this.uploadPlace ? this.uploadPlace.value : undefined;
+        this.track.gpsTrack.region = this.uploadRegion ? this.uploadRegion.value : undefined;
         this.track.gpsTrack.name = obj.name;
         this.track.gpsTrack.description = obj.description;
         this.track.gpsTrack.color = obj.color;

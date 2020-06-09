@@ -17,6 +17,9 @@
               <li class="nav-item">
                 <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabsettings" role="tab">{{ $t('settings') }}</a>
               </li>
+              <li class="nav-item">
+                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabplaces" role="tab">{{ $t('objects') }}</a>
+              </li>
             </ul>
             <div class="tab-content" id="tab_content_tracks">
               <div class="tab-pane show active" role="tabpanel" id="tabtracks">
@@ -94,6 +97,13 @@
                   </div>
                 </div>
               </div>
+              <div class="tab-pane show" role="tabpanel" id="tabplaces">
+                <div class="card">
+                  <div class="card-body p-2">
+                    <ObjectsTab></ObjectsTab>
+                  </div>
+                </div>    
+              </div>  
             </div>
           </div>
         </div>
@@ -154,17 +164,20 @@ import $ from 'jquery';
 import BaseComponent from '@/components/Base.vue';
 import { AlertStatus, TrackStatus, TrackType } from '@/ts/types';
 import Track from '@/ts/Track';
+import Region from '@/ts/Region';
 import Place from '@/ts/Place';
 import GpsTrack from '@/ts/GpsTrack';
 import i18n from '@/plugins/i18n';
 import YearTrackGrouper from '@/ts/trackgroupers/year';
 import TypeTrackGrouper from '@/ts/trackgroupers/type';
-import PlaceTrackGrouper from '@/ts/trackgroupers/place';
+import RegionTrackGrouper from '@/ts/trackgroupers/region';
 import TrackGrouper from '@/ts/TrackGrouper';
 import TrackGroup from '@/ts/TrackGroup';
 // @ts-ignore
 import gpxParse from 'gpx-parse';
 import listTranslator from '@/ts/list_translator';
+import PlaceType from '@/ts/PlaceType';
+import Photo from '../ts/Photo';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -181,7 +194,7 @@ export default class Index extends BaseComponent {
   private fullscreenOpened = false;
   private playingSpeed = this.$store.state.playingSpeed;
 
-  private groups = [{id: 'year', translate: 'year', label: '', grouper: new YearTrackGrouper()}, {id: 'type', translate: 'type', label: '', grouper: new TypeTrackGrouper()}, {id: 'place', translate: 'place', label: '', grouper: new PlaceTrackGrouper()}];
+  private groups = [{id: 'year', translate: 'year', label: '', grouper: new YearTrackGrouper()}, {id: 'type', translate: 'type', label: '', grouper: new TypeTrackGrouper()}, {id: 'region', translate: 'region', label: '', grouper: new RegionTrackGrouper()}];
   private groupBy = this.groups[0];
   private trackGroupsDict: { [key: string]: TrackGroup[] } = {};
   private importGroup: TrackGroup = new TrackGroup();
@@ -286,7 +299,9 @@ export default class Index extends BaseComponent {
     this.addImportButton();
     this.addCurrentLocationControl();
     this.downloadTracks();
+    this.downloadRegions();
     this.downloadPlaces();
+    this.downloadPlaceTypes();
   }
 
   private setLanguage() {
@@ -312,7 +327,11 @@ export default class Index extends BaseComponent {
   private createMap(center: [number, number], zoom: number) {
     const map = L.map('map', {zoomAnimation: false});
     map.setView(center, zoom);
+    map.on('zoomend', () => {
+      this.$store.commit('setZoomLevel', map.getZoom())
+    })
     this.$store.commit('setMap', map);
+    this.$store.commit('setZoomLevel', zoom);
   }
 
   private addLayers() {
@@ -620,12 +639,36 @@ export default class Index extends BaseComponent {
     }
   }
 
+  private downloadRegions() {
+    axios.get(this.$store.state.appHost + 'api/regions/').then(
+      (response) => {
+        const regions = [];
+        for (const responseRegion of response.data.results) {
+          const region = new Region(responseRegion.id, responseRegion.name);
+          regions.push(region);
+        }
+        this.$store.commit('setRegions', regions);
+        this.createAlert(AlertStatus.success, this.$t('regionsDownloaded', [response.data.results.length]).toString(), 2000);
+      },
+    ).catch(
+      (response) => {
+        this.createAlert(AlertStatus.danger, this.$t('regionsError').toString(), 2000);
+      },
+    );
+  }
+
   private downloadPlaces() {
     axios.get(this.$store.state.appHost + 'api/places/').then(
       (response) => {
         const places = [];
         for (const responsePlace of response.data.results) {
-          const place = new Place(responsePlace.id, responsePlace.name);
+          const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name);
+          const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, this.$store.state.map.getZoom());
+          for (const responsePhoto of responsePlace.photo_set) {
+            const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
+            place.addPhoto(photo);
+          }
+          place.makeToolTip();
           places.push(place);
         }
         this.$store.commit('setPlaces', places);
@@ -634,6 +677,24 @@ export default class Index extends BaseComponent {
     ).catch(
       (response) => {
         this.createAlert(AlertStatus.danger, this.$t('placesError').toString(), 2000);
+      },
+    );
+  }
+
+  private downloadPlaceTypes() {
+    axios.get(this.$store.state.appHost + 'api/placetypes/').then(
+      (response) => {
+        const placeTypes = [];
+        for (const responsePlaceType of response.data.results) {
+          const placeType = new PlaceType(responsePlaceType.id, responsePlaceType.name);
+          placeTypes.push(placeType);
+        }
+        this.$store.commit('setPlaceTypes', placeTypes);
+        this.createAlert(AlertStatus.success, this.$t('placeTypesDownloaded', [response.data.results.length]).toString(), 2000);
+      },
+    ).catch(
+      (response) => {
+        this.createAlert(AlertStatus.danger, this.$t('placeTypesError').toString(), 2000);
       },
     );
   }
@@ -652,8 +713,8 @@ export default class Index extends BaseComponent {
             checked = true;
           }
           try {
-            const place: Place = gpstrack.place ? new Place(gpstrack.place.id, gpstrack.place.name) : undefined;
-            const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color ? gpstrack.color : '#ff0000', gpstrack.distance, gpstrack.status, gpstrack.type, gpstrack.start_time ? new Date(gpstrack.start_time) : null, gpstrack.end_time ? new Date(gpstrack.end_time) : null, undefined, place);
+            const region: Region = gpstrack.region ? new Region(gpstrack.region.id, gpstrack.region.name) : undefined;
+            const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color ? gpstrack.color : '#ff0000', gpstrack.distance, gpstrack.status, gpstrack.type, gpstrack.start_time ? new Date(gpstrack.start_time) : null, gpstrack.end_time ? new Date(gpstrack.end_time) : null, undefined, region);
             const track = new Track(newGpstrack, checked, true);
             if (newGpstrack.isDoneTrack()) {
               tracks.push(track);

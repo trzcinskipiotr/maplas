@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'colorfield',
     'djoser',
     'rest_framework.authtoken',
+    'imagekit',
 
     'maplas_app'
 ]
@@ -141,3 +142,7 @@ CORS_ORIGIN_ALLOW_ALL = True
 OPTIMIZE_EPSILON = float(os.environ.get('OPTIMIZE_EPSILON') or 0.00002)
 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
+
+MEDIA_URL = '/media/'
+if not DEBUG:
+    MEDIA_ROOT = '/media/'

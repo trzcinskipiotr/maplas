@@ -3,3 +3,5 @@ src/db.sqlite3
 __pycache__
 set_env.bat
 .idea
+src/CACHE
+src/photos

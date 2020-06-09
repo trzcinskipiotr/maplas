@@ -57,7 +57,7 @@ import { AlertStatus } from '@/ts/types';
 import L from 'leaflet';
 import $ from 'jquery';
 import EXIF from 'exif-js';
-import Photo from '@/ts/Photo';
+import OldPhoto from '@/ts/OldPhoto';
 import 'lightgallery.js';
 import 'lightgallery.js/dist/css/lightgallery.css';
 import 'lg-fullscreen.js';
@@ -87,7 +87,7 @@ export default class PhotoUpload extends BaseComponent {
   }
 
   private addPhotoToMap() {
-    const photo = new Photo(this.name, this.description, this.lat, this.lon);
+    const photo = new OldPhoto(this.name, this.description, this.lat, this.lon);
     photo.marker.addTo(this.$store.state.map);
     const smallImage = document.createElement("IMG");
     smallImage.src = this.jpgsrc;

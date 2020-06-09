@@ -4,12 +4,19 @@ from colorfield.fields import ColorField
 from djchoices import DjangoChoices, ChoiceItem
 import json
 import gpxpy
+import uuid
+import os
 
-class Place(models.Model):
-    name = models.CharField(max_length=100, null=False, blank=True, default='')
+from imagekit.models import ImageSpecField
+from imagekit.processors import ResizeToFill, Thumbnail, SmartResize, Resize, ResizeToFit
+
+
+class Region(models.Model):
+    name = models.CharField(max_length=100, null=False, blank=False)
 
     def __str__(self):
         return self.name
+
 
 class Track(models.Model):
 
@@ -34,7 +41,7 @@ class Track(models.Model):
     distance = models.IntegerField(null=False)
     status = models.IntegerField(null=False, blank=False)
     type = models.IntegerField(null=False, blank=False)
-    place = models.ForeignKey(Place, on_delete=models.SET_NULL, null=True, blank=True)
+    region = models.ForeignKey(Region, on_delete=models.SET_NULL, null=True, blank=True)
     gpx_file = models.TextField(null=False, default='', blank=True)
     upload_user = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
@@ -71,3 +78,46 @@ class Track(models.Model):
             return 'No file'
 
     get_gpx_file_counts.short_description = 'gpx file'
+
+class PlaceType(models.Model):
+    name = models.CharField(max_length=100, null=False, blank=False)
+
+    def __str__(self):
+        return self.name
+
+
+class Place(models.Model):
+    type = models.ForeignKey(PlaceType, null=False, on_delete=models.PROTECT)
+    lat = models.FloatField(null=False, blank=False)
+    lon = models.FloatField(null=False, blank=False)
+    name = models.CharField(max_length=2000, null=False, default='', blank=True)
+    description = models.CharField(max_length=2000, null=False, default='', blank=True)
+
+    class Meta:
+        unique_together = ['lat', 'lon']
+
+
+class Photo(models.Model):
+
+    def get_file_path(instance, filename):
+        ext = filename.split('.')[-1]
+        filename = "{}.{}".format(uuid.uuid4(), ext)
+        return os.path.join('photos', filename)
+
+    name = models.CharField(max_length=2000, null=False, default='', blank=True)
+    description = models.CharField(max_length=2000, null=False, default='', blank=True)
+    place = models.ForeignKey(Place, null=False, on_delete=models.CASCADE)
+    image = models.ImageField(upload_to=get_file_path)
+    image_fullhd = ImageSpecField(source='image',
+                                      processors=[ResizeToFit(1920, 1920)],
+                                      format='JPEG',
+                                      options={'quality': 90})
+    image_thumb = ImageSpecField(source='image',
+                                  processors=[ResizeToFit(300, 300)],
+                                  format='JPEG',
+                                  options={'quality': 80})
+
+    def save(self, *args, **kwargs):
+        self.image_fullhd.generate()
+        self.image_thumb.generate()
+        super(Photo, self).save(*args, **kwargs)
