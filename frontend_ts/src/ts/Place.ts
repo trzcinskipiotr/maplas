@@ -21,7 +21,7 @@ export default class Place {
       html: iconHtml,
       className: 'dummy',
     });
-    this.marker = new L.Marker([lat, lon], {icon: markerIcon, draggable: draggable, zIndexOffset: 1000000});
+    this.marker = new L.Marker([lat, lon], {icon: markerIcon, draggable: draggable});
     this.photos = [];
   }
 

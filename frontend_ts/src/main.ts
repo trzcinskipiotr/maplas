@@ -7,6 +7,7 @@ import './unregisterServiceWorker';
 
 import 'leaflet.gridlayer.googlemutant';
 import 'leaflet.locatecontrol';
+import 'leaflet-hotline';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.motion/dist/leaflet.motion.min';
 
@@ -107,6 +108,9 @@ import 'vue-select/dist/vue-select.css';
 // @ts-ignore
 import VueSession from 'vue-session';
 Vue.use(VueSession, {persist: true});
+
+window.detailsX = 50;
+window.detailsY = 50;
 
 new Vue({
   // @ts-ignore

@@ -119,6 +119,8 @@ en: {
   hideTimeLabels: 'Hide time labels',
   showTimeLabels: 'Show time labels',
   gpxParsingError: 'GPX parsing error',
+  hideSpeedTrack: 'Hide speed',
+  showSpeedTrack: 'Show speed',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -236,6 +238,8 @@ pl: {
   hideTimeLabels: 'Ukryj etykiety czasu',
   showTimeLabels: 'Pokaż etykiety czasu',
   gpxParsingError: 'Błąd parsowania GPX',
+  hideSpeedTrack: 'Ukryj prędkość',
+  showSpeedTrack: 'Pokaż prędkość',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

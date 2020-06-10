@@ -114,7 +114,10 @@
   </div>
   <div ref="detailsWindow" class="detailsWindow card" v-show="maximized">
     <div ref="detailsWindowHeader" class="detailsWindowHeader card-header" style="width: 500px">
-      {{ track.gpsTrack.name }}
+      <div style="display: inline" class="custom-control custom-checkbox" :id="'detailstrackcheckbox' + track.gpsTrack.id">
+      <input type="checkbox" class="custom-control-input" :id="'detailscheckbox' + track.gpsTrack.id" v-model="checked" />
+      <label style="margin-right: 2px;" class="custom-control-label" :for="'detailscheckbox' + track.gpsTrack.id">{{ track.gpsTrack.name }}</label>
+      </div>
       <span class="badge badge-dark" style="margin-right: 2px; margin-left: 2px;">{{ track.gpsTrack.start_time|formatDateDay }}</span>
       <span class="badge badge-success">{{ track.gpsTrack.distance|roundTrackDistance }}</span>
       <div style="float: right;">
@@ -131,8 +134,9 @@
         <b>{{ $t('type') }}: </b><TrackTypeIcon :gpsTrack="track.gpsTrack" height=12 imgheight=12 verticalAlign="-2px"></TrackTypeIcon><br>
         <b>{{ $t('status') }}: </b><TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br>
         <b>{{ $t('id') }}: </b>{{ track.gpsTrack.id }}<br>
-        <template v-if="track.gpsTrack.gpx_file"><b>{{ $t('gpxFile') }}: </b>{{ track.gpsTrack.gpx_file.length|roundFileBytes }} <button @click="saveGPX" type="button" class="btn btn-primary btn-sm">Download</button><br></template>
-        <template v-if="track.gpsTrack.gpx_file"><button @click="showHideTimeLables" type="button" class="btn btn-primary btn-sm">{{ timeLabelsVisible ? $t('hideTimeLabels') : $t('showTimeLabels') }}</button></template>
+        <template v-if="track.gpsTrack.gpx_file"><b>{{ $t('gpxFile') }}: </b>{{ track.gpsTrack.gpx_file.length|roundFileBytes }} <button @click="saveGPX" type="button" class="btn btn-primary btn-sm">Download</button><br><br></template>
+        <template v-if="track.gpsTrack.gpx_file"><button @click="showHideTimeLables" type="button" class="btn btn-primary btn-sm">{{ timeLabelsVisible ? $t('hideTimeLabels') : $t('showTimeLabels') }}</button></template>&nbsp;
+        <template v-if="track.gpsTrack.gpx_file"><button @click="colorTrackBySpeed" type="button" class="btn btn-primary btn-sm">{{ speedTrackVisible ? $t('hideSpeedTrack') : $t('showSpeedTrack') }}</button></template>
       </div>  
     </div>  
   </div>
@@ -180,6 +184,9 @@ export default class AppTrack extends BaseComponent {
 
   private timeLabelsVisible = false;
   private timeMarkers = [];
+
+  private speedTrackVisible = false;
+  private speedTrack = null;
 
   public constructor() {
     super();
@@ -274,7 +281,7 @@ export default class AppTrack extends BaseComponent {
       for (const point of points) {
         const icon = new L.Icon({iconUrl: 'img/circle.svg', iconSize: [10, 10]});
         const marker = new L.Marker([point[0], point[1]], {icon: icon});
-        marker.bindTooltip(String(point[2]), {permanent: true});
+        marker.bindTooltip("<span class=nomargin>" + String(point[2]) + "</span>", {direction: 'center', permanent: true, opacity: 1, className: 'smallTooltip'});
         this.timeMarkers.push(marker);
       }
       for(const marker of this.timeMarkers) {
@@ -282,6 +289,76 @@ export default class AppTrack extends BaseComponent {
       }
     }
     this.timeLabelsVisible = !this.timeLabelsVisible;
+  }
+
+  private deg2rad(deg: number) {
+    return deg * (Math.PI/180)
+  }
+
+  private distance(lat1: number, lon1: number, lat2: number, lon2: number) {
+    let R = 6371;
+    let dLat = this.deg2rad(lat2-lat1);
+    let dLon = this.deg2rad(lon2-lon1); 
+    let a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    let d = R * c * 1000; // Distance in meters
+    return d;
+  }
+
+  private speed(p2: any, p1: any) {
+    let dist = this.distance(p1.lat, p1.lon, p2.lat, p2.lon);
+    let time_s = (p2.time - p1.time) / 1000.0;
+    let speed_mps = dist / time_s;
+    let speed_kph = (speed_mps * 3600.0) / 1000.0;
+    return speed_kph;
+  }
+
+  private colorTrackBySpeed() {
+    if (! this.speedTrack) {
+      const points = [];
+      let index = 0;
+      gpxParse.parseGpx(this.track.gpsTrack.gpx_file, (error: string, data: any) => {
+        if (error) {
+          this.createAlert(AlertStatus.danger, this.$t('gpxParsingError').toString(), 2000);
+        } else {
+          let last_point = null;
+          for (const fileTrack of data.tracks) {
+            for (const segment of fileTrack.segments) {
+              for (const point of segment) {
+                if (! last_point) {
+                  last_point = point;
+                } else if (index % 5 == 0) {
+                  const speed = this.speed(point, last_point);
+                  last_point = point;
+                  points.push([point.lat, point.lon, speed]);
+                }
+                index = index + 1;
+              }
+            }
+          }
+        }
+      });
+      this.speedTrack = L.hotline(points, {
+			  min: 10,
+			  max: 20,
+			  palette: {
+				  0.0: '#008800',
+				  0.5: '#ffff00',
+				  1.0: '#ff0000'
+			  },
+			  weight: 5,
+			  outlineColor: '#000000',
+			  outlineWidth: 1
+		  })
+    }
+    if (this.speedTrackVisible) {
+      this.speedTrack.removeFrom(this.$store.state.map);
+      this.checked = true;
+    } else {
+      this.speedTrack.addTo(this.$store.state.map);
+      this.checked = false;
+    }
+    this.speedTrackVisible = !this.speedTrackVisible;
   }
 
   private togglePanel() {
@@ -351,11 +428,20 @@ export default class AppTrack extends BaseComponent {
         },
       );
     }
+
     this.maximized = true;
     // @ts-ignore
-    this.$refs.detailsWindow.style.left = (15 + document.getElementById('map').getBoundingClientRect().left) + 'px';
+    this.$refs.detailsWindow.style.left = (window.detailsX + document.getElementById('map').getBoundingClientRect().left) + 'px';
     // @ts-ignore
-    this.$refs.detailsWindow.style.top = '15px';
+    this.$refs.detailsWindow.style.top = '' + window.detailsY + 'px';
+    window.detailsX = window.detailsX + 50;
+    window.detailsY = window.detailsY + 50;
+    if (window.detailsX > 500) {
+      window.detailsX = 50;
+    }
+    if (window.detailsY > 500) {
+      window.detailsY = 50;
+    }
     if (! this.maximizedDetails) {
       this.toggleMaximizedDetails();
     }
@@ -508,7 +594,7 @@ export default class AppTrack extends BaseComponent {
 }
 </script>
 
-<style scoped>
+<style>
 .detailsWindow {
   position: fixed;
   z-index: 1000000;
@@ -517,4 +603,12 @@ export default class AppTrack extends BaseComponent {
 .detailsWindowHeader {
   cursor: move;
 }
+
+.smallTooltip {
+  padding: 1px;
+  margin: 0px;
+  border: 1px solid black;
+  font-size: 0.6rem;
+}
+
 </style>
