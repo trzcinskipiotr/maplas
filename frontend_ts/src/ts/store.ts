@@ -23,6 +23,9 @@ export interface RootState {
   user: any;
   places: Place[];
   placeTypes: PlaceType[];
+  speedLegendVisible: boolean;
+  speedThresholds: number[];
+  speedColors: Array<{color: string}>;
 }
 
 const store: StoreOptions<RootState> = {
@@ -39,6 +42,16 @@ const store: StoreOptions<RootState> = {
     user: null,
     places: Array<Place>(),
     placeTypes: Array<PlaceType>(),
+    speedLegendVisible: false,
+    speedThresholds: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
+    speedColors: [
+      {color: 'rgb(229,11,10)'}, {color: 'rgb(231,106,12)'}, {color: 'rgb(231,154,12)'},
+      {color: 'rgb(228,201,12)'}, {color: 'rgb(210,230,12)'}, {color: 'rgb(164,231,12)'},
+      {color: 'rgb(68,231,12)'}, {color: 'rgb(11,230,143)'}, {color: 'rgb(12,220,230)'},
+      {color: 'rgb(12,175,230)'}, {color: 'rgb(12,126,230)'}, {color: 'rgb(11,77,229)'},
+      {color: 'rgb(88,12,230)'}, {color: 'rgb(137,12,230)'}, {color: 'rgb(181,11,229)'},
+      {color: 'rgb(230,12,229)'}
+    ],
   },
   getters: {
     selectedTracks: (state): Track[] => {
@@ -80,6 +93,9 @@ const store: StoreOptions<RootState> = {
     },
     setTracks(state, tracks: Track[]) {
       state.tracks = tracks;
+    },
+    setSpeedLegendVisible(state, speedLegendVisible: boolean) {
+      state.speedLegendVisible = speedLegendVisible;
     },
     setRegions(state, regions: Region[]) {
       state.regions = regions;

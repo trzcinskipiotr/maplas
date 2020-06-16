@@ -8,8 +8,11 @@ import './unregisterServiceWorker';
 import 'leaflet.gridlayer.googlemutant';
 import 'leaflet.locatecontrol';
 import 'leaflet-hotline';
+import 'Leaflet.MultiOptionsPolyline';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.motion/dist/leaflet.motion.min';
+
+import './ts/L.CanvasLayer';
 
 import '@fortawesome/fontawesome-free/css/all.css';
 import { library } from '@fortawesome/fontawesome-svg-core';

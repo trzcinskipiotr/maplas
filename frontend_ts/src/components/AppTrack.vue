@@ -136,7 +136,8 @@
         <b>{{ $t('id') }}: </b>{{ track.gpsTrack.id }}<br>
         <template v-if="track.gpsTrack.gpx_file"><b>{{ $t('gpxFile') }}: </b>{{ track.gpsTrack.gpx_file.length|roundFileBytes }} <button @click="saveGPX" type="button" class="btn btn-primary btn-sm">Download</button><br><br></template>
         <template v-if="track.gpsTrack.gpx_file"><button @click="showHideTimeLables" type="button" class="btn btn-primary btn-sm">{{ timeLabelsVisible ? $t('hideTimeLabels') : $t('showTimeLabels') }}</button></template>&nbsp;
-        <template v-if="track.gpsTrack.gpx_file"><button @click="colorTrackBySpeed" type="button" class="btn btn-primary btn-sm">{{ speedTrackVisible ? $t('hideSpeedTrack') : $t('showSpeedTrack') }}</button></template>
+        <template v-if="track.gpsTrack.gpx_file"><button @click="showHideSpeedLables" type="button" class="btn btn-primary btn-sm">{{ speedLabelsVisible ? $t('hideSpeedLabels') : $t('showSpeedLabels') }}</button></template>&nbsp;&nbsp;
+        <template v-if="track.gpsTrack.gpx_file"><button @click="colorTrackBySpeed" type="button" class="btn btn-primary btn-sm">{{ speedTrackVisible ? $t('hideSpeedTrack') : $t('showSpeedTrack') }}</button></template>&nbsp;
       </div>  
     </div>  
   </div>
@@ -144,7 +145,7 @@
 </template>
 
 <script lang="ts">
-import L from 'leaflet';
+import L, { LatLng } from 'leaflet';
 import axios from 'axios';
 import $ from 'jquery';
 import BaseComponent from '@/components/Base.vue';
@@ -182,11 +183,16 @@ export default class AppTrack extends BaseComponent {
   private uploadName = this.track.gpsTrack.name;
   private description = '';
 
-  private timeLabelsVisible = false;
-  private timeMarkers = [];
-
   private speedTrackVisible = false;
-  private speedTrack = null;
+  private speedTrack: any = null;
+
+  private timeLabelsVisible = false;
+  private timePoints: {lat: number, lon: number, time: string}[] = [];
+  private canvasTimeLayer: any = null;
+
+  private speedLabelsVisible = false;
+  private speedPoints: {lat: number, lon: number, speed: number}[] = [];
+  private canvasSpeedLayer: any = null;
 
   public constructor() {
     super();
@@ -253,14 +259,46 @@ export default class AppTrack extends BaseComponent {
     dragElement(this.$refs.detailsWindow, this.$refs.detailsWindowHeader);
   }
 
+  public onDrawLayer(info: any) {
+    let ctx = info.canvas.getContext('2d');
+    ctx.clearRect(0, 0, info.canvas.width, info.canvas.height);
+    ctx.font = "12px Arial";
+    ctx.textAlign = 'center';
+    for (let i = 0; i < this.timePoints.length; i++) {
+      let timePoint = this.timePoints[i];
+      if (info.bounds.contains([timePoint.lat, timePoint.lon])) {
+        const dot = info.layer._map.latLngToContainerPoint([timePoint.lat, timePoint.lon]);
+        const text = ctx.measureText(timePoint.time);
+        ctx.fillStyle = 'white';
+        ctx.fillRect(dot.x - text.width / 2 - 1, dot.y - 11, text.width + 2, 14);
+        ctx.fillStyle = 'black';
+        ctx.fillText(timePoint.time, dot.x, dot.y);
+        ctx.strokeStyle = 'black';
+        ctx.strokeRect(dot.x - text.width / 2 - 1, dot.y - 11, text.width + 2, 14);
+      }
+    }
+    for (let i = 0; i < this.speedPoints.length; i++) {
+      let speedPoint = this.speedPoints[i];
+      if (info.bounds.contains([speedPoint.lat, speedPoint.lon])) {
+        const dot = info.layer._map.latLngToContainerPoint([speedPoint.lat, speedPoint.lon]);
+        const text = ctx.measureText(speedPoint.speed.toFixed(1));
+        ctx.fillStyle = 'white';
+        ctx.fillRect(dot.x - text.width / 2 - 1, dot.y - 11, text.width + 2, 14);
+        ctx.fillStyle = 'black';
+        ctx.fillText(speedPoint.speed.toFixed(1), dot.x, dot.y);
+        ctx.strokeStyle = 'black';
+        ctx.strokeRect(dot.x - text.width / 2 - 2, dot.y - 11, text.width + 4, 14);
+      }
+    }
+  };
+
   private showHideTimeLables() {
     if (this.timeLabelsVisible) {
-      for(const marker of this.timeMarkers) {
-        marker.removeFrom(this.$store.state.map);
-      }
-      this.timeMarkers = [];
+      this.timePoints = [];
+      this.canvasTimeLayer.removeFrom(this.$store.state.map);
+      this.canvasTimeLayer = null;
     } else {
-      const points = [];
+      this.timePoints = [];
       let index = 0;
       gpxParse.parseGpx(this.track.gpsTrack.gpx_file, (error: string, data: any) => {
         if (error) {
@@ -270,52 +308,29 @@ export default class AppTrack extends BaseComponent {
             for (const segment of fileTrack.segments) {
               for (const point of segment) {
                 if (index % 10 == 0) {
-                  points.push([point.lat, point.lon, formatTimeSeconds(point.time)]);
+                  this.timePoints.push({lat: point.lat, lon: point.lon, time: formatTimeSeconds(point.time)});
                 }
                 index = index + 1;
               }
             }
           }
+          this.canvasTimeLayer = L.canvasLayer();
+          this.canvasTimeLayer.delegate(this).addTo(this.$store.state.map);
+          this.canvasTimeLayer._onLayerDidMove();
+          this.canvasTimeLayer.needRedraw();
         }
       });
-      for (const point of points) {
-        const icon = new L.Icon({iconUrl: 'img/circle.svg', iconSize: [10, 10]});
-        const marker = new L.Marker([point[0], point[1]], {icon: icon});
-        marker.bindTooltip("<span class=nomargin>" + String(point[2]) + "</span>", {direction: 'center', permanent: true, opacity: 1, className: 'smallTooltip'});
-        this.timeMarkers.push(marker);
-      }
-      for(const marker of this.timeMarkers) {
-        marker.addTo(this.$store.state.map);
-      }
     }
     this.timeLabelsVisible = !this.timeLabelsVisible;
   }
 
-  private deg2rad(deg: number) {
-    return deg * (Math.PI/180)
-  }
-
-  private distance(lat1: number, lon1: number, lat2: number, lon2: number) {
-    let R = 6371;
-    let dLat = this.deg2rad(lat2-lat1);
-    let dLon = this.deg2rad(lon2-lon1); 
-    let a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
-    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-    let d = R * c * 1000; // Distance in meters
-    return d;
-  }
-
-  private speed(p2: any, p1: any) {
-    let dist = this.distance(p1.lat, p1.lon, p2.lat, p2.lon);
-    let time_s = (p2.time - p1.time) / 1000.0;
-    let speed_mps = dist / time_s;
-    let speed_kph = (speed_mps * 3600.0) / 1000.0;
-    return speed_kph;
-  }
-
-  private colorTrackBySpeed() {
-    if (! this.speedTrack) {
-      const points = [];
+  private showHideSpeedLables() {
+    if (this.speedLabelsVisible) {
+      this.speedPoints = [];
+      this.canvasSpeedLayer.removeFrom(this.$store.state.map);
+      this.canvasSpeedLayer = null;
+    } else {
+      this.speedPoints = [];
       let index = 0;
       gpxParse.parseGpx(this.track.gpsTrack.gpx_file, (error: string, data: any) => {
         if (error) {
@@ -327,10 +342,65 @@ export default class AppTrack extends BaseComponent {
               for (const point of segment) {
                 if (! last_point) {
                   last_point = point;
-                } else if (index % 5 == 0) {
-                  const speed = this.speed(point, last_point);
+                } else if (index % 10 == 0) {
+                  const speed = this.speedBetweenPoints(point, last_point);
                   last_point = point;
-                  points.push([point.lat, point.lon, speed]);
+                  this.speedPoints.push({lat: point.lat, lon: point.lon, speed: speed});
+                }
+                index = index + 1;
+              }
+            }
+          }
+          this.canvasSpeedLayer = L.canvasLayer();
+          this.canvasSpeedLayer.delegate(this).addTo(this.$store.state.map);
+          this.canvasSpeedLayer._onLayerDidMove();
+          this.canvasSpeedLayer.needRedraw();
+        }
+      });
+    }
+    this.speedLabelsVisible = !this.speedLabelsVisible;
+  }
+
+  private deg2rad(deg: number) {
+    return deg * (Math.PI/180)
+  }
+
+  private distanceBetweenPoints(lat1: number, lon1: number, lat2: number, lon2: number) {
+    let R = 6371;
+    let dLat = this.deg2rad(lat2-lat1);
+    let dLon = this.deg2rad(lon2-lon1); 
+    let a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
+    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+    let d = R * c * 1000; // Distance in meters
+    return d;
+  }
+
+  private speedBetweenPoints(p2: any, p1: any) {
+    let dist = this.distanceBetweenPoints(p1.lat, p1.lon, p2.lat, p2.lon);
+    let time_s = (p2.time - p1.time) / 1000.0;
+    let speed_mps = dist / time_s;
+    let speed_kph = (speed_mps * 3600.0) / 1000.0;
+    return speed_kph;
+  }
+
+  private colorTrackBySpeed() {
+    if (! this.speedTrack) {
+      const points: {lat: number, lon: number, speed: number}[] = [];
+      let index = 0;
+      gpxParse.parseGpx(this.track.gpsTrack.gpx_file, (error: string, data: any) => {
+        if (error) {
+          this.createAlert(AlertStatus.danger, this.$t('gpxParsingError').toString(), 2000);
+        } else {
+          let last_point = null;
+          for (const fileTrack of data.tracks) {
+            for (const segment of fileTrack.segments) {
+              for (const point of segment) {
+                if (! last_point) {
+                  last_point = point;
+                } else if (index % 10 == 0) {
+                  const speed = this.speedBetweenPoints(point, last_point);
+                  last_point = point;
+                  points.push({lat: point.lat, lon: point.lon, speed: speed});
                 }
                 index = index + 1;
               }
@@ -338,24 +408,31 @@ export default class AppTrack extends BaseComponent {
           }
         }
       });
-      this.speedTrack = L.hotline(points, {
-			  min: 10,
-			  max: 20,
-			  palette: {
-				  0.0: '#008800',
-				  0.5: '#ffff00',
-				  1.0: '#ff0000'
-			  },
-			  weight: 5,
-			  outlineColor: '#000000',
-			  outlineWidth: 1
-		  })
+      this.speedTrack = L.multiOptionsPolyline(points as unknown as LatLng[], {
+        multiOptions: {
+          optionIdxFn: (latLng) => {
+            const altThresholds = this.$store.state.speedThresholds;
+            for (let i = 0; i < altThresholds.length; ++i) {
+                if (latLng.speed <= altThresholds[i]) {
+                    return i;
+                }
+            }
+            return altThresholds.length;
+          },
+          options: this.$store.state.speedColors,
+        },
+      weight: 5,
+      lineCap: 'butt',
+      opacity: 0.75,
+      smoothFactor: 1})
     }
     if (this.speedTrackVisible) {
       this.speedTrack.removeFrom(this.$store.state.map);
+      this.$store.commit('setSpeedLegendVisible', false);
       this.checked = true;
     } else {
       this.speedTrack.addTo(this.$store.state.map);
+      this.$store.commit('setSpeedLegendVisible', true);
       this.checked = false;
     }
     this.speedTrackVisible = !this.speedTrackVisible;
@@ -436,10 +513,10 @@ export default class AppTrack extends BaseComponent {
     this.$refs.detailsWindow.style.top = '' + window.detailsY + 'px';
     window.detailsX = window.detailsX + 50;
     window.detailsY = window.detailsY + 50;
-    if (window.detailsX > 500) {
+    if (window.detailsX > 400) {
       window.detailsX = 50;
     }
-    if (window.detailsY > 500) {
+    if (window.detailsY > 400) {
       window.detailsY = 50;
     }
     if (! this.maximizedDetails) {
@@ -609,6 +686,10 @@ export default class AppTrack extends BaseComponent {
   margin: 0px;
   border: 1px solid black;
   font-size: 0.6rem;
+}
+
+.leaflet-layer2 {
+  z-index: 1000000 !important;
 }
 
 </style>

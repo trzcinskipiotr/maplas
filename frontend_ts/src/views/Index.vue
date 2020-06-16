@@ -127,6 +127,15 @@
         <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="file-upload"/>
       </div>
     </div>
+    <div id="speedlegenddiv" style="display: none;">
+      <div id="speedlegenddivinner">
+        <div style="background-color: white; margin: 2px" v-if="$store.state.speedLegendVisible">
+          <div v-for="(color, index) in $store.state.speedColors" :key="color.color" :style="{'text-align': 'center', 'color': 'white', 'width': '16px', 'height': '14px', 'margin': '1px', 'background-color': color.color}">
+            <b>{{ $store.state.speedThresholds[index] }}</b>
+          </div>
+        </div>  
+      </div>
+    </div>
     <photo-upload></photo-upload>
     <div class="alertmessage">
       <div class="flexcenter"><font-awesome-icon v-if="loading" class="fa-spin" icon="spinner" size="3x"/></div>
@@ -293,6 +302,7 @@ export default class Index extends BaseComponent {
     this.setStoreToken();
     this.createMap([52.743682, 16.273668], 11);
     this.addLayers();
+    this.createSpeedLegendControl();
     this.addScaleControl();
     this.addFullScreenControl();
     this.addCogsButton();
@@ -513,6 +523,18 @@ export default class Index extends BaseComponent {
       },
     });
     this.$store.state.map!.addControl(new CogsControl());
+  }
+
+  private createSpeedLegendControl() {
+    const LegendControl = L.Control.extend({
+      options: {
+        position: 'bottomleft',
+      },
+      onAdd: (map: L.Map) => {
+        return document.getElementById('speedlegenddivinner');
+      },
+    });
+    this.$store.state.map.addControl(new LegendControl());
   }
 
   private addImportButton() {
