@@ -123,6 +123,7 @@ en: {
   gpxParsingError: 'GPX parsing error',
   hideSpeedTrack: 'Hide speed',
   showSpeedTrack: 'Show speed',
+  fullRes: 'Full resolution',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -244,6 +245,7 @@ pl: {
   gpxParsingError: 'Błąd parsowania GPX',
   hideSpeedTrack: 'Ukryj prędkość',
   showSpeedTrack: 'Pokaż prędkość',
+  fullRes: 'Pełna rozdzielczość',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

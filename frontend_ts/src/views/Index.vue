@@ -308,6 +308,7 @@ export default class Index extends BaseComponent {
     this.addCogsButton();
     this.addImportButton();
     this.addCurrentLocationControl();
+    this.addMeasureControl();
     this.downloadTracks();
     this.downloadRegions();
     this.downloadPlaces();
@@ -342,6 +343,10 @@ export default class Index extends BaseComponent {
     })
     this.$store.commit('setMap', map);
     this.$store.commit('setZoomLevel', zoom);
+  }
+
+  private addMeasureControl() {
+    L.control.polylineMeasure({clearMeasurementsOnStop: false, showClearControl: true}).addTo(this.$store.state.map);
   }
 
   private addLayers() {
@@ -512,6 +517,8 @@ export default class Index extends BaseComponent {
       layers['openStreetMap'].addTo(this.$store.state.map!);
     }
   }
+
+  
 
   private addCogsButton() {
     const CogsControl = L.Control.extend({
@@ -695,7 +702,7 @@ export default class Index extends BaseComponent {
           const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name);
           const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, this.$store.state.map.getZoom(), !!this.$store.state.user);
           for (const responsePhoto of responsePlace.photo_set) {
-            const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
+            const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
             place.addPhoto(photo);
           }
           places.push(place);

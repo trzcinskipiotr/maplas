@@ -114,9 +114,10 @@
   </div>
   <div ref="detailsWindow" class="detailsWindow card" v-show="maximized">
     <div ref="detailsWindowHeader" class="detailsWindowHeader card-header" style="width: 500px">
+      <span v-b-tooltip.hover :title="$t('centerTrack')"><font-awesome-icon @click="centerTrack" style="cursor: pointer" icon="search-location"/></span>&nbsp;
       <div style="display: inline" class="custom-control custom-checkbox" :id="'detailstrackcheckbox' + track.gpsTrack.id">
-      <input type="checkbox" class="custom-control-input" :id="'detailscheckbox' + track.gpsTrack.id" v-model="checked" />
-      <label style="margin-right: 2px;" class="custom-control-label" :for="'detailscheckbox' + track.gpsTrack.id">{{ track.gpsTrack.name }}</label>
+        <input type="checkbox" class="custom-control-input" :id="'detailscheckbox' + track.gpsTrack.id" v-model="checked" />
+        <label style="margin-right: 2px;" class="custom-control-label" :for="'detailscheckbox' + track.gpsTrack.id">{{ track.gpsTrack.name }}</label>
       </div>
       <span class="badge badge-dark" style="margin-right: 2px; margin-left: 2px;">{{ track.gpsTrack.start_time|formatDateDay }}</span>
       <span class="badge badge-success">{{ track.gpsTrack.distance|roundTrackDistance }}</span>

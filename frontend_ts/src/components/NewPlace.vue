@@ -220,7 +220,7 @@ export default class NewPlace extends BaseComponent {
     reader.onload = (onLoadEvent: Event) => {
       const buffer = (onLoadEvent.target as FileReaderEventTarget).result;
       const now = new Date();
-      this.photos.push({'src': this.arrayBufferToBase64(buffer), 'buffer': buffer, 'id': now.getTime()});
+      this.photos.push({'src': this.arrayBufferToBase64(buffer), 'buffer': buffer, 'id': now.getTime(), 'org_filename': file.name});
       this.refreshFirstPhotoCoords()
       $('#importPhotoFileInput').val('');
     };
@@ -237,7 +237,7 @@ export default class NewPlace extends BaseComponent {
         const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name);
         const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, this.$store.state.map.getZoom(), !!this.$store.state.user);
         for (const responsePhoto of responsePlace.photo_set) {
-          const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
+          const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
           place.addPhoto(photo);
         }
         this.$store.commit('addPlace', place);
@@ -295,6 +295,7 @@ export default class NewPlace extends BaseComponent {
         let form_data = new FormData();
         form_data.append('name', '');
         form_data.append('description', '');
+        form_data.append('org_filename', photo.org_filename);
         form_data.append('place', response.data.id);
         form_data.append('image', new Blob([new Uint8Array(photo.buffer)], {type: 'image/jpeg'}), '1.jpg');
         let headers = {'Accept': 'application/json', 'Content-Type': 'multipart/form-data'}

@@ -13,10 +13,12 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.motion/dist/leaflet.motion.min';
 
 import './ts/L.CanvasLayer';
+import './ts/Leaflet.PolylineMeasure.css';
+import './ts/Leaflet.PolylineMeasure';
 
 import '@fortawesome/fontawesome-free/css/all.css';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle, faFileUpload, faBars, faUpload, faCamera, faTrash, faUndo } from '@fortawesome/free-solid-svg-icons';
+import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle, faFileUpload, faBars, faUpload, faCamera, faTrash, faUndo, faSearchPlus } from '@fortawesome/free-solid-svg-icons';
 import { faCalendarTimes, faCalendarCheck, faWindowClose, faTimesCircle, faWindowMaximize } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 library.add(faShoePrints);
@@ -42,6 +44,7 @@ library.add(faWindowMaximize);
 library.add(faCamera);
 library.add(faTrash);
 library.add(faUndo);
+library.add(faSearchPlus);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 import BootstrapVue from 'bootstrap-vue';
@@ -78,8 +81,9 @@ Vue.component('ObjectsTab', ObjectsTab);
 Vue.component('NewPlace', NewPlace);
 Vue.component('MapPlace', MapPlace);
 
-import {formatDate, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
+import {formatDate, formatDateSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);
+Vue.filter('formatDateSeconds', formatDateSeconds);
 Vue.filter('formatDateDay', formatDateDay);
 Vue.filter('roundTrackDistance', roundTrackDistance);
 Vue.filter('roundFileBytes', roundFileBytes);

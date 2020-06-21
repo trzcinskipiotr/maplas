@@ -1,9 +1,15 @@
 from django.contrib.auth.models import User
+from django.core.files.images import get_image_dimensions
 from django.db import models
 from colorfield.fields import ColorField
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from djchoices import DjangoChoices, ChoiceItem
 import json
+import datetime
 import gpxpy
+import exifread
+import piexif
 import uuid
 import os
 
@@ -107,7 +113,8 @@ class Photo(models.Model):
     name = models.CharField(max_length=2000, null=False, default='', blank=True)
     description = models.CharField(max_length=2000, null=False, default='', blank=True)
     place = models.ForeignKey(Place, null=False, on_delete=models.CASCADE)
-    image = models.ImageField(upload_to=get_file_path)
+    org_filename = models.CharField(max_length=256, null=True, blank=True)
+    image = models.ImageField(upload_to=get_file_path, null=False)
     image_fullhd = ImageSpecField(source='image',
                                       processors=[ResizeToFit(1920, 1920)],
                                       format='JPEG',
@@ -116,8 +123,42 @@ class Photo(models.Model):
                                   processors=[ResizeToFit(300, 300)],
                                   format='JPEG',
                                   options={'quality': 80})
+    exif_time_taken = models.DateTimeField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        self.image_fullhd.generate()
-        self.image_thumb.generate()
+        if not self.exif_time_taken:
+            tags = exifread.process_file(self.image, details=False)
+            if 'EXIF DateTimeOriginal' in tags:
+                date_time_obj = datetime.datetime.strptime(str(tags['EXIF DateTimeOriginal']), '%Y:%m:%d %H:%M:%S')
+                self.exif_time_taken = date_time_obj
         super(Photo, self).save(*args, **kwargs)
+        exif_fullhd = piexif.load(self.image.path)
+        if '0th' in exif_fullhd:
+            width, height = get_image_dimensions(self.image_fullhd.file)
+            exif_fullhd['0th'][256] = width
+            exif_fullhd['0th'][257] = height
+        if '1st' in exif_fullhd:
+            del exif_fullhd['1st']
+        if 'thumbnail' in exif_fullhd:
+            del exif_fullhd['thumbnail']
+        exif_thumb = piexif.load(self.image.path)
+        if '0th' in exif_thumb:
+            width, height = get_image_dimensions(self.image_thumb.file)
+            exif_thumb['0th'][256] = width
+            exif_thumb['0th'][257] = height
+        if '1st' in exif_thumb:
+            del exif_thumb['1st']
+        if 'thumbnail' in exif_thumb:
+            del exif_thumb['thumbnail']
+        piexif.insert(piexif.dump(exif_fullhd), self.image_fullhd.path)
+        piexif.insert(piexif.dump(exif_thumb), self.image_thumb.path)
+
+def delete_file(image):
+    if image and image.path and os.path.isfile(image.path):
+        os.remove(image.path)
+
+@receiver(models.signals.post_delete, sender=Photo)
+def auto_delete_file_on_delete(sender, instance, **kwargs):
+    delete_file(instance.image)
+    delete_file(instance.image_thumb)
+    delete_file(instance.image_fullhd)
