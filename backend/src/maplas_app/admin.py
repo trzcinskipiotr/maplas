@@ -6,7 +6,7 @@ from maplas_app.models import Track, Region, Place, PlaceType, Photo
 
 @admin.register(Track)
 class TrackAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'description', 'color', 'start_time', 'end_time', 'distance', 'status', 'type')
+    list_display = ('id', 'name', 'description', 'color', 'start_time', 'end_time', 'distance', 'status', 'type', 'upload_user')
     search_fields = ('id', 'name', 'description', 'color', 'points_json')
 
 @admin.register(Region)
@@ -20,7 +20,7 @@ class TrackDetails(Track):
 
 @admin.register(TrackDetails)
 class TrackDetailsAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'description', 'color', 'start_time', 'end_time', 'distance', 'status', 'type', 'get_points_json_counts', 'get_points_json_optimized_counts', 'get_gpx_file_counts')
+    list_display = ('id', 'name', 'description', 'color', 'start_time', 'end_time', 'distance', 'status', 'type', 'get_points_json_counts', 'get_points_json_optimized_counts', 'get_gpx_file_counts', 'upload_user')
     search_fields = ('id', 'name', 'description', 'color', 'points_json')
 
 @admin.register(PlaceType)

@@ -17,6 +17,7 @@ export interface RootState {
   appHost: string;
   tracks: Track[];
   imports: Track[];
+  plannedTracks: Track[];
   playingSpeed: number;
   regions: Region[];
   token: string;
@@ -26,6 +27,7 @@ export interface RootState {
   speedLegendVisible: boolean;
   speedThresholds: number[];
   speedColors: Array<{color: string}>;
+  editedTrack: Track;
 }
 
 const store: StoreOptions<RootState> = {
@@ -36,6 +38,7 @@ const store: StoreOptions<RootState> = {
     appHost: '',
     tracks: Array<Track>(),
     imports: Array<Track>(),
+    plannedTracks: Array<Track>(),
     playingSpeed: 10,
     regions: Array<Region>(),
     token: '',
@@ -52,6 +55,7 @@ const store: StoreOptions<RootState> = {
       {color: 'rgb(88,12,230)'}, {color: 'rgb(137,12,230)'}, {color: 'rgb(181,11,229)'},
       {color: 'rgb(230,12,229)'}
     ],
+    editedTrack: null,
   },
   getters: {
     selectedTracks: (state): Track[] => {
@@ -121,6 +125,12 @@ const store: StoreOptions<RootState> = {
     },
     addImportedTrack(state, track) {
       state.imports.push(track);
+    },
+    addPlannedTrack(state, track) {
+      state.plannedTracks.push(track);
+    },
+    setEditedTrack(state, track) {
+      state.editedTrack = track;
     },
     addPlace(state, place) {
       state.places.push(place);

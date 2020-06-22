@@ -13,12 +13,10 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.motion/dist/leaflet.motion.min';
 
 import './ts/L.CanvasLayer';
-import './ts/Leaflet.PolylineMeasure.css';
-import './ts/Leaflet.PolylineMeasure';
 
 import '@fortawesome/fontawesome-free/css/all.css';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle, faFileUpload, faBars, faUpload, faCamera, faTrash, faUndo, faSearchPlus } from '@fortawesome/free-solid-svg-icons';
+import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle, faFileUpload, faBars, faUpload, faCamera, faTrash, faUndo, faSearchPlus, faLock, faLockOpen } from '@fortawesome/free-solid-svg-icons';
 import { faCalendarTimes, faCalendarCheck, faWindowClose, faTimesCircle, faWindowMaximize } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 library.add(faShoePrints);
@@ -45,6 +43,8 @@ library.add(faCamera);
 library.add(faTrash);
 library.add(faUndo);
 library.add(faSearchPlus);
+library.add(faLock);
+library.add(faLockOpen);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 import BootstrapVue from 'bootstrap-vue';
@@ -69,6 +69,7 @@ import ColorPopover from '@/components/ColorPopover.vue';
 import ObjectsTab from '@/components/ObjectsTab.vue';
 import NewPlace from '@/components/NewPlace.vue';
 import MapPlace from '@/components/MapPlace.vue';
+import PlannedTracks from '@/components/PlannedTracks.vue';
 Vue.component('AppTrack', AppTrack);
 Vue.component('AppTrackGroup', AppTrackGroup);
 Vue.component('TrackStatusIcon', TrackStatusIcon);
@@ -80,6 +81,7 @@ Vue.component('ColorPopover', ColorPopover);
 Vue.component('ObjectsTab', ObjectsTab);
 Vue.component('NewPlace', NewPlace);
 Vue.component('MapPlace', MapPlace);
+Vue.component('PlannedTracks', PlannedTracks);
 
 import {formatDate, formatDateSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);

@@ -33,7 +33,16 @@
         <span v-if="$store.state.user">
           <span v-if="track.onServer" v-b-tooltip.hover :title="$t('saveTrack')"><font-awesome-icon @click="showUploadModal" style="height: 24px; cursor: pointer" icon="save"/></span>
           <span v-else v-b-tooltip.hover :title="$t('uploadTrack')"><font-awesome-icon @click="showUploadModal" style="height: 24px; cursor: pointer" icon="upload"/></span>
-        </span>  
+          <span style='margin-right: 3px;'></span>
+        </span>
+        <span v-if="track.gpsTrack.status === TrackStatus.planned">
+          <span v-if="track === $store.state.editedTrack">
+            <font-awesome-icon @click="setEdited(null)" style="height: 24px; cursor: pointer" icon="lock-open"/>
+          </span>
+          <span v-else>
+            <font-awesome-icon @click="setEdited(track)" style="height: 24px; cursor: pointer" icon="lock"/>
+          </span>
+        </span>
       </div>
       <div ref="uploadTrackModal" class="modal fade" tabindex="-1" role="dialog">
         <info-modal :title="$t('trackSaveTitle')">
@@ -158,6 +167,7 @@ import {dragElement} from '@/ts/utils';
 import FileSaver from 'file-saver';
 import {formatDate, formatTimeSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
 import gpxParse from 'gpx-parse';
+import { speedBetweenPoints } from '@/ts/utils/coords';
 
 @Component
 export default class AppTrack extends BaseComponent {
@@ -211,9 +221,12 @@ export default class AppTrack extends BaseComponent {
     this.uploadTrackType = this.uploadTrackTypes[0];
   }
 
-  private mounted() {
+  private refreshTooltip() {
     for (const mapTrack of this.track.mapTracks) {
-      mapTrack.bindTooltip(document.getElementById('tooltip' + this.track.gpsTrack.id), {sticky: true, opacity: 0.95});
+      if (this.track.gpsTrack.status === TrackStatus.done) {
+        const element = document.getElementById('tooltip' + this.track.gpsTrack.id);
+        mapTrack.bindTooltip(element, {sticky: true, opacity: 0.95});
+      }
       mapTrack.on('mouseover', (e) => {
         this.highlightMapTrack();
       });
@@ -221,6 +234,10 @@ export default class AppTrack extends BaseComponent {
         this.unhighlightMapTrack();
       });
     }
+  }
+
+  private mounted() {
+    this.refreshTooltip();
     this.showOrHideTrack();
     this.togglePanel();
     for (const animateTrack of this.track.animateTracks) {
@@ -258,6 +275,10 @@ export default class AppTrack extends BaseComponent {
       this.highlightMapTrack();
     }
     dragElement(this.$refs.detailsWindow, this.$refs.detailsWindowHeader);
+  }
+
+  private setEdited(track: Track) {
+    this.$store.commit('setEditedTrack', track);
   }
 
   public onDrawLayer(info: any) {
@@ -344,7 +365,7 @@ export default class AppTrack extends BaseComponent {
                 if (! last_point) {
                   last_point = point;
                 } else if (index % 10 == 0) {
-                  const speed = this.speedBetweenPoints(point, last_point);
+                  const speed = speedBetweenPoints(point, last_point);
                   last_point = point;
                   this.speedPoints.push({lat: point.lat, lon: point.lon, speed: speed});
                 }
@@ -362,28 +383,6 @@ export default class AppTrack extends BaseComponent {
     this.speedLabelsVisible = !this.speedLabelsVisible;
   }
 
-  private deg2rad(deg: number) {
-    return deg * (Math.PI/180)
-  }
-
-  private distanceBetweenPoints(lat1: number, lon1: number, lat2: number, lon2: number) {
-    let R = 6371;
-    let dLat = this.deg2rad(lat2-lat1);
-    let dLon = this.deg2rad(lon2-lon1); 
-    let a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(this.deg2rad(lat1)) * Math.cos(this.deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2); 
-    let c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-    let d = R * c * 1000; // Distance in meters
-    return d;
-  }
-
-  private speedBetweenPoints(p2: any, p1: any) {
-    let dist = this.distanceBetweenPoints(p1.lat, p1.lon, p2.lat, p2.lon);
-    let time_s = (p2.time - p1.time) / 1000.0;
-    let speed_mps = dist / time_s;
-    let speed_kph = (speed_mps * 3600.0) / 1000.0;
-    return speed_kph;
-  }
-
   private colorTrackBySpeed() {
     if (! this.speedTrack) {
       const points: {lat: number, lon: number, speed: number}[] = [];
@@ -399,7 +398,7 @@ export default class AppTrack extends BaseComponent {
                 if (! last_point) {
                   last_point = point;
                 } else if (index % 10 == 0) {
-                  const speed = this.speedBetweenPoints(point, last_point);
+                  const speed = speedBetweenPoints(point, last_point);
                   last_point = point;
                   points.push({lat: point.lat, lon: point.lon, speed: speed});
                 }
@@ -613,15 +612,23 @@ export default class AppTrack extends BaseComponent {
     for (const mapTrack of this.track.mapTracks) {
       mapTrack.bringToFront();
     }
-    this.track.startMarker.addTo(this.$store.state.map);
-    this.track.finishMarker.addTo(this.$store.state.map);
+    if (this.track.startMarker) {
+      this.track.startMarker.addTo(this.$store.state.map);
+    }
+    if (this.track.finishMarker) {
+      this.track.finishMarker.addTo(this.$store.state.map);
+    }
   }
 
   private unhighlightMapTrack() {
     document.getElementById('trackcheckbox' + this.track.gpsTrack.id)!.style.fontWeight = 'normal';
     this.changeWidth(3);
-    this.track.finishMarker.removeFrom(this.$store.state.map);
-    this.track.startMarker.removeFrom(this.$store.state.map);
+    if (this.track.startMarker) {
+      this.track.finishMarker.removeFrom(this.$store.state.map);
+    }
+    if (this.track.finishMarker) {
+      this.track.startMarker.removeFrom(this.$store.state.map);
+    }
   }
 
   private changeWidth(width: number) {
@@ -645,10 +652,16 @@ export default class AppTrack extends BaseComponent {
       for (const mapTrack of this.track.mapTracks) {
         mapTrack.addTo(this.$store.state.map);
       }
+      for (const marker of this.track.plannedMarkers) {
+        marker.addTo(this.$store.state.map);
+      }
       this.track.checked = true;
     } else {
       for (const mapTrack of this.track.mapTracks) {
         mapTrack.removeFrom(this.$store.state.map);
+      }
+      for (const marker of this.track.plannedMarkers) {
+        marker.removeFrom(this.$store.state.map);
       }
       this.track.checked = false;
     }
@@ -669,6 +682,12 @@ export default class AppTrack extends BaseComponent {
     this.changeColor();
   }
 
+  @Watch('track.lastRefresh')
+  private onPointsChanged(value: string, oldValue: string) {
+    this.showOrHideTrack();
+    this.refreshTooltip();
+  }
+
 }
 </script>
 
@@ -685,8 +704,9 @@ export default class AppTrack extends BaseComponent {
 .smallTooltip {
   padding: 1px;
   margin: 0px;
+  margin-left: 10px;
   border: 1px solid black;
-  font-size: 0.6rem;
+  font-size: 0.7rem;
 }
 
 .leaflet-layer2 {

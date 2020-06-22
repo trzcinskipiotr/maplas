@@ -308,7 +308,6 @@ export default class Index extends BaseComponent {
     this.addCogsButton();
     this.addImportButton();
     this.addCurrentLocationControl();
-    this.addMeasureControl();
     this.downloadTracks();
     this.downloadRegions();
     this.downloadPlaces();
@@ -335,6 +334,12 @@ export default class Index extends BaseComponent {
     this.$store.commit('setAppHost', window.location.hostname === 'localhost' ? 'http://localhost:8000/djangoapp/' : '/djangoapp/');
   }
 
+  private mapClicked(e) {
+    if (this.$store.state.editedTrack) {
+      this.$store.state.editedTrack.addPoint(e.latlng.lat, e.latlng.lng, this.$store.state.map)
+    }
+  }
+
   private createMap(center: [number, number], zoom: number) {
     const map = L.map('map', {zoomAnimation: false});
     map.setView(center, zoom);
@@ -343,10 +348,7 @@ export default class Index extends BaseComponent {
     })
     this.$store.commit('setMap', map);
     this.$store.commit('setZoomLevel', zoom);
-  }
-
-  private addMeasureControl() {
-    L.control.polylineMeasure({clearMeasurementsOnStop: false, showClearControl: true}).addTo(this.$store.state.map);
+    map.on('click', this.mapClicked);
   }
 
   private addLayers() {

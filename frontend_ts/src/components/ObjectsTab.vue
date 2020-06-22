@@ -1,4 +1,5 @@
 <template>
+  <div>
   <div class="card">
     <div class="card-header py-2">
       <b-form-checkbox style="display: inline;" v-model="checkedAll" :indeterminate="indeterminate">
@@ -17,6 +18,9 @@
       </div>
     </div>
     <MapPlace v-for="place of $store.state.places" :key="place.id" :place="place"></MapPlace>
+  </div>
+  <br>
+  <PlannedTracks></PlannedTracks>
   </div>
 </template>
 
