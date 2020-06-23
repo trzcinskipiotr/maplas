@@ -124,6 +124,8 @@ en: {
   hideSpeedTrack: 'Hide speed',
   showSpeedTrack: 'Show speed',
   fullRes: 'Full resolution',
+  plannedTracks: 'Plans',
+  newPlannedTrack: 'New',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -246,6 +248,8 @@ pl: {
   hideSpeedTrack: 'Ukryj prędkość',
   showSpeedTrack: 'Pokaż prędkość',
   fullRes: 'Pełna rozdzielczość',
+  plannedTracks: 'Plany',
+  newPlannedTrack: 'Nowy',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

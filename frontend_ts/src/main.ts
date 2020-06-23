@@ -121,7 +121,7 @@ Vue.use(VueSession, {persist: true});
 window.detailsX = 50;
 window.detailsY = 50;
 
-new Vue({
+window.GLOBALVUE = new Vue({
   // @ts-ignore
   i18n,
   router,

@@ -1,7 +1,8 @@
 <template>
   <div class="mb-2">
-    <button v-if="$store.state.user" class="btn btn-primary btn-sm" @click="newPlannedTrack">{{ $t('newPlannedTrack') }}</button>
-    <AppTrackGroup :trackGroup="plannedGroup"></AppTrackGroup>
+    <AppTrackGroup :trackGroup="plannedGroup">
+      <button v-if="$store.state.user" class="btn btn-primary btn-sm" @click="newPlannedTrack">{{ $t('newPlannedTrack') }}</button>
+    </AppTrackGroup>
   </div>
 </template>
 
@@ -17,6 +18,14 @@ import Track from '@/ts/Track';
 export default class PlannedTracks extends BaseComponent {
 
   private plannedGroup: TrackGroup = new TrackGroup();
+
+  @Watch('$store.state.plannedTracks')
+  private onStoreTracksChanged(value: string, oldValue: string) {
+    this.plannedGroup.tracks = [];
+    for (const plannedTrack of this.$store.state.plannedTracks) {
+      this.plannedGroup.tracks.push(plannedTrack);
+    }
+  }
 
   private mounted() {
     this.plannedGroup.label = 'plannedTracks';

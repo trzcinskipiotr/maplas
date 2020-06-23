@@ -5,6 +5,7 @@
       </b-form-checkbox>
       {{ trackGroup.translate ? $t(trackGroup.translate) : trackGroup.label }}
       <div style="float: right;">
+        <slot></slot>&nbsp;
         <font-awesome-icon @click="togglePanel" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
       </div>
     </div>

@@ -16,6 +16,7 @@ class TrackViewSet(ListModelMixin, UpdateModelMixin, RetrieveModelMixin, CreateM
     queryset = Track.objects.all().order_by('-start_time')
     list_serializer_class = serializers.TrackSerializerRegionNested
     create_update_serializer_class = serializers.TrackSerializer
+    create_update_no_gpx_serializer_class = serializers.TrackSerializerNoGpx
     retrieve_serializer_class = serializers.TrackSerializerFull
     pagination_class = LargeResultsSetPagination
     permission_classes = (permissions.AllowAny,)
@@ -36,11 +37,16 @@ class TrackViewSet(ListModelMixin, UpdateModelMixin, RetrieveModelMixin, CreateM
             return self.list_serializer_class
         if self.action == 'retrieve':
             return self.retrieve_serializer_class
+        nogpx = self.request.query_params.get('nogpx', None)
+        if nogpx:
+            return self.create_update_no_gpx_serializer_class
         return self.create_update_serializer_class
 
     def perform_create(self, serializer):
+        nogpx = self.request.query_params.get('nogpx', None)
         track = serializer.save()
-        fill_array_from_gpx_file(track)
+        if not nogpx:
+            fill_array_from_gpx_file(track)
 
 class RegionViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = Region.objects.all().order_by('id')

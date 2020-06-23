@@ -3,6 +3,7 @@ import L from 'leaflet';
 import Segment from './Segment';
 import { TrackStatus } from './types';
 import { distanceBetweenPoints } from './utils/coords';
+import { getCenter } from 'geolib';
 
 export default class Track {
 
@@ -11,12 +12,13 @@ export default class Track {
   public startMarker: L.Marker;
   public finishMarker: L.Marker;
   public plannedMarkers: L.Marker[];
+  public middleMarkers: L.Marker[];
 
   public lastRefresh: number;
 
   constructor(public gpsTrack: GpsTrack, public checked: boolean, public onServer: boolean) {
     this.lastRefresh = 0;
-    this.createMapObjects(null);
+    this.createMapObjects(window.GLOBALVUE.$store.state.map);
   }
 
   public dragEnd(event: L.DragEndEvent) {
@@ -25,10 +27,33 @@ export default class Track {
     this.obj.moveMarker(this.map);
   }
 
+  public click(event: any) {
+    if (event.originalEvent.ctrlKey) {
+      const pointsArray = this['obj'].gpsTrack.segments[0].pointsArray;
+      const index = pointsArray.indexOf(this.point);
+      if (index >= 0) {
+        pointsArray.splice(index, 1);
+      }
+      this.obj.moveMarker(this.map);
+    }
+  }
+
+  public clickNew(event: L.LeafletMouseEvent) {
+    const pointsArray = this['obj'].gpsTrack.segments[0].pointsArray;
+    const index = pointsArray.indexOf(this.point);
+    if (index >= 0) {
+      pointsArray.splice(index, 0, event.latlng);
+    }
+    this.obj.moveMarker(this.map);
+    L.DomEvent.stopPropagation(event);
+    return false;
+  }
+
   public createMapObjects(map: L.Map) {
     this.mapTracks = [];
     this.animateTracks = [];
     this.plannedMarkers = [];
+    this.middleMarkers = [];
     for (const segment of this.gpsTrack.segments) {
       const poliline = new L.Polyline(segment.pointsArray, {
         color: this.gpsTrack.color,
@@ -72,18 +97,28 @@ export default class Track {
       if (this.gpsTrack.status === TrackStatus.planned) {
         let lastPoint: L.LatLng = null;
         let distance = 0;
+        const markerIcon = L.icon({
+          iconUrl: 'img/circle.svg',
+          iconSize: [13, 13],
+          iconAnchor: [6, 6],
+        });
+        const middleMarkerIcon = L.icon({
+          iconUrl: 'img/circle_blue.svg',
+          iconSize: [9, 9],
+          iconAnchor: [4, 4],
+        });
         for (const segment of this.gpsTrack.segments) {
           for (const point of segment.pointsArray) {
-            const markerIcon = L.icon({
-              iconUrl: 'img/circle.svg',
-              iconSize: [11, 11],
-              iconAnchor: [5, 5],
-            });
-            const marker = new L.Marker(point, {draggable: true, icon: markerIcon});
+            const marker = new L.Marker(point, {draggable: true, icon: markerIcon, zIndexOffset: 100000});
             const dragParam = {'obj': this, 'point': point, 'map': map};
             marker.on('dragend', this.dragEnd.bind(dragParam));
+            marker.on('click', this.click.bind(dragParam));
             if (lastPoint) {
               distance = distance + distanceBetweenPoints(point.lat, point.lng, lastPoint.lat, lastPoint.lng);
+              const middle = getCenter([{latitude: point.lat, longitude: point.lng}, {latitude: lastPoint.lat, longitude: lastPoint.lng}]);
+              const middleMarker = new L.Marker([middle.latitude, middle.longitude], {icon: middleMarkerIcon, zIndexOffset: 50000});
+              middleMarker.on('click', this.clickNew.bind(dragParam));
+              this.middleMarkers.push(middleMarker);
               lastPoint = point;
             } else {
               lastPoint = point;
@@ -104,6 +139,9 @@ export default class Track {
       animateTrack.removeFrom(map);
     }
     for (const marker of this.plannedMarkers) {
+      marker.removeFrom(map);
+    }
+    for (const marker of this.middleMarkers) {
       marker.removeFrom(map);
     }
     if (this.startMarker) {

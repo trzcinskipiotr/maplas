@@ -98,6 +98,9 @@ const store: StoreOptions<RootState> = {
     setTracks(state, tracks: Track[]) {
       state.tracks = tracks;
     },
+    setPlannedTracks(state, plannedTracks: Track[]) {
+      state.plannedTracks = plannedTracks;
+    },
     setSpeedLegendVisible(state, speedLegendVisible: boolean) {
       state.speedLegendVisible = speedLegendVisible;
     },
@@ -154,6 +157,11 @@ const store: StoreOptions<RootState> = {
         }
       }
       for (const looptrack of state.imports) {
+        if (looptrack === options.track) {
+          looptrack.checked = options.checked;
+        }
+      }
+      for (const looptrack of state.plannedTracks) {
         if (looptrack === options.track) {
           looptrack.checked = options.checked;
         }

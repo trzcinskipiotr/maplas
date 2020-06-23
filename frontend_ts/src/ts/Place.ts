@@ -30,10 +30,12 @@ export default class Place {
   }
 
   public setDraggable(drag: boolean) {
-    if (drag) {
-      this.marker.dragging.enable();
-    } else {
-      this.marker.dragging.disable();
+    if (this.marker.dragging) {
+      if (drag) {
+        this.marker.dragging.enable();
+      } else {
+        this.marker.dragging.disable();
+      }
     }
   }
 

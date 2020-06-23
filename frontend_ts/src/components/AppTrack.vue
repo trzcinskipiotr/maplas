@@ -167,7 +167,7 @@ import {dragElement} from '@/ts/utils';
 import FileSaver from 'file-saver';
 import {formatDate, formatTimeSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
 import gpxParse from 'gpx-parse';
-import { speedBetweenPoints } from '@/ts/utils/coords';
+import { speedBetweenPoints, roundCoord } from '@/ts/utils/coords';
 
 @Component
 export default class AppTrack extends BaseComponent {
@@ -460,8 +460,22 @@ export default class AppTrack extends BaseComponent {
     obj.region = this.uploadRegion ? this.uploadRegion.value.id : undefined;
     obj.type = this.uploadTrackType.value;
     obj.description = this.description;
+    if (this.track.gpsTrack.status === TrackStatus.planned) {
+      obj.points_json_optimized = '[[';
+      for (const segment of this.track.gpsTrack.segments) {
+        for (const point of segment.pointsArray) {
+          obj.points_json_optimized = obj.points_json_optimized + '[' + roundCoord(point.lat) + ',' + roundCoord(point.lng) + ']';
+          if (point !== segment.pointsArray[segment.pointsArray.length - 1]) {
+            obj.points_json_optimized = obj.points_json_optimized + ','
+          }
+        }
+      }
+      obj.points_json_optimized = obj.points_json_optimized + ']]';
+      obj.points_json = obj.points_json_optimized;
+    }
     this.trackSaving = true;
-    axios.put(this.$store.state.appHost + `api/tracks/${this.track.gpsTrack.id}/`, obj)
+    const nogpx = this.track.gpsTrack.status === TrackStatus.done ? '' : '?nogpx=true';
+    axios.put(this.$store.state.appHost + `api/tracks/${this.track.gpsTrack.id}/` + nogpx, obj)
       .then((response: object) => {
         this.track.gpsTrack.region = this.uploadRegion ? this.uploadRegion.value : undefined;
         this.track.gpsTrack.name = obj.name;
@@ -548,8 +562,22 @@ export default class AppTrack extends BaseComponent {
     obj.type = this.uploadTrackType.value;
     obj.description = this.description;
     obj.upload_user = this.$store.state.user.id;
+    if (this.track.gpsTrack.status === TrackStatus.planned) {
+      obj.points_json_optimized = '[[';
+      for (const segment of this.track.gpsTrack.segments) {
+        for (const point of segment.pointsArray) {
+          obj.points_json_optimized = obj.points_json_optimized + '[' + roundCoord(point.lat) + ',' + roundCoord(point.lng) + ']';
+          if (point !== segment.pointsArray[segment.pointsArray.length - 1]) {
+            obj.points_json_optimized = obj.points_json_optimized + ','
+          }
+        }
+      }
+      obj.points_json_optimized = obj.points_json_optimized + ']]';
+      obj.points_json = obj.points_json_optimized;
+    }
     this.trackSaving = true;
-    axios.post(this.$store.state.appHost + `api/tracks/`, obj)
+    const nogpx = this.track.gpsTrack.status === TrackStatus.done ? '' : '?nogpx=true';
+    axios.post(this.$store.state.appHost + `api/tracks/` + nogpx, obj)
       .then((response: any) => {
         this.track.gpsTrack.distance = response.data.distance;
         this.track.gpsTrack.id = response.data.id;
@@ -559,9 +587,11 @@ export default class AppTrack extends BaseComponent {
         this.track.gpsTrack.description = obj.description;
         this.track.gpsTrack.color = obj.color;
         this.track.gpsTrack.type = obj.type;
-        this.$store.commit('removeImportedTrack', this.track);
-        this.$store.commit('addTrack', this.track);
-        this.$store.commit('sortTracks');
+        if (this.track.gpsTrack.status === TrackStatus.done) {
+          this.$store.commit('removeImportedTrack', this.track);
+          this.$store.commit('addTrack', this.track);
+          this.$store.commit('sortTracks');
+        }
         this.track.onServer = true;
         this.createAlert(AlertStatus.success, this.$t('trackSaved').toString(), 2000);
         this.closeUploadTrackModal();
@@ -655,12 +685,18 @@ export default class AppTrack extends BaseComponent {
       for (const marker of this.track.plannedMarkers) {
         marker.addTo(this.$store.state.map);
       }
+      for (const marker of this.track.middleMarkers) {
+        marker.addTo(this.$store.state.map);
+      }
       this.track.checked = true;
     } else {
       for (const mapTrack of this.track.mapTracks) {
         mapTrack.removeFrom(this.$store.state.map);
       }
       for (const marker of this.track.plannedMarkers) {
+        marker.removeFrom(this.$store.state.map);
+      }
+      for (const marker of this.track.middleMarkers) {
         marker.removeFrom(this.$store.state.map);
       }
       this.track.checked = false;

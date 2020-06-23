@@ -236,6 +236,14 @@ export default class Index extends BaseComponent {
     }
   }
 
+  @Watch('$store.state.imports')
+  private onStoreImportsChanged(value: string, oldValue: string) {
+    this.importGroup.tracks = [];
+    for (const track of this.$store.state.imports) {
+      this.importGroup.tracks.push(track);
+    }
+  }
+
   private logInToApi() {
     axios.post(this.$store.state.appHost + 'api/auth/token/login/', {username: this.login, password: this.password}).then(
       (response) => {
@@ -655,7 +663,6 @@ export default class Index extends BaseComponent {
               const newGpstrack: GpsTrack = new GpsTrack(startIndex + trackIndex, fileTrack.name, data.metadata.description, JSON.stringify(segments), '#FF0000', distance, TrackStatus.done, TrackType.bicycle, startTime ? new Date(startTime) : null, endTime ? new Date(endTime) : null, gpxFileString, undefined);
               const track = new Track(newGpstrack, true, false);
               this.$store.commit('addImportedTrack', track);
-              this.importGroup.tracks.push(track);
               const trackBounds = new L.LatLngBounds(track.mapTracks[0].getBounds().getNorthEast(), track.mapTracks[0].getBounds().getSouthWest());
               for (const mapTrack of track.mapTracks) {
                 trackBounds.extend(mapTrack.getBounds());
@@ -741,27 +748,34 @@ export default class Index extends BaseComponent {
     axios.get(this.$store.state.appHost + 'api/tracks/' + (process.env.VUE_APP_TRACKS_QUERY || '')).then(
       (response) => {
         const tracks = [];
+        const plannedTracks = [];
         for (const gpstrack of response.data.results) {
-          let checked;
-          if (typeof this.$route.query.tracks === 'string') {
-            const tracksIds = this.$route.query.tracks.split(',');
-            checked = tracksIds.includes(String(gpstrack.id));
-          } else {
-            checked = ((!this.isPlannedTrack(gpstrack)) && (this.isBicycleTrack(gpstrack)));
-            checked = true;
-          }
           try {
             const region: Region = gpstrack.region ? new Region(gpstrack.region.id, gpstrack.region.name) : undefined;
             const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color ? gpstrack.color : '#ff0000', gpstrack.distance, gpstrack.status, gpstrack.type, gpstrack.start_time ? new Date(gpstrack.start_time) : null, gpstrack.end_time ? new Date(gpstrack.end_time) : null, undefined, region);
+            let checked = false;
+            if (typeof this.$route.query.tracks === 'string') {
+              const tracksIds = this.$route.query.tracks.split(',');
+              checked = tracksIds.includes(String(gpstrack.id));
+            } else {
+              if (newGpstrack.status === TrackStatus.done) {
+                checked = true;
+              } else {
+                checked = false;
+              }
+            }
             const track = new Track(newGpstrack, checked, true);
             if (newGpstrack.isDoneTrack()) {
               tracks.push(track);
+            } else {
+              plannedTracks.push(track);
             }
           } catch (error) {
             this.createAlert(AlertStatus.danger, this.$t('oneTrackError').toString(), 2000);
           }
         }
         this.$store.commit('setTracks', tracks);
+        this.$store.commit('setPlannedTracks', plannedTracks);
         if (this.$route.query.tracks) {
           let trackBounds: L.LatLngBounds | undefined;
           for (const track of this.$store.getters.selectedTracks as Track[]) {
@@ -883,6 +897,16 @@ export default class Index extends BaseComponent {
 
   .leaflet-control-scale-line {
     background-color: rgba(255, 255, 255, 0.95) !important;
+  }
+
+  .leaflet-control-layers-toggle {
+    width: 48px !important;
+    height: 48px !important;
+  }
+
+  .leaflet-control-zoom-in, .leaflet-control-zoom-out, .leaflet-control-zoom-fullscreen, .leaflet-bar a, .leaflet-control-locate {
+    width: 32px !important;
+    height: 32px !important;
   }
 
   .alertmessage {
