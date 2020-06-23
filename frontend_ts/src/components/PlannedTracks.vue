@@ -34,7 +34,7 @@ export default class PlannedTracks extends BaseComponent {
   }
 
   private newPlannedTrack() {
-    const newGpstrack: GpsTrack = new GpsTrack(Date.now(), '', '', '[]', '#FF0000', 0, TrackStatus.planned, TrackType.bicycle, null, null, '', undefined);
+    const newGpstrack: GpsTrack = new GpsTrack(Date.now(), 'Nowa trasa', '', '[]', '#FF0000', 0, TrackStatus.planned, TrackType.bicycle, null, null, '', undefined);
     const track = new Track(newGpstrack, true, false);
     this.$store.commit('addPlannedTrack', track);
     this.plannedGroup.tracks.push(track);
