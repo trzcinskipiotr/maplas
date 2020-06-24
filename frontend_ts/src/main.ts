@@ -14,6 +14,8 @@ import 'leaflet.motion/dist/leaflet.motion.min';
 import 'localforage';
 import './ts/leaflet.offline';
 
+import 'localforage-getitems';
+
 import './ts/L.CanvasLayer';
 
 import '@fortawesome/fontawesome-free/css/all.css';
