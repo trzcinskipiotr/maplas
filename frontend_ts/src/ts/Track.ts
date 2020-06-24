@@ -14,10 +14,13 @@ export default class Track {
   public plannedMarkers: L.Marker[];
   public middleMarkers: L.Marker[];
 
+  public maximized: boolean;
+
   public lastRefresh: number;
 
   constructor(public gpsTrack: GpsTrack, public checked: boolean, public onServer: boolean) {
     this.lastRefresh = 0;
+    this.maximized = false;
     this.createMapObjects(window.GLOBALVUE.$store.state.map);
   }
 
@@ -151,6 +154,9 @@ export default class Track {
       this.finishMarker.removeFrom(map);
     }
     this.createMapObjects(map);
+    if (this.gpsTrack.segments.length) {
+      this.gpsTrack.distance = this.gpsTrack.segments[0].distance;
+    }
     this.lastRefresh = Date.now();
   }
 

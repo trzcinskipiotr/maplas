@@ -38,6 +38,7 @@ export default class PlannedTracks extends BaseComponent {
     const track = new Track(newGpstrack, true, false);
     this.$store.commit('addPlannedTrack', track);
     this.plannedGroup.tracks.push(track);
+    this.$store.commit('setEditedTrack', track);
   }
 
 }

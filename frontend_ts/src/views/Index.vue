@@ -136,7 +136,6 @@
         </div>  
       </div>
     </div>
-    <photo-upload></photo-upload>
     <div class="alertmessage">
       <div class="flexcenter"><font-awesome-icon v-if="loading" class="fa-spin" icon="spinner" size="3x"/></div>
       <div v-for="alert in $store.state.alerts" class="alert border border-dark" v-bind:class="{ 'alert-success': isSuccessAlert(alert), 'alert-danger': isDangerAlert(alert) }" v-bind:key="alert.date" role="alert">
@@ -158,6 +157,7 @@
     <template v-if="document.getElementsByClassName('leaflet-control-zoom-out')[0]">
       <b-tooltip :target="document.getElementsByClassName('leaflet-control-zoom-out')[0]">{{ $t('zoomOut') }}</b-tooltip>
     </template>
+    <TrackDetails v-for="track in $store.state.tracks" :track="track" :key="track.gpsTrack.id"></TrackDetails>
   </div>  
 </template>
 
@@ -904,9 +904,22 @@ export default class Index extends BaseComponent {
     height: 48px !important;
   }
 
-  .leaflet-control-zoom-in, .leaflet-control-zoom-out, .leaflet-control-zoom-fullscreen, .leaflet-bar a, .leaflet-control-locate {
-    width: 32px !important;
-    height: 32px !important;
+  @media (min-width: 700px) {
+    .leaflet-control-zoom-in, .leaflet-control-zoom-out, .leaflet-control-zoom-fullscreen, .leaflet-bar a, .leaflet-control-locate {
+      width: 32px !important;
+      height: 32px !important;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .leaflet-control-zoom-in, .leaflet-control-zoom-out, .leaflet-control-zoom-fullscreen, .leaflet-bar a, .leaflet-control-locate {
+      width: 48px !important;
+      height: 48px !important;
+    }
+
+    .leaflet-control-zoom-in, .leaflet-control-zoom-out {
+      margin-bottom: 7px !important;
+    }
   }
 
   .alertmessage {

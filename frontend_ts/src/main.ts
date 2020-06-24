@@ -70,6 +70,7 @@ import ObjectsTab from '@/components/ObjectsTab.vue';
 import NewPlace from '@/components/NewPlace.vue';
 import MapPlace from '@/components/MapPlace.vue';
 import PlannedTracks from '@/components/PlannedTracks.vue';
+import TrackDetails from '@/components/TrackDetails.vue';
 Vue.component('AppTrack', AppTrack);
 Vue.component('AppTrackGroup', AppTrackGroup);
 Vue.component('TrackStatusIcon', TrackStatusIcon);
@@ -82,6 +83,7 @@ Vue.component('ObjectsTab', ObjectsTab);
 Vue.component('NewPlace', NewPlace);
 Vue.component('MapPlace', MapPlace);
 Vue.component('PlannedTracks', PlannedTracks);
+Vue.component('TrackDetails', TrackDetails);
 
 import {formatDate, formatDateSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);
@@ -120,6 +122,7 @@ Vue.use(VueSession, {persist: true});
 
 window.detailsX = 50;
 window.detailsY = 50;
+window.detailsLastZIndex = 1;
 
 window.GLOBALVUE = new Vue({
   // @ts-ignore
