@@ -434,19 +434,19 @@ export default class Index extends BaseComponent {
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
-    layers['openStreetMap'] = L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+    layers['openStreetMap'] = L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
-    layers['openCycleMap'] = L.tileLayer('http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png', {
+    layers['openCycleMap'] = L.tileLayer('https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenCycleMap, ' + 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
-    layers['openCycleMapOffline'] = L.tileLayer.offline('http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png', {
+    layers['openCycleMapOffline'] = L.tileLayer.offline('https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenCycleMap, ' + 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
