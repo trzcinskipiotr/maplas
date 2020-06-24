@@ -348,6 +348,10 @@ export default class Index extends BaseComponent {
     }
   }
 
+  private mapMoveEnd(e) {
+    $('.leaflet-control-scale-line').html($('.leaflet-control-scale-line').html() + '<span style="float: right">(Zoom: ' + this.$store.state.map.getZoom() + ')</span>');
+  }
+
   private createMap(center: [number, number], zoom: number) {
     const map = L.map('map', {zoomAnimation: false});
     map.setView(center, zoom);
@@ -357,6 +361,7 @@ export default class Index extends BaseComponent {
     this.$store.commit('setMap', map);
     this.$store.commit('setZoomLevel', zoom);
     map.on('click', this.mapClicked);
+    map.on('moveend', this.mapMoveEnd);
   }
 
   private addLayers() {
@@ -528,7 +533,6 @@ export default class Index extends BaseComponent {
     }
   }
 
-  
 
   private addCogsButton() {
     const CogsControl = L.Control.extend({
