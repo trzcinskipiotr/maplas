@@ -11,6 +11,8 @@ import 'leaflet-hotline';
 import 'Leaflet.MultiOptionsPolyline';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet.motion/dist/leaflet.motion.min';
+import 'localforage';
+import './ts/leaflet.offline';
 
 import './ts/L.CanvasLayer';
 

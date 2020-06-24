@@ -1,5 +1,11 @@
 <template>
   <div id="appvue">
+    <div id="saveTitleMessageDiv" class="alertmessage" style="display: none">
+      <div id="saveTitleMessage" class="alert border border-dark alert-success" role="alert">
+        <span id="saveTitleMessageMessage"></span>&nbsp;
+        <span style="cursor: pointer" aria-hidden="true" @click="document.getElementById('saveTitleMessageDiv').style.display = 'none'">&times;</span>
+      </div>
+    </div>
     <div class="wrapper">
       <div id="sidebar">
         <div class="card">
@@ -216,6 +222,11 @@ export default class Index extends BaseComponent {
   // @ts-ignore
   private TrackType = TrackType;
 
+  private openCycleMapOfflineLayer: L.Layer = null;
+
+  private progress = 0;
+  private totalToSave = 0;
+
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
     i18n.locale = this.language!.language;
@@ -316,6 +327,7 @@ export default class Index extends BaseComponent {
     this.addCogsButton();
     this.addImportButton();
     this.addCurrentLocationControl();
+    this.addOffline();
     this.downloadTracks();
     this.downloadRegions();
     this.downloadPlaces();
@@ -434,6 +446,13 @@ export default class Index extends BaseComponent {
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
+    layers['openCycleMapOffline'] = L.tileLayer.offline('http://{s}.tile.opencyclemap.org/cycle/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; OpenCycleMap, ' + 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+      errorTileUrl: 'img/tiledownloadfailed.jpg',
+      subdomains: 'abc',
+    });
+
     layers['googleRoads'] = L.gridLayer.googleMutant({
       maxZoom: 21,
       type: 'roadmap',
@@ -485,6 +504,7 @@ export default class Index extends BaseComponent {
     const baseMaps: LayersDictionary = {
       'OpenStreetMap': layers['openStreetMap'],
       'OpenCycleMap': layers['openCycleMap'],
+      'OpenCycleMapOffline': layers['openCycleMapOffline'],
       'OpenTopoMap': layers['openTopoMap'],
       'Mapbox streets': layers['mapboxStreets'],
       'Mapbox satellite': layers['mapboxSatellite'],
@@ -500,6 +520,8 @@ export default class Index extends BaseComponent {
       'Hydda base': layers['hyddaBase'],
       'mapa-turystyczna.pl': layers['mapaTurystycznaPL'],
     };
+
+    this.openCycleMapOfflineLayer = layers['openCycleMapOffline'];
 
     for (const layer in baseMaps) {
       if (baseMaps.hasOwnProperty(layer)) {
@@ -533,6 +555,35 @@ export default class Index extends BaseComponent {
     }
   }
 
+  private addOffline() {
+    const control = L.control.savetiles(this.openCycleMapOfflineLayer, {
+      zoomlevels: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
+      confirm(layer, succescallback) {
+        if (window.confirm(`Save ${layer._tilesforSave.length}`)) {
+          succescallback();
+        }
+      },
+      confirmRemoval(layer, successCallback) {
+        if (window.confirm('Remove all the tiles?')) {
+          successCallback();
+        }
+      },
+      saveText: '<i class="fa fa-download" aria-hidden="true" title="Save tiles"></i>',
+      rmText: '<i class="fa fa-trash" aria-hidden="true"  title="Remove tiles"></i>',
+    });
+    control.addTo(this.$store.state.map);
+    this.progress = 0;
+    this.openCycleMapOfflineLayer.on('savestart', (e) => {
+      this.progress = 0;
+      this.totalToSave = e._tilesforSave.length
+      document.getElementById('saveTitleMessageDiv').style.display = 'block';
+      document.getElementById('saveTitleMessageMessage').innerHTML = '' + this.progress + '/' + this.totalToSave;
+    });
+    this.openCycleMapOfflineLayer.on('savetileend', () => {
+      this.progress += 1;
+      document.getElementById('saveTitleMessageMessage').innerHTML = '' + this.progress + '/' + this.totalToSave;
+    });
+  }
 
   private addCogsButton() {
     const CogsControl = L.Control.extend({
@@ -873,6 +924,18 @@ export default class Index extends BaseComponent {
 
   #sidebar.active {
     margin-left: 0;
+  }
+
+  .saveMessage {
+    position: fixed;
+    left: 50%;
+    top: 10px;
+    z-index: 100000;
+    background-color: white;
+    -webkit-transform: translate(-50%, 0);
+    -moz-transform: translate(-50%, 0);
+    -o-transform: translate(-50%, 0);
+    transform: translate(-50%, 0);
   }
 
   .centerloading {
