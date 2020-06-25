@@ -31,6 +31,7 @@ export interface RootState {
   isDesktop: boolean;
   minimalZoom: number;
   maximalZoom: number;
+  offlineControl: any;
 }
 
 const store: StoreOptions<RootState> = {
@@ -62,6 +63,7 @@ const store: StoreOptions<RootState> = {
     isDesktop: document.documentElement.clientWidth >= 700,
     minimalZoom: 4,
     maximalZoom: 18,
+    offlineControl: null,
   },
   getters: {
     selectedTracks: (state): Track[] => {

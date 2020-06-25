@@ -11,13 +11,21 @@
         {{ $t('zoomTo') }} <select v-model="$store.state.maximalZoom">
           <option v-for="zoom in allowMaximalZoom" :value="zoom" :key="zoom">{{ zoom }}</option>
         </select><br><br>  
-        <button :disabled="exporting || importing" class="btn btn-primary btn-sm" @click="exportOffline">
+        <button :disabled="exporting || importing || saving" class="btn btn-primary btn-sm" @click="exportOffline">
           <font-awesome-icon v-if="exporting" class="fa-spin" icon="spinner" />&nbsp;
           {{ $t('exportOffline') }}
         </button>&nbsp;
-        <button :disabled="exporting || importing" class="btn btn-primary btn-sm" @click="openImportFileInput">
+        <button :disabled="exporting || importing || saving" class="btn btn-primary btn-sm" @click="openImportFileInput">
           <font-awesome-icon v-if="importing" class="fa-spin" icon="spinner" />&nbsp;
           {{ $t('importOffline') }}
+        </button><br><br>
+        <button :disabled="exporting || importing || saving" class="btn btn-primary btn-sm" @click="downloadOffline">
+          <font-awesome-icon v-if="saving" class="fa-spin" icon="spinner" />&nbsp;
+          {{ $t('downloadOffline') }}
+        </button>&nbsp;
+        <button :disabled="exporting || importing || saving" class="btn btn-primary btn-sm" @click="deleteOffline">
+          <font-awesome-icon v-if="saving" class="fa-spin" icon="spinner" />&nbsp;
+          {{ $t('deleteOffline') }}
         </button>
         <input id="importFileInputOffline" style="display:none;" type="file" accept=".txt" v-on:change="importFile" />
       </div>
@@ -40,6 +48,7 @@ export default class OfflineCard extends BaseComponent {
   private allowMinimalZoom = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
   private exporting = false;
   private importing = false;
+  private saving = false;
 
   private chunkSize = 1024 * 1024 * 100;
 
@@ -62,6 +71,13 @@ export default class OfflineCard extends BaseComponent {
     return allow;
   }
 
+  private downloadOffline() {
+    this.$store.state.offlineControl._saveTiles();
+  }
+
+  private deleteOffline() {
+    this.$store.state.offlineControl._rmTiles();
+  }
 
   private async exportOffline() {
     this.exporting = true;

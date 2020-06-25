@@ -101,6 +101,8 @@
                     <font-awesome-icon icon="shoe-prints"/> {{ playingSpeed / 10 }} km/s 
                     <b-form-slider style="width: 100%;" v-model="playingSpeed" :min=1 :max=20></b-form-slider><br><br>
                     <OfflineCard></OfflineCard>
+                    <br>
+                    <button class="btn btn-primary" @click="noSleepToggle">{{ noSleepActive ? $t('noSleepActive') : $t('noSleepInactive')}}</button>
                   </div>
                 </div>
               </div>
@@ -198,6 +200,7 @@ import gpxParse from 'gpx-parse';
 import listTranslator from '@/ts/list_translator';
 import PlaceType from '@/ts/PlaceType';
 import Photo from '../ts/Photo';
+import NoSleep from 'nosleep.js';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -241,6 +244,9 @@ export default class Index extends BaseComponent {
   private layerName: string = null;
   private baseMaps: LayersDictionary = {};
 
+  private noSleepActive = false;
+  private noSleep: any = null;
+
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
     i18n.locale = this.language!.language;
@@ -266,6 +272,16 @@ export default class Index extends BaseComponent {
     this.importGroup.tracks = [];
     for (const track of this.$store.state.imports) {
       this.importGroup.tracks.push(track);
+    }
+  }
+
+  private noSleepToggle() {
+    if (this.noSleepActive) {
+      this.noSleep.disable();
+      this.noSleepActive = false;
+    } else {
+      this.noSleep.enable();
+      this.noSleepActive = true;
     }
   }
 
@@ -370,6 +386,7 @@ export default class Index extends BaseComponent {
     this.downloadRegions();
     this.downloadPlaces();
     this.downloadPlaceTypes();
+    this.noSleep = new NoSleep();
   }
 
   private setLanguage() {
@@ -649,6 +666,7 @@ export default class Index extends BaseComponent {
       saveText: '<i class="fa fa-download" aria-hidden="true" title="Save tiles"></i>',
       rmText: '<i class="fa fa-trash" aria-hidden="true"  title="Remove tiles"></i>',
     });
+    this.$store.state.offlineControl = this.offlineControl;
     this.offlineControl.addTo(this.$store.state.map);
   }
 

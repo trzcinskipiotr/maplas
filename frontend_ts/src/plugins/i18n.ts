@@ -132,8 +132,12 @@ en: {
   mapNotOffline: 'Map is not offline layer',
   removeAllTitles: 'Remove all {0} titles?',
   saveAllTitles: 'Save {0} titles?\nZooms: {1}\nFirst url: {2}',
-  exportOffline: 'Export offline maps',
-  importOffline: 'Import offline maps',
+  exportOffline: 'Export maps',
+  importOffline: 'Import maps',
+  downloadOffline: 'Download',
+  deleteOffline: 'Delete',
+  noSleepActive: 'Screen lock activated',
+  noSleepInactive: 'Screen lock deactivated',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -264,8 +268,12 @@ pl: {
   mapNotOffline: 'Mapa nie jest warstwą offline',
   removeAllTitles: 'Usunąć wszystkie {0} bitmapy?',
   saveAllTitles: 'Zapisać {0} bitmapy?\nZoomy: {1}\nPierwszy url: {2}',
-  exportOffline: 'Exportuj mapy offline',
-  importOffline: 'Importuj mapy offline',
+  exportOffline: 'Exportuj mapy',
+  importOffline: 'Importuj mapy',
+  downloadOffline: 'Ściągnij',
+  deleteOffline: 'Usuń',
+  noSleepActive: 'Blokada ekranu aktywowana',
+  noSleepInactive: 'Blokada ekranu deaktywowana',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

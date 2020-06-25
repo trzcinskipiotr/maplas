@@ -50,6 +50,7 @@
     "localforage": "^1.7.4",
     "localforage-getitems": "^1.4.2",
     "moment": "^2.24.0",
+    "nosleep.js": "^0.11.0",
     "register-service-worker": "^1.6.2",
     "streamsaver": "^2.0.4",
     "vue": "^2.6.10",

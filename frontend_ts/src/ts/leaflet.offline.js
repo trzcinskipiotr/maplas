@@ -284,11 +284,12 @@ var ControlSaveTiles = L.Control.extend(
       this.options.zoomlevels = zoomlevels;
     },
     onAdd: function onAdd() {
-      var container = L.DomUtil.create('div', 'savetiles leaflet-bar');
+      //var container = L.DomUtil.create('div', 'savetiles leaflet-bar');
+      var container = L.DomUtil.create('span');
       var ref = this;
       var options = ref.options;
-      this._createButton(options.saveText, 'savetiles', container, this._saveTiles);
-      this._createButton(options.rmText, 'rmtiles', container, this._rmTiles);
+      //this._createButton(options.saveText, 'savetiles', container, this._saveTiles);
+      //this._createButton(options.rmText, 'rmtiles', container, this._rmTiles);
       return container;
     },
     _createButton: function _createButton(html, className, container, fn) {
