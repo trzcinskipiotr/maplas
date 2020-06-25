@@ -631,7 +631,7 @@ export default class Index extends BaseComponent {
       confirm: (layer, succescallback) => {
         if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline')) {
           const firstUrl = layer._tilesforSave[0].key
-          if (window.confirm(`Save ${layer._tilesforSave.length} titles?\nZooms: ${this.offlineControl.options.zoomlevels}\nFirst url: ${firstUrl}`)) {
+          if (window.confirm(this.$t('saveAllTitles', [layer._tilesforSave.length, this.offlineControl.options.zoomlevels, firstUrl]))) {
             succescallback();
           }
         } else {
@@ -642,7 +642,7 @@ export default class Index extends BaseComponent {
       confirmRemoval: (layer, successCallback) => {
         let size = -1;
         this.offlineControl.getStorageSize((f) => {size = f});
-        if (window.confirm(`Remove all ${size} tiles?`)) {
+        if (window.confirm(this.$t('removeAllTitles', [size]))) {
           successCallback();
         }
       },

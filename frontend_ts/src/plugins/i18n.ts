@@ -126,6 +126,12 @@ en: {
   fullRes: 'Full resolution',
   plannedTracks: 'Plans',
   newPlannedTrack: 'New',
+  offlineMaps: 'Offline maps',
+  zoomFrom: 'Zoom from',
+  zoomTo: 'to',
+  mapNotOffline: 'Map is not offline layer',
+  removeAllTitles: 'Remove all {0} titles?',
+  saveAllTitles: 'Save {0} titles?\nZooms: {1}\nFirst url: {2}',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -250,6 +256,12 @@ pl: {
   fullRes: 'Pełna rozdzielczość',
   plannedTracks: 'Plany',
   newPlannedTrack: 'Nowy',
+  offlineMaps: 'Mapy offline',
+  zoomFrom: 'Zoom od',
+  zoomTo: 'do',
+  mapNotOffline: 'Mapa nie jest warstwą offline',
+  removeAllTitles: 'Usunąć wszystkie {0} bitmapy?',
+  saveAllTitles: 'Zapisać {0} bitmapy?\nZoomy: {1}\nPierwszy url: {2}',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

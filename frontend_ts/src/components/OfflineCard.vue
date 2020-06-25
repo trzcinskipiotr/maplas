@@ -11,7 +11,7 @@
         {{ $t('zoomTo') }} <select v-model="$store.state.maximalZoom">
           <option v-for="zoom in allowMaximalZoom" :value="zoom" :key="zoom">{{ zoom }}</option>
         </select>  
-        <button class="btn btn-primary btn-sm" @click="exportOffline">{{ $t('exportOffline') }}</button>
+        <button hidden class="btn btn-primary btn-sm" @click="exportOffline">{{ $t('exportOffline') }}</button>
       </div>
     </div>    
   </div>
