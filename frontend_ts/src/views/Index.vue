@@ -721,7 +721,10 @@ export default class Index extends BaseComponent {
   }
 
   private addCurrentLocationControl() {
-    this.$store.state.map!.addControl(L.control.locate({
+    this.$store.state.map.addControl(L.control.locate({
+      flyTo: true,
+      setView: 'untilPan',
+      keepCurrentZoomLevel: true,
       locateOptions: {
         enableHighAccuracy: true,
       },

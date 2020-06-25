@@ -432,16 +432,37 @@ export default class AppTrack extends BaseComponent {
     }
   }
 
-  private showOrHideTrack() {
-    if (this.checked) {
-      for (const mapTrack of this.track.mapTracks) {
-        mapTrack.addTo(this.$store.state.map);
-      }
+  @Watch('$store.state.editedTrack')
+  private onEditedTrackChanged() {
+    if (this.$store.state.editedTrack === this.track) {
       for (const marker of this.track.plannedMarkers) {
         marker.addTo(this.$store.state.map);
       }
       for (const marker of this.track.middleMarkers) {
         marker.addTo(this.$store.state.map);
+      }
+    } else {
+      for (const marker of this.track.plannedMarkers) {
+        marker.removeFrom(this.$store.state.map);
+      }
+      for (const marker of this.track.middleMarkers) {
+        marker.removeFrom(this.$store.state.map);
+      }
+    }
+  }
+
+  private showOrHideTrack() {
+    if (this.checked) {
+      for (const mapTrack of this.track.mapTracks) {
+        mapTrack.addTo(this.$store.state.map);
+      }
+      if (this.$store.state.editedTrack === this.track) {
+        for (const marker of this.track.plannedMarkers) {
+          marker.addTo(this.$store.state.map);
+        }
+        for (const marker of this.track.middleMarkers) {
+          marker.addTo(this.$store.state.map);
+        }
       }
       this.track.checked = true;
     } else {
