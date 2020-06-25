@@ -1,7 +1,7 @@
 <template>
   <div class="mb-2">
     <AppTrackGroup :trackGroup="plannedGroup">
-      <button v-if="$store.state.user" class="btn btn-primary btn-sm" @click="newPlannedTrack">{{ $t('newPlannedTrack') }}</button>
+      <button v-if="($store.state.user) && ($store.state.isDesktop)" class="btn btn-primary btn-sm" @click="newPlannedTrack">{{ $t('newPlannedTrack') }}</button>
     </AppTrackGroup>
   </div>
 </template>

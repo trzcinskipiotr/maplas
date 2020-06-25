@@ -1,6 +1,6 @@
 <template>
   <span>
-    <font-awesome-icon :style="{color: track.gpsTrack.color, height: '24px'}" :id="'colorpopover' + track.gpsTrack.id + type" style="cursor: pointer" icon="circle"></font-awesome-icon>
+    <font-awesome-icon :style="{color: track.gpsTrack.color, height: height, width: width || null}" :id="'colorpopover' + track.gpsTrack.id + type" style="cursor: pointer" icon="circle"></font-awesome-icon>
     <b-popover ref="popover" :target="'colorpopover' + track.gpsTrack.id + type" triggers="focus" placement="top">
       <template v-slot:title>{{ $t('changeColor') }}
         <div style="float: right;">
@@ -24,6 +24,8 @@ export default class ColorPopover extends BaseComponent {
 
   @Prop({ required: true }) private track: Track;
   @Prop({ required: false }) private type: string;
+  @Prop({ required: false }) private height: string;
+  @Prop({ required: false }) private width: string;
 
   private color = this.track.gpsTrack.color;
 

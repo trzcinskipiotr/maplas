@@ -7,6 +7,7 @@ localforage.config({
   size: 4980736,
   storeName: 'tiles',
   description: 'the tiles',
+  driver: localforage.WEBSQL,
 });
 
 /**

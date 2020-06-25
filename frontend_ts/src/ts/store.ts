@@ -28,6 +28,9 @@ export interface RootState {
   speedThresholds: number[];
   speedColors: Array<{color: string}>;
   editedTrack: Track;
+  isDesktop: boolean;
+  minimalZoom: number;
+  maximalZoom: number;
 }
 
 const store: StoreOptions<RootState> = {
@@ -56,6 +59,9 @@ const store: StoreOptions<RootState> = {
       {color: 'rgb(230,12,229)'}
     ],
     editedTrack: null,
+    isDesktop: document.documentElement.clientWidth >= 700,
+    minimalZoom: 4,
+    maximalZoom: 18,
   },
   getters: {
     selectedTracks: (state): Track[] => {

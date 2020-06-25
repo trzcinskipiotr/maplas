@@ -21,7 +21,6 @@
   </div>
   <br>
   <PlannedTracks></PlannedTracks>
-  <button class="btn btn-primary btn-sm" @click="exportOffline">{{ $t('exportOffline') }}</button>
   </div>
 </template>
 

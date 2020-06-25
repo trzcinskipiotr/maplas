@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div :style="{'margin-bottom': $store.state.isDesktop ? 0 : '15px'}">
   <div v-on:mouseover="highlightMapTrack()" v-on:mouseleave="unhighlightMapTrack()">
     <div style="display: inline" class="custom-control custom-checkbox" :id="'trackcheckbox' + track.gpsTrack.id">
       <input type="checkbox" class="custom-control-input" :id="'checkbox' + track.gpsTrack.id" v-model="checked" />
@@ -11,7 +11,7 @@
       </div>
     </div><br>
     <div style="display: none">
-      <div :id="'tooltip' + track.gpsTrack.id">
+      <div :id="'tooltip' + track.gpsTrack.id" v-if="$store.state.isDesktop">
         <b>{{ $t('name') }}: </b>{{ track.gpsTrack.name }}<br>
         <b>{{ $t('startTime') }}: </b>{{ track.gpsTrack.start_time|formatDate }}<br>
         <b>{{ $t('distance') }}: </b>{{ track.gpsTrack.distance|roundTrackDistance }}<br>
@@ -21,21 +21,22 @@
       </div>
     </div>
     <div v-if="renderComponent">
-      <div ref="icons" style="display: block;">
-        <div style="display: inline-block; margin-right: 3px;" v-b-tooltip.hover :title="$t('changeColor')"><color-popover :track="track"></color-popover></div>
-        <span style='margin-right: 3px;'><TrackTypeIcon :gpsTrack="track.gpsTrack" height=24 imgheight=16 verticalAlign="2px"></TrackTypeIcon></span>
-        <span style='margin-right: 3px;'><TrackStatusIcon :gpsTrack="track.gpsTrack" height=24></TrackStatusIcon></span>
-        <span style='margin-right: 3px;'><TrackDownload :gpsTrack="track.gpsTrack" height=24></TrackDownload></span>
-        <span style='margin-right: 3px;' v-b-tooltip.hover :title="$t('centerTrack')"><font-awesome-icon @click="centerTrack" style="height: 24px; cursor: pointer" icon="search-location"/></span>
-        <span v-if="track.gpsTrack.status === TrackStatus.done" ref="tooltipSpan" style='margin-right: 3px;'><font-awesome-icon @click="playTrack" style="height: 24px; cursor: pointer" :icon="playing ? 'stop-circle' : 'play'"/></span>
-        <span v-if="track.gpsTrack.status === TrackStatus.done" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('maximizeTrack')"><font-awesome-icon @click="track.maximized = true" style="height: 24px; cursor: pointer" :icon="['far', 'window-maximize']" /></span>
-        <b-tooltip v-if="(track.gpsTrack.status === TrackStatus.done) && (renderedComponent)" :target="$refs.tooltipSpan">{{ playing ? $t('stopTrack') : $t('playTrack') }}</b-tooltip>
-        <span v-if="$store.state.user">
+      <div ref="icons" style="display: block;" :style="{'margin-top': $store.state.isDesktop ? '0px' : '5px'}">
+        <div ref="colorDiv" style="display: inline-block; margin-right: 3px;"><color-popover :track="track" :height="$store.state.isDesktop ? '24px' : '32px'" :width="$store.state.isDesktop ? null : '32px'"></color-popover></div>
+        <b-tooltip v-if="(renderedComponent) && ($store.state.isDesktop)" :target="$refs.colorDiv">{{ $t('changeColor') }}</b-tooltip>
+        <span v-if="$store.state.isDesktop" style='margin-right: 3px;'><TrackTypeIcon :gpsTrack="track.gpsTrack" height=24 imgheight=16 verticalAlign="2px"></TrackTypeIcon></span>
+        <span v-if="$store.state.isDesktop" style='margin-right: 3px;'><TrackStatusIcon :gpsTrack="track.gpsTrack" height=24></TrackStatusIcon></span>
+        <span style='margin-right: 3px;'><TrackDownload :gpsTrack="track.gpsTrack" :height="$store.state.isDesktop ? '24' : '32'" :width="$store.state.isDesktop ? null : '32px'"></TrackDownload></span>
+        <span v-if="$store.state.isDesktop" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('centerTrack')"><font-awesome-icon @click="centerTrack" style="height: 24px; cursor: pointer" icon="search-location"/></span>
+        <span v-if="(track.gpsTrack.status === TrackStatus.done) && ($store.state.isDesktop)" ref="tooltipSpan" style='margin-right: 3px;'><font-awesome-icon @click="playTrack" style="height: 24px; cursor: pointer" :icon="playing ? 'stop-circle' : 'play'"/></span>
+        <span v-if="(track.gpsTrack.status === TrackStatus.done) && ($store.state.isDesktop)" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('maximizeTrack')"><font-awesome-icon @click="track.maximized = true" style="height: 24px; cursor: pointer" :icon="['far', 'window-maximize']" /></span>
+        <b-tooltip v-if="(track.gpsTrack.status === TrackStatus.done) && (renderedComponent) && ($store.state.isDesktop)" :target="$refs.tooltipSpan">{{ playing ? $t('stopTrack') : $t('playTrack') }}</b-tooltip>
+        <span v-if="($store.state.user) && ($store.state.isDesktop)">
           <span v-if="track.onServer" v-b-tooltip.hover :title="$t('saveTrack')"><font-awesome-icon @click="showUploadModal" style="height: 24px; cursor: pointer" icon="save"/></span>
           <span v-else v-b-tooltip.hover :title="$t('uploadTrack')"><font-awesome-icon @click="showUploadModal" style="height: 24px; cursor: pointer" icon="upload"/></span>
           <span style='margin-right: 3px;'></span>
         </span>
-        <span v-if="track.gpsTrack.status === TrackStatus.planned">
+        <span v-if="(track.gpsTrack.status === TrackStatus.planned) && ($store.state.isDesktop)">
           <span v-if="track === $store.state.editedTrack">
             <font-awesome-icon @click="setEdited(null)" style="height: 24px; cursor: pointer" icon="lock-open"/>
           </span>
@@ -44,7 +45,7 @@
           </span>
         </span>
       </div>
-      <div ref="uploadTrackModal" class="modal fade" tabindex="-1" role="dialog">
+      <div v-if="$store.state.isDesktop" ref="uploadTrackModal" class="modal fade" tabindex="-1" role="dialog">
         <info-modal :title="$t('trackSaveTitle')">
           <table class="table table-sm">
             <thead></thead>
@@ -176,22 +177,24 @@ export default class AppTrack extends BaseComponent {
   }
 
   private refreshTooltip() {
-    for (const mapTrack of this.track.mapTracks) {
-      if (this.track.gpsTrack.status === TrackStatus.done) {
-        const element = document.getElementById('tooltip' + this.track.gpsTrack.id);
-        mapTrack.bindTooltip(element, {sticky: true, opacity: 0.95});
-      }
-      mapTrack.on('mouseover', (e) => {
-        this.highlightMapTrack();
-      });
-      mapTrack.on('mouseout', (e) => {
-        this.unhighlightMapTrack();
-      });
-      mapTrack.on('click', (e) => {
-        if (! this.$store.state.editedTrack) {
-          this.track.maximized = !this.track.maximized;
+    if (this.$store.state.isDesktop) {
+      for (const mapTrack of this.track.mapTracks) {
+        if (this.track.gpsTrack.status === TrackStatus.done) {
+          const element = document.getElementById('tooltip' + this.track.gpsTrack.id);
+          mapTrack.bindTooltip(element, {sticky: true, opacity: 0.95});
         }
-      });
+        mapTrack.on('mouseover', (e) => {
+          this.highlightMapTrack();
+        });
+        mapTrack.on('mouseout', (e) => {
+          this.unhighlightMapTrack();
+        });
+        mapTrack.on('click', (e) => {
+          if (! this.$store.state.editedTrack) {
+            this.track.maximized = !this.track.maximized;
+          }
+        });
+      }
     }
   }
 

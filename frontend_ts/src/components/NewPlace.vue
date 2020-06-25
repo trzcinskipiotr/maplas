@@ -1,6 +1,6 @@
 <template>
   <span>
-    <button v-if="$store.state.user" class="btn btn-primary btn-sm" @click="openNewPlaceModal(true)">{{ $t('addPlace') }}</button>
+    <button v-if="($store.state.user) && ($store.state.isDesktop)" class="btn btn-primary btn-sm" @click="openNewPlaceModal(true)">{{ $t('addPlace') }}</button>
     <div ref="newPlaceModal" class="modal fade" tabindex="-1" role="dialog">
       <info-modal :title="$t('newPlace')">
         <table class="table table-sm">

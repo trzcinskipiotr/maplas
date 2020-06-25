@@ -1,12 +1,15 @@
 <template>
-  <span v-b-tooltip.hover :title="$t('downloadGPX')"><font-awesome-icon @click="saveGPX" :style="{height: height + 'px', cursor: 'pointer'}" icon="download"/></span>
+  <span>
+    <span ref="icon"><font-awesome-icon @click="saveGPX" :style="{height: height + 'px', width: width || null, cursor: 'pointer'}" icon="download"/></span>
+    <b-tooltip v-if="rendered" :target="$refs.icon">{{ $t('downloadGPX') }}</b-tooltip>
+  </span>  
 </template>
 
 <script lang="ts">
 import BaseComponent from './Base.vue';
 import {BaseBuilder, buildGPX} from 'gpx-builder';
 import FileSaver from 'file-saver';
-import { Component, Prop } from 'vue-property-decorator';
+import { Component, Prop, Watch } from 'vue-property-decorator';
 import GpsTrack from '@/ts/GpsTrack';
 
 @Component
@@ -14,8 +17,18 @@ export default class TrackDownload extends BaseComponent {
 
   @Prop({ required: true }) private gpsTrack!: GpsTrack;
   @Prop({ required: true }) private height!: number;
+  @Prop({ required: true }) private width: string;
+
+  private rendered = false;
+
+  private mounted() {
+    this.$nextTick(() => {
+      this.rendered = true;
+    })
+  }
 
   private saveGPX() {
+    console.log(this.$refs.icons);
     const segments = [];
     for (const segment of this.gpsTrack.segments) {
       const gpsPointList = [];

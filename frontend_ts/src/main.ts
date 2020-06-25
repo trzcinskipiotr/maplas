@@ -75,6 +75,7 @@ import NewPlace from '@/components/NewPlace.vue';
 import MapPlace from '@/components/MapPlace.vue';
 import PlannedTracks from '@/components/PlannedTracks.vue';
 import TrackDetails from '@/components/TrackDetails.vue';
+import OfflineCard from '@/components/OfflineCard.vue';
 Vue.component('AppTrack', AppTrack);
 Vue.component('AppTrackGroup', AppTrackGroup);
 Vue.component('TrackStatusIcon', TrackStatusIcon);
@@ -88,6 +89,7 @@ Vue.component('NewPlace', NewPlace);
 Vue.component('MapPlace', MapPlace);
 Vue.component('PlannedTracks', PlannedTracks);
 Vue.component('TrackDetails', TrackDetails);
+Vue.component('OfflineCard', OfflineCard);
 
 import {formatDate, formatDateSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);

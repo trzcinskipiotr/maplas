@@ -99,7 +99,8 @@
                     {{ $t('playingSpeed') }}:
                     <font-awesome-icon icon="biking"/> {{ playingSpeed }} km/s&nbsp;&nbsp;
                     <font-awesome-icon icon="shoe-prints"/> {{ playingSpeed / 10 }} km/s 
-                    <b-form-slider style="width: 100%;" v-model="playingSpeed" :min=1 :max=20></b-form-slider>
+                    <b-form-slider style="width: 100%;" v-model="playingSpeed" :min=1 :max=20></b-form-slider><br><br>
+                    <OfflineCard></OfflineCard>
                   </div>
                 </div>
               </div>
@@ -123,12 +124,14 @@
       </div>
     </div>
     <div id="cogsdiv" style="display: none;">
-      <div id="cogsdivinner" style="width: 48px; height: 48px;" @click="togglePanel" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="menuOpened ? $t('closeMenu') : $t('openMenu')">
+      <div id="cogsdivinner" style="width: 48px; height: 48px;" @click="togglePanel" class="leaflet-touch leaflet-bar cogsbutton">
+        <b-tooltip v-if="(document.getElementById('cogsdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('cogsdivinner')">{{ menuOpened ? $t('closeMenu') : $t('openMenu') }}</b-tooltip>
         <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="bars" size="lg"/>
       </div>
     </div>
     <div id="importdiv" style="display: none;">
-      <div id="importdivinner" style="width: 48px; height: 48px;" @click="openImportFileInput" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="$t('importGpxFile')">
+      <div id="importdivinner" style="width: 48px; height: 48px;" @click="openImportFileInput" class="leaflet-touch leaflet-bar cogsbutton">
+        <b-tooltip v-if="(document.getElementById('importdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('importdivinner')">{{ $t('importGpxFile') }}</b-tooltip>
         <input id="importFileInput" multiple type="file" style="display:none;" accept=".gpx" v-on:change="importGpxFile" />
         <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="file-upload"/>
       </div>
@@ -151,19 +154,21 @@
     <div v-for="language in languages" :key="language.flag" style="position: absolute; left: -10000px">
       <flag :iso="language.flag" v-bind:squared=false />
     </div>
-    <template v-if="document.getElementsByClassName('leaflet-control-locate')[0]">
+    <template v-if="(document.getElementsByClassName('leaflet-control-locate')[0]) && ($store.state.isDesktop)">
       <b-tooltip :target="document.getElementsByClassName('leaflet-control-locate')[0]">{{ $t('showMyLocation') }}</b-tooltip>
     </template>
-    <template v-if="document.getElementsByClassName('leaflet-control-zoom-fullscreen')[0]">
+    <template v-if="(document.getElementsByClassName('leaflet-control-zoom-fullscreen')[0]) && ($store.state.isDesktop)">
       <b-tooltip ref="fullscreenTooltip" :target="document.getElementsByClassName('leaflet-control-zoom-fullscreen')[0]">{{ fullscreenOpened ? $t('exitFullscreen') : $t('enterFullscreen') }}</b-tooltip>
     </template>
-    <template v-if="document.getElementsByClassName('leaflet-control-zoom-in')[0]">
+    <template v-if="(document.getElementsByClassName('leaflet-control-zoom-in')[0]) && ($store.state.isDesktop)">
       <b-tooltip :target="document.getElementsByClassName('leaflet-control-zoom-in')[0]">{{ $t('zoomIn') }}</b-tooltip>
     </template>
-    <template v-if="document.getElementsByClassName('leaflet-control-zoom-out')[0]">
+    <template v-if="(document.getElementsByClassName('leaflet-control-zoom-out')[0]) && ($store.state.isDesktop)">
       <b-tooltip :target="document.getElementsByClassName('leaflet-control-zoom-out')[0]">{{ $t('zoomOut') }}</b-tooltip>
     </template>
-    <TrackDetails v-for="track in $store.state.tracks" :track="track" :key="track.gpsTrack.id"></TrackDetails>
+    <template v-if="$store.state.isDesktop">
+      <TrackDetails v-for="track in $store.state.tracks" :track="track" :key="track.gpsTrack.id"></TrackDetails>
+    </template>  
   </div>  
 </template>
 
@@ -198,6 +203,10 @@ interface FileReaderEventTarget extends EventTarget {
   result: string;
 }
 
+interface LayersDictionary {
+  [index: string]: L.TileLayer | L.gridLayer.GoogleMutant;
+}
+
 @Component
 export default class Index extends BaseComponent {
   private mapboxApiToken: string = 'MAPBOX_API_KEY';
@@ -227,6 +236,11 @@ export default class Index extends BaseComponent {
   private progress = 0;
   private totalToSave = 0;
 
+  private offlineControl: L.Control = null;
+
+  private layerName: string = null;
+  private baseMaps: LayersDictionary = {};
+
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
     i18n.locale = this.language!.language;
@@ -253,6 +267,30 @@ export default class Index extends BaseComponent {
     for (const track of this.$store.state.imports) {
       this.importGroup.tracks.push(track);
     }
+  }
+
+  private getOfflineZooms() {
+    const zooms = [];
+    for (let i = this.$store.state.minimalZoom; i <= this.$store.state.maximalZoom; i++) {
+      zooms.push(i);
+    }
+    return zooms;
+  }
+
+  private offlineControlZoomChange() {
+    if ((this.$store.state.minimalZoom) && (this.$store.state.maximalZoom) && (this.$store.state.minimalZoom <= this.$store.state.maximalZoom)) {
+      this.offlineControl.setZoomlevels(this.getOfflineZooms());
+    }
+  }
+
+  @Watch('$store.state.minimalZoom')
+  private onStoreMinimalZoomChanged() {
+    this.offlineControlZoomChange();
+  }
+
+  @Watch('$store.state.maximalZoom')
+  private onStoreMaximalZoomChanged() {
+    this.offlineControlZoomChange();
   }
 
   private logInToApi() {
@@ -364,6 +402,27 @@ export default class Index extends BaseComponent {
     $('.leaflet-control-scale-line').html($('.leaflet-control-scale-line').html() + '<span style="float: right">(Zoom: ' + this.$store.state.map.getZoom() + ')</span>');
   }
 
+  private baseLayerChange(e: L.LayersControlEvent) {
+    this.layerName = e.name;
+    if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline')) {
+      this.offlineControl.setLayer(this.baseMaps[this.layerName]);
+      this.offlineControl._baseLayer.on('savestart', (e) => {
+        this.progress = 0;
+        this.totalToSave = e._tilesforSave.length
+        document.getElementById('saveTitleMessageDiv').style.display = 'block';
+        document.getElementById('saveTitleMessageMessage').innerHTML = '' + this.progress + '/' + this.totalToSave;
+      });
+      this.offlineControl._baseLayer.on('savetileend', () => {
+        this.progress += 1;
+        document.getElementById('saveTitleMessageMessage').innerHTML = '' + this.progress + '/' + this.totalToSave;
+      });
+    } else {
+      if (this.offlineControl) {
+        this.offlineControl.setLayer(this.baseMaps['OpenStreetMapOffline']);
+      }
+    }
+  }
+
   private createMap(center: [number, number], zoom: number) {
     const map = L.map('map', {zoomAnimation: false});
     map.setView(center, zoom);
@@ -374,12 +433,10 @@ export default class Index extends BaseComponent {
     this.$store.commit('setZoomLevel', zoom);
     map.on('click', this.mapClicked);
     map.on('moveend', this.mapMoveEnd);
+    map.on('baselayerchange', this.baseLayerChange);
   }
 
   private addLayers() {
-    interface LayersDictionary {
-      [index: string]: L.TileLayer | L.gridLayer.GoogleMutant;
-    }
     const layers: LayersDictionary = {};
 
     layers['mapboxStreets'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
@@ -428,6 +485,12 @@ export default class Index extends BaseComponent {
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
+    layers['esriWorldImageryOffline'] = L.tileLayer.offline('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+      errorTileUrl: 'img/tiledownloadfailed.jpg',
+    });
+
     layers['esriWorldTopoMap'] = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
       attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
@@ -440,6 +503,13 @@ export default class Index extends BaseComponent {
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
+    layers['openStreetMapOffline'] = L.tileLayer.offline('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+      errorTileUrl: 'img/tiledownloadfailed.jpg',
+      subdomains: 'abcabcabca',
+    });
+
     layers['openCycleMap'] = L.tileLayer('https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: '&copy; OpenCycleMap, ' + 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
@@ -450,7 +520,7 @@ export default class Index extends BaseComponent {
       maxZoom: 19,
       attribution: '&copy; OpenCycleMap, ' + 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
-      subdomains: 'abc',
+      subdomains: 'abcabcabca',
     });
 
     layers['googleRoads'] = L.gridLayer.googleMutant({
@@ -501,8 +571,9 @@ export default class Index extends BaseComponent {
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
-    const baseMaps: LayersDictionary = {
+    this.baseMaps = {
       'OpenStreetMap': layers['openStreetMap'],
+      'OpenStreetMapOffline': layers['openStreetMapOffline'],
       'OpenCycleMap': layers['openCycleMap'],
       'OpenCycleMapOffline': layers['openCycleMapOffline'],
       'OpenTopoMap': layers['openTopoMap'],
@@ -511,6 +582,7 @@ export default class Index extends BaseComponent {
       'Mapbox outdoor': layers['mapboxOutdoor'],
       'Mapbox hybrid': layers['mapboxSatelliteStreets'],
       'ESRI imaginary': layers['esriWorldImagery'],
+      'ESRI imaginary Offline': layers['esriWorldImageryOffline'],
       'ESRI topo': layers['esriWorldTopoMap'],
       'Hike bike': layers['hikeBike'],
       'Google roads': layers['googleRoads'],
@@ -521,14 +593,12 @@ export default class Index extends BaseComponent {
       'mapa-turystyczna.pl': layers['mapaTurystycznaPL'],
     };
 
-    this.openCycleMapOfflineLayer = layers['openCycleMapOffline'];
-
-    for (const layer in baseMaps) {
-      if (baseMaps.hasOwnProperty(layer)) {
-        baseMaps[layer].on('loading', (event) => {
+    for (const layer in this.baseMaps) {
+      if (this.baseMaps.hasOwnProperty(layer)) {
+        this.baseMaps[layer].on('loading', (event) => {
           this.tileLoading = true;
         });
-        baseMaps[layer].on('load', (event) => {
+        this.baseMaps[layer].on('load', (event) => {
           this.tileLoading = false;
         });
       }
@@ -544,7 +614,7 @@ export default class Index extends BaseComponent {
     console.log(`Available layers: ${availableLayers}`);
 
     const maplayer: string = (typeof this.$route.query.maplayer === 'string') ? this.$route.query.maplayer : '';
-    L.control.layers(baseMaps).addTo(this.$store.state.map!);
+    L.control.layers(this.baseMaps).addTo(this.$store.state.map!);
     if (layers.hasOwnProperty(maplayer)) {
       layers[maplayer].addTo(this.$store.state.map!);
     } else {
@@ -556,33 +626,30 @@ export default class Index extends BaseComponent {
   }
 
   private addOffline() {
-    const control = L.control.savetiles(this.openCycleMapOfflineLayer, {
-      zoomlevels: [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17],
-      confirm(layer, succescallback) {
-        if (window.confirm(`Save ${layer._tilesforSave.length}`)) {
-          succescallback();
+    this.offlineControl = L.control.savetiles(this.baseMaps['OpenStreetMapOffline'], {
+      zoomlevels: this.getOfflineZooms(),
+      confirm: (layer, succescallback) => {
+        if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline')) {
+          const firstUrl = layer._tilesforSave[0].key
+          if (window.confirm(`Save ${layer._tilesforSave.length} titles?\nZooms: ${this.offlineControl.options.zoomlevels}\nFirst url: ${firstUrl}`)) {
+            succescallback();
+          }
+        } else {
+          this.createAlert(AlertStatus.danger, this.$t('mapNotOffline'), 2000);
+          return false;
         }
       },
-      confirmRemoval(layer, successCallback) {
-        if (window.confirm('Remove all the tiles?')) {
+      confirmRemoval: (layer, successCallback) => {
+        let size = -1;
+        this.offlineControl.getStorageSize((f) => {size = f});
+        if (window.confirm(`Remove all ${size} tiles?`)) {
           successCallback();
         }
       },
       saveText: '<i class="fa fa-download" aria-hidden="true" title="Save tiles"></i>',
       rmText: '<i class="fa fa-trash" aria-hidden="true"  title="Remove tiles"></i>',
     });
-    control.addTo(this.$store.state.map);
-    this.progress = 0;
-    this.openCycleMapOfflineLayer.on('savestart', (e) => {
-      this.progress = 0;
-      this.totalToSave = e._tilesforSave.length
-      document.getElementById('saveTitleMessageDiv').style.display = 'block';
-      document.getElementById('saveTitleMessageMessage').innerHTML = '' + this.progress + '/' + this.totalToSave;
-    });
-    this.openCycleMapOfflineLayer.on('savetileend', () => {
-      this.progress += 1;
-      document.getElementById('saveTitleMessageMessage').innerHTML = '' + this.progress + '/' + this.totalToSave;
-    });
+    this.offlineControl.addTo(this.$store.state.map);
   }
 
   private addCogsButton() {
