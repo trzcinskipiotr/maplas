@@ -160,36 +160,6 @@ export default class ObjectsTab extends BaseComponent {
     this.iconsVisible = !this.iconsVisible;
   }
 
-  private saveFile(string: string) {
-    const blob = new Blob([string], {type: 'text/plain;charset=utf-8'});
-    const date = formatDateSeconds(new Date());
-    FileSaver.saveAs(blob, 'offline_maps_' + date + '.txt');
-  }
-
-  private exportOffline() {
-    localforage.getItems(null).then(results => {
-      const obj: any = {}
-      let done = 0;
-      let total = 0;
-      for (const result in results) {
-        total = total + 1;
-      }
-      for (const result in results) {
-        localforage.getItem(result).then(data => {
-          var reader = new FileReader();
-          reader.onload = () => {
-            obj[result] = (reader.result as string).replace(/^data:.+;base64,/, '');
-            done = done + 1;
-            if (done === total) {
-              this.saveFile(JSON.stringify(obj));
-            }
-          }
-          reader.readAsDataURL(data);
-        })
-      }
-    });
-  }
-
 }
 
 </script>
