@@ -105,12 +105,16 @@ export default class OfflineCard extends BaseComponent {
       if (tab2.length === 2) {
         const key = tab2[0];
         const value = tab2[1];
-        const response = await fetch(value);
-        const blob = await response.blob(); 
-        const result = await localforage.setItem(key, blob);
-        done = done + 1
-        const chunkPlus1 = chunkIndex + 1;
-        document.getElementById('saveTitleMessageMessage').innerHTML = 'Chunk ' + chunkPlus1 + ' of ' + chunks + '; Bitmap ' + done + ' of '+ total;
+        try {
+          const response = await fetch(value);
+          const blob = await response.blob(); 
+          const result = await localforage.setItem(key, blob);
+          done = done + 1
+          const chunkPlus1 = chunkIndex + 1;
+          document.getElementById('saveTitleMessageMessage').innerHTML = 'Chunk ' + chunkPlus1 + ' of ' + chunks + '; Bitmap ' + done + ' of '+ total;
+        } catch (error) {
+
+        }
       }
     }
     this.processFile(file, chunkIndex + 1);
