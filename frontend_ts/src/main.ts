@@ -20,7 +20,7 @@ import './ts/L.CanvasLayer';
 
 import '@fortawesome/fontawesome-free/css/all.css';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle, faFileUpload, faBars, faUpload, faCamera, faTrash, faUndo, faSearchPlus, faLock, faLockOpen } from '@fortawesome/free-solid-svg-icons';
+import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle, faFileUpload, faBars, faUpload, faCamera, faTrash, faUndo, faSearchPlus, faLock, faLockOpen, faMapMarker } from '@fortawesome/free-solid-svg-icons';
 import { faCalendarTimes, faCalendarCheck, faWindowClose, faTimesCircle, faWindowMaximize } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 library.add(faShoePrints);
@@ -49,6 +49,7 @@ library.add(faUndo);
 library.add(faSearchPlus);
 library.add(faLock);
 library.add(faLockOpen);
+library.add(faMapMarker);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 import BootstrapVue from 'bootstrap-vue';

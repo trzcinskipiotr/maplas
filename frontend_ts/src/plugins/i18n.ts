@@ -138,6 +138,8 @@ en: {
   deleteOffline: 'Delete',
   noSleepActive: 'Screen lock activated',
   noSleepInactive: 'Screen lock deactivated',
+  showLocation: 'Show position',
+  hideLocation: 'Hide position',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -274,6 +276,8 @@ pl: {
   deleteOffline: 'Usuń',
   noSleepActive: 'Blokada ekranu aktywowana',
   noSleepInactive: 'Blokada ekranu deaktywowana',
+  showLocation: 'Pokaż pozycję',
+  hideLocation: 'Ukryj pozycję',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

@@ -138,6 +138,16 @@
         <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="file-upload"/>
       </div>
     </div>
+    <div id="locationdiv" style="display: none;">
+      <div id="locationdivinner" @click="toggleLocation" class="leaflet-touch leaflet-bar cogsbutton">
+        <b-tooltip v-if="(document.getElementById('locationdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('locationdivinner')">{{ locationActive ? $t('hideLocation') : $t('showLocation') }}</b-tooltip>
+        <template v-if="locationActive">
+          <font-awesome-icon v-if="! currentLocation" class="fa-spin" icon="spinner" size="lg"/>
+          <font-awesome-icon v-else style="color: green; cursor: pointer; width: 28px; height: 28px;" icon="map-marker" size="lg"/>
+        </template>
+        <font-awesome-icon v-else style="color: red; cursor: pointer; width: 28px; height: 28px;" icon="map-marker" size="lg"/>  
+      </div>
+    </div>
     <div id="speedlegenddiv" style="display: none;">
       <div id="speedlegenddivinner">
         <div style="background-color: white; margin: 2px" v-if="$store.state.speedLegendVisible">
@@ -246,6 +256,9 @@ export default class Index extends BaseComponent {
 
   private noSleepActive = false;
   private noSleep: any = null;
+
+  private locationActive = false;
+  private locationMarker: L.CircleMarker = null;
 
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
@@ -380,7 +393,8 @@ export default class Index extends BaseComponent {
     this.addFullScreenControl();
     this.addCogsButton();
     this.addImportButton();
-    this.addCurrentLocationControl();
+    this.addLocationButton();
+    //this.addCurrentLocationControl();
     this.addOffline();
     this.downloadTracks();
     this.downloadRegions();
@@ -451,14 +465,21 @@ export default class Index extends BaseComponent {
     map.on('click', this.mapClicked);
     map.on('moveend', this.mapMoveEnd);
     map.on('baselayerchange', this.baseLayerChange);
+    map.on('dragend', () => {this.followLocation = false});
   }
 
   private addLayers() {
     const layers: LayersDictionary = {};
 
+    let attributionString: string = '';
+    const noattr: string = (typeof this.$route.query.noattr === 'string') ? this.$route.query.noattr : '';
+    if (noattr) {
+      attributionString = '.';
+    }
+
     layers['mapboxStreets'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
       maxZoom: 18,
-      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+      attribution: attributionString || 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
         '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
         'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         // @ts-ignore
@@ -468,7 +489,7 @@ export default class Index extends BaseComponent {
 
     layers['mapboxSatellite'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
       maxZoom: 18,
-      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+      attribution: attributionString || 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
         '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
         'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         // @ts-ignore
@@ -478,7 +499,7 @@ export default class Index extends BaseComponent {
 
     layers['mapboxOutdoor'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
       maxZoom: 18,
-      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+      attribution: attributionString || 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
         '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
         'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         // @ts-ignore
@@ -488,7 +509,7 @@ export default class Index extends BaseComponent {
 
     layers['mapboxSatelliteStreets'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
       maxZoom: 18,
-      attribution: 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
+      attribution: attributionString || 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
         '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
         'Imagery © <a href="https://www.mapbox.com/">Mapbox</a>',
         // @ts-ignore
@@ -498,44 +519,44 @@ export default class Index extends BaseComponent {
 
     layers['esriWorldImagery'] = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
-      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+      attribution: attributionString || 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['esriWorldImageryOffline'] = L.tileLayer.offline('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
-      attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
+      attribution: attributionString || 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['esriWorldTopoMap'] = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}', {
       maxZoom: 19,
-      attribution: 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
+      attribution: attributionString || 'Tiles &copy; Esri &mdash; Esri, DeLorme, NAVTEQ, TomTom, Intermap, iPC, USGS, FAO, NPS, NRCAN, GeoBase, Kadaster NL, Ordnance Survey, Esri Japan, METI, Esri China (Hong Kong), and the GIS User Community',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['openStreetMap'] = L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+      attribution: attributionString || '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['openStreetMapOffline'] = L.tileLayer.offline('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+      attribution: attributionString || '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
       subdomains: 'abcabcabca',
     });
 
     layers['openCycleMap'] = L.tileLayer('https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '&copy; OpenCycleMap, ' + 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+      attribution: attributionString || '&copy; OpenCycleMap, ' + 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['openCycleMapOffline'] = L.tileLayer.offline('https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '&copy; OpenCycleMap, ' + 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
+      attribution: attributionString || '&copy; OpenCycleMap, ' + 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
       subdomains: 'abcabcabca',
     });
@@ -566,25 +587,25 @@ export default class Index extends BaseComponent {
 
     layers['openTopoMap'] = L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
       maxZoom: 17,
-      attribution: 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+      attribution: attributionString || 'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['hikeBike'] = L.tileLayer('https://tiles.wmflabs.org/hikebike/{z}/{x}/{y}.png', {
       maxZoom: 19,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      attribution: attributionString || '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['hyddaBase'] = L.tileLayer('https://{s}.tile.openstreetmap.se/hydda/base/{z}/{x}/{y}.png', {
       maxZoom: 18,
-      attribution: 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+      attribution: attributionString || 'Tiles courtesy of <a href="http://openstreetmap.se/" target="_blank">OpenStreetMap Sweden</a> &mdash; Map data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
     layers['mapaTurystycznaPL'] = L.tileLayer('https://m0.mapa-turystyczna.pl/map-xhdpi/{z}/{x}/{y}.v2224.png', {
       maxZoom: 18,
-      attribution: '<a target="_blank" href="https://mapa-turystyczna.pl" title="Serwis mapa-turystyczna.pl"><img alt="Serwis mapa-turystyczna.pl" src="https://mapa-turystyczna.pl/images/mapa-turystyczna-baner.png" width="100" height="36" /></a>',
+      attribution: attributionString || '<a target="_blank" href="https://mapa-turystyczna.pl" title="Serwis mapa-turystyczna.pl"><img alt="Serwis mapa-turystyczna.pl" src="https://mapa-turystyczna.pl/images/mapa-turystyczna-baner.png" width="100" height="36" /></a>',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
@@ -705,6 +726,52 @@ export default class Index extends BaseComponent {
     });
     this.$store.state.map.addControl(new ImportControl());
     this.importGroup.translate = 'imports';
+  }
+
+  private currentLocation: [number, number] = null;
+  private locationWatchID: number;
+  private followLocation = false;
+
+  private updateGPSPosition(position: Position) {
+     this.currentLocation = [position.coords.latitude, position.coords.longitude];
+     this.locationMarker.setLatLng(this.currentLocation);
+     if (this.followLocation) {
+       this.$store.state.map.panTo(this.currentLocation);
+     }
+  }
+
+  private toggleLocation() {
+    if (this.locationActive) {
+      this.locationMarker.removeFrom(this.$store.state.map);
+      this.currentLocation = null;
+      this.locationActive = false;
+      this.followLocation = false;
+      navigator.geolocation.clearWatch(this.locationWatchID);
+    } else {
+      if (navigator.geolocation) {
+        if (! this.locationMarker) {
+          this.locationMarker = new L.CircleMarker([0, 0], {radius: 10});
+        }
+        this.locationMarker.setLatLng([0, 0]);
+        this.locationMarker.addTo(this.$store.state.map);
+        this.followLocation = true;
+        this.currentLocation = null;
+        this.locationWatchID = navigator.geolocation.watchPosition(this.updateGPSPosition);
+        this.locationActive = true;
+      }
+    }
+  }
+
+  private addLocationButton() {
+    const locationControl = L.Control.extend({
+      options: {
+        position: 'topleft',
+      },
+      onAdd: (map: L.Map) => {
+        return document.getElementById('locationdivinner');
+      },
+    });
+    this.$store.state.map.addControl(new locationControl());
   }
 
   private togglePanel() {
@@ -1060,14 +1127,14 @@ export default class Index extends BaseComponent {
   }
 
   @media (min-width: 700px) {
-    .leaflet-control-zoom-in, .leaflet-control-zoom-out, .leaflet-control-zoom-fullscreen, .leaflet-bar a, .leaflet-control-locate {
+    .leaflet-control-zoom-in, #locationdivinner, .leaflet-control-zoom-out, .leaflet-control-zoom-fullscreen, .leaflet-bar a, .leaflet-control-locate {
       width: 32px !important;
       height: 32px !important;
     }
   }
 
   @media (max-width: 700px) {
-    .leaflet-control-zoom-in, .leaflet-control-zoom-out, .leaflet-control-zoom-fullscreen, .leaflet-bar a, .leaflet-control-locate {
+    .leaflet-control-zoom-in, #locationdivinner, .leaflet-control-zoom-out, .leaflet-control-zoom-fullscreen, .leaflet-bar a, .leaflet-control-locate {
       width: 48px !important;
       height: 48px !important;
     }
