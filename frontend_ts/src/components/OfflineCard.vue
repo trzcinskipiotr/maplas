@@ -11,7 +11,7 @@
         {{ $t('zoomTo') }} <select v-model="$store.state.maximalZoom">
           <option v-for="zoom in allowMaximalZoom" :value="zoom" :key="zoom">{{ zoom }}</option>
         </select><br><br>  
-        <button :disabled="exporting || importing || saving" class="btn btn-primary btn-sm" @click="exportOfflineAtOnce">
+        <button :disabled="exporting || importing || saving" class="btn btn-primary btn-sm" @click="exportOffline">
           <font-awesome-icon v-if="exporting" class="fa-spin" icon="spinner" />&nbsp;
           {{ $t('exportOffline') }}
         </button>&nbsp;
