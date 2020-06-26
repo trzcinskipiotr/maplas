@@ -11,7 +11,7 @@
         {{ $t('zoomTo') }} <select v-model="$store.state.maximalZoom">
           <option v-for="zoom in allowMaximalZoom" :value="zoom" :key="zoom">{{ zoom }}</option>
         </select><br><br>  
-        <button :disabled="exporting || importing || saving" class="btn btn-primary btn-sm" @click="exportOffline">
+        <button :disabled="exporting || importing || saving" class="btn btn-primary btn-sm" @click="exportOfflineAtOnce">
           <font-awesome-icon v-if="exporting" class="fa-spin" icon="spinner" />&nbsp;
           {{ $t('exportOffline') }}
         </button>&nbsp;
@@ -41,6 +41,7 @@ import localforage from 'localforage';
 import { formatDateSeconds } from '@/ts/utils';
 import { AlertStatus } from '@/ts/types';
 import streamSaver from 'streamsaver';
+import FileSaver from 'file-saver';
 
 @Component
 export default class OfflineCard extends BaseComponent {
@@ -94,21 +95,56 @@ export default class OfflineCard extends BaseComponent {
     const fileStream = streamSaver.createWriteStream('offline_maps_' + date + '.txt');
     const writer = fileStream.getWriter();
     for (const result in results) {
-      const data = await localforage.getItem(result);
-      var reader = new FileReader();
+      const data = results[result];
+      const reader = new FileReader();
       reader.onload = () => {
-        let b64 = reader.result as string
+        let b64 = reader.result as string;
         let lineToSave = result + '$$$' + b64 + '###';
         writer.write(encode(lineToSave));
         done = done + 1;
         document.getElementById('saveTitleMessageMessage').innerHTML = '' + done + '/' + total;
         if (done === total) {
-          writer.close()
+          writer.close();
+          this.exporting = false;
         }
       }
       reader.readAsDataURL(data);
     }
-    this.exporting = false;
+  }
+
+  private async exportOfflineAtOnce() {
+    this.exporting = true;
+    document.getElementById('saveTitleMessageDiv').style.display = 'block';
+    document.getElementById('saveTitleMessageMessage').innerHTML = 'Starting...';
+    const date = formatDateSeconds(new Date());
+    const results = await localforage.getItems(null);
+    let tmpStra = '';
+    let done = 0;
+    let total = 0;
+    for (const result in results) {
+      total = total + 1;
+    }
+    for (const result in results) {
+      const data = results[result];
+      const reader = new FileReader();
+      reader.onload = () => {
+        let b64 = reader.result as string
+        let lineToSave = result + '$$$' + b64 + '###';
+        tmpStra = tmpStra + lineToSave; 
+        done = done + 1;
+        if (done === total) {
+          this.saveFile(tmpStra, 'offline_maps_' + date + '.txt');
+          this.exporting = false;
+        }
+        document.getElementById('saveTitleMessageMessage').innerHTML = '' + done + '/' + total;
+      }
+      reader.readAsDataURL(data);
+    }
+  }
+
+  private saveFile(data: any, name: any) {
+    const blob = new Blob([data], {type: 'text/plain;charset=utf-8'});
+    FileSaver.saveAs(blob, name);
   }
 
   private async importToDB(file: File, chunkIndex: number, result: string) {
