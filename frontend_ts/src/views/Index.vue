@@ -145,7 +145,7 @@
           <font-awesome-icon v-if="! currentLocation" class="fa-spin" icon="spinner" size="lg"/>
           <font-awesome-icon v-else style="color: green; cursor: pointer; width: 28px; height: 28px;" icon="map-marker" size="lg"/>
         </template>
-        <font-awesome-icon v-else style="color: red; cursor: pointer; width: 28px; height: 28px;" icon="map-marker" size="lg"/>  
+        <font-awesome-icon v-else style="color: black; cursor: pointer; width: 28px; height: 28px;" icon="map-marker" size="lg"/>  
       </div>
     </div>
     <div id="speedlegenddiv" style="display: none;">
@@ -382,6 +382,8 @@ export default class Index extends BaseComponent {
     );
   }
 
+  private node: any = null;
+
   private mounted() {
     this.setLanguage();
     this.setAppHost();
@@ -430,7 +432,21 @@ export default class Index extends BaseComponent {
   }
 
   private mapMoveEnd(e) {
-    $('.leaflet-control-scale-line').html($('.leaflet-control-scale-line').html() + '<span style="float: right">(Zoom: ' + this.$store.state.map.getZoom() + ')</span>');
+    if (! document.getElementById('currentZoomId')) {
+      this.node = document.createElement("span");
+      this.node.id = 'currentZoomId';
+      //this.node.style.backgroundColor = 'white';
+      //this.node.style.border = '1px solid black';
+      this.node.style.paddingRight = '4px';
+      this.node.style.position = 'absolute';
+      this.node.style.right = '0px';
+      const scale = document.getElementsByClassName('leaflet-control-scale-line');
+      if (scale.length) {
+        scale[0].appendChild(this.node);
+      }
+    }
+    this.node.innerHTML = '(Zoom: ' + this.$store.state.map.getZoom() + ')';
+    //$('.leaflet-control-scale-line').html($('.leaflet-control-scale-line').html() + '<span style="float: right">(Zoom: ' + this.$store.state.map.getZoom() + ')</span>');
   }
 
   private baseLayerChange(e: L.LayersControlEvent) {
@@ -465,7 +481,7 @@ export default class Index extends BaseComponent {
     map.on('click', this.mapClicked);
     map.on('moveend', this.mapMoveEnd);
     map.on('baselayerchange', this.baseLayerChange);
-    map.on('dragend', () => {this.followLocation = false});
+    map.on('dragstart', () => {this.followLocation = false});
   }
 
   private addLayers() {
@@ -750,7 +766,7 @@ export default class Index extends BaseComponent {
     } else {
       if (navigator.geolocation) {
         if (! this.locationMarker) {
-          this.locationMarker = new L.CircleMarker([0, 0], {radius: 10});
+          this.locationMarker = new L.CircleMarker([0, 0], {radius: 11, fill: true, fillOpacity: 0.5});
         }
         this.locationMarker.setLatLng([0, 0]);
         this.locationMarker.addTo(this.$store.state.map);
