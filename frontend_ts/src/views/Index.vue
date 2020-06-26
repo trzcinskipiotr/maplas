@@ -56,6 +56,7 @@
                         </div>
                       </div>
                     </div>
+                    <button class="btn btn-primary btn-sm" @click="openImportFileInput">{{ $t('importGpxFile') }}</button>
                   </div>
                 </div>
               </div>
@@ -740,7 +741,9 @@ export default class Index extends BaseComponent {
         return document.getElementById('importdivinner');
       },
     });
-    this.$store.state.map.addControl(new ImportControl());
+    if (this.$store.state.isDesktop) {
+      this.$store.state.map.addControl(new ImportControl());
+    }
     this.importGroup.translate = 'imports';
   }
 
