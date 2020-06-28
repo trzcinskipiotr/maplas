@@ -47,7 +47,7 @@
     "lg-zoom.js": "^1.0.1",
     "lightgallery.js": "^1.1.3",
     "load-google-maps-api": "^2.0.1",
-    "localforage": "git+https://github.com/trzcinskipiotr/localForage.git",
+    "localforage": "^1.7.4",
     "localforage-getitems": "^1.4.2",
     "localforage-setitems": "^1.4.0",
     "moment": "^2.24.0",
