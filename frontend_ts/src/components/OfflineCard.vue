@@ -309,7 +309,7 @@ export default class OfflineCard extends BaseComponent {
       offlineControl._baseLayer.on('savetileend', () => {
         progress += 1;
         if (errors) {
-          this.showMessage('' + progress + '/' + totalToSave + '(' + this.$t('bitmapDownloadErrors') + ': ' + errors + ')');
+          this.showMessage('' + progress + '/' + totalToSave + ' (' + this.$t('bitmapDownloadErrors') + ': ' + errors + ')');
         } else {
           this.showMessage('' + progress + '/' + totalToSave);
         }

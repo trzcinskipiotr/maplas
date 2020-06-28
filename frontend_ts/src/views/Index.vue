@@ -423,6 +423,11 @@ export default class Index extends BaseComponent {
   private mapClicked(e) {
     if (this.$store.state.editedTrack) {
       this.$store.state.editedTrack.addPoint(e.latlng.lat, e.latlng.lng, this.$store.state.map)
+    } else {
+      this.followLocation = true;
+      if (this.currentLocation) {
+        this.$store.state.map.panTo(this.currentLocation);
+      }
     }
   }
 
@@ -742,7 +747,7 @@ export default class Index extends BaseComponent {
   private addLocationButton() {
     const locationControl = L.Control.extend({
       options: {
-        position: 'topleft',
+        position: this.$store.state.isDesktop ? 'topleft' : 'topright'
       },
       onAdd: (map: L.Map) => {
         return document.getElementById('locationdivinner');
@@ -767,7 +772,7 @@ export default class Index extends BaseComponent {
 
   private addFullScreenControl() {
     L.control.fullscreen({
-      position: 'topleft',
+      position: this.$store.state.isDesktop ? 'topleft' : 'topright',
       title: '',
       titleCancel: '',
       // @ts-ignore
