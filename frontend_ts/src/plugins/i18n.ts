@@ -147,6 +147,7 @@ en: {
   importProgressLine: 'Readed: {0}MB; Bitmaps loaded: {1}',
   noBitmapsToExport: 'No bitmaps to export',
   importToDBError: 'Import to DB error',
+  bitmapDownloadErrors: 'errors',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -292,6 +293,7 @@ pl: {
   importProgressLine: 'Przeczytano: {0}MB; Załadowano bitmap: {1}',
   noBitmapsToExport: 'Brak bitmap do exportu',
   importToDBError: 'Błąd importu',
+  bitmapDownloadErrors: 'błędy',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

@@ -390,7 +390,6 @@ var ControlSaveTiles = L.Control.extend(
           self.status.lengthLoaded += 1;
           self._saveTile(tileUrl.key, xhr.response);
           if (self.status._tilesforSave.length > 0) {
-            self._loadTile();
             self._baseLayer.fire('loadtileend', self.status);
           } else {
             self._baseLayer.fire('loadtileend', self.status);
@@ -401,7 +400,11 @@ var ControlSaveTiles = L.Control.extend(
           return;
         }
         if (xhr.readyState === XMLHttpRequest.DONE) {
-          throw new Error(("Request failed with status " + (xhr.status)));
+          self._baseLayer.fire('loadtileenderror', self.status);
+          console.error(("Request failed with status " + (xhr.status)));
+        }
+        if (self.status._tilesforSave.length > 0) {
+          self._loadTile();
         }
       };
     },

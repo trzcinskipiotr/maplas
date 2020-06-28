@@ -64,8 +64,6 @@ export default class OfflineCard extends BaseComponent {
   private deleting = false;
   private counting = false;
   private totalImported = 0;
-  private progress = 0;
-  private totalToSave = 0;
   private layerName = '';
 
   private CHUNKSIZE = 1024 * 1024 * 100;
@@ -296,18 +294,38 @@ export default class OfflineCard extends BaseComponent {
 
   private onBaseLayerChange(e: L.LayersControlEvent) {
     this.layerName = e.name;
+    let progress: number;
+    let errors: number;
+    let totalToSave: number;
     const offlineControl = this.$store.state.offlineControl;
     if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline')) {
       offlineControl.setLayer(this.$store.state.baseMaps[this.layerName]);
       offlineControl._baseLayer.on('savestart', (e: any) => {
-        this.progress = 0;
-        this.totalToSave = e._tilesforSave.length;
-        this.showMessageDiv('' + this.progress + '/' + this.totalToSave);
+        progress = 0;
+        errors = 0;
+        totalToSave = e._tilesforSave.length;
+        this.showMessageDiv('' + progress + '/' + totalToSave);
       });
       offlineControl._baseLayer.on('savetileend', () => {
-        this.progress += 1;
-        this.showMessage('' + this.progress + '/' + this.totalToSave);
-        if (this.progress === this.totalToSave) {
+        progress += 1;
+        if (errors) {
+          this.showMessage('' + progress + '/' + totalToSave + '(' + this.$t('bitmapDownloadErrors') + ': ' + errors + ')');
+        } else {
+          this.showMessage('' + progress + '/' + totalToSave);
+        }
+        if (progress === totalToSave) {
+          this.saving = false;
+        }
+      });
+      offlineControl._baseLayer.on('loadtileenderror', () => {
+        errors += 1;
+        progress += 1;
+        if (errors) {
+          this.showMessage('' + progress + '/' + totalToSave + ' (' + this.$t('bitmapDownloadErrors') + ': ' + errors + ')');
+        } else {
+          this.showMessage('' + progress + '/' + totalToSave);
+        }
+        if (progress === totalToSave) {
           this.saving = false;
         }
       });
