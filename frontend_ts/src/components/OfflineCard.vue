@@ -68,7 +68,7 @@ export default class OfflineCard extends BaseComponent {
   private totalToSave = 0;
   private layerName = '';
 
-  private CHUNKSIZE = 1024 * 100;
+  private CHUNKSIZE = 1024 * 1024 * 100;
 
   private setMessageClass(className: string) {
     (this.$refs.messageClass as HTMLElement).className = 'alert border border-dark '+ className;
