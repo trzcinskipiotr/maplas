@@ -15,6 +15,7 @@ import 'localforage';
 import './ts/leaflet.offline';
 
 import 'localforage-getitems';
+import 'localforage-setitems';
 
 import './ts/L.CanvasLayer';
 

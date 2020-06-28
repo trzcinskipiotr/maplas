@@ -140,6 +140,13 @@ en: {
   noSleepInactive: 'Screen lock deactivated',
   showLocation: 'Show position',
   hideLocation: 'Hide position',
+  bitmapInDatabase: 'Bitmaps in batabase: {0}',
+  allBitmapsRemoved: 'All bitmaps removed',
+  starting: 'Staring...',
+  countOffline: 'Count',
+  importProgressLine: 'Readed: {0}MB; Bitmaps loaded: {1}',
+  noBitmapsToExport: 'No bitmaps to export',
+  importToDBError: 'Import to DB error',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -278,6 +285,13 @@ pl: {
   noSleepInactive: 'Blokada ekranu deaktywowana',
   showLocation: 'Pokaż pozycję',
   hideLocation: 'Ukryj pozycję',
+  bitmapInDatabase: 'Bitmap w bazie: {0}',
+  allBitmapsRemoved: 'Wszystkie bitmapy usunięte',
+  starting: 'Rozpoczynam',
+  countOffline: 'Policz',
+  importProgressLine: 'Przeczytano: {0}MB; Załadowano bitmap: {1}',
+  noBitmapsToExport: 'Brak bitmap do exportu',
+  importToDBError: 'Błąd importu',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});
