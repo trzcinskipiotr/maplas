@@ -49,6 +49,7 @@
     "load-google-maps-api": "^2.0.1",
     "localforage": "^1.7.4",
     "localforage-getitems": "^1.4.2",
+    "localforage-setitems": "^1.4.0",
     "moment": "^2.24.0",
     "nosleep.js": "^0.11.0",
     "register-service-worker": "^1.6.2",

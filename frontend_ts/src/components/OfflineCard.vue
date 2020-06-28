@@ -1,5 +1,11 @@
 <template>
   <div>
+    <div ref="messageDiv" class="alertmessage" style="display: none">
+      <div ref="messageClass" class="alert border border-dark" role="alert">
+        <span ref="message"></span>&nbsp;
+        <span style="cursor: pointer" aria-hidden="true" @click="$refs.messageDiv.style.display = 'none'">&times;</span>
+      </div>
+    </div>
     <div class="card">
       <div class="card-header py-2">
         {{ $t('offlineMaps' )}}
@@ -11,21 +17,25 @@
         {{ $t('zoomTo') }} <select v-model="$store.state.maximalZoom">
           <option v-for="zoom in allowMaximalZoom" :value="zoom" :key="zoom">{{ zoom }}</option>
         </select><br><br>  
-        <button :disabled="exporting || importing || saving" class="btn btn-primary btn-sm" @click="exportOffline">
+        <button :disabled="exporting || importing || deleting || saving || counting" class="btn btn-primary btn-sm" @click="exportOffline">
           <font-awesome-icon v-if="exporting" class="fa-spin" icon="spinner" />&nbsp;
           {{ $t('exportOffline') }}
         </button>&nbsp;
-        <button :disabled="exporting || importing || saving" class="btn btn-primary btn-sm" @click="openImportFileInput">
+        <button :disabled="exporting || importing || deleting || saving || counting" class="btn btn-primary btn-sm" @click="openImportFileInput">
           <font-awesome-icon v-if="importing" class="fa-spin" icon="spinner" />&nbsp;
           {{ $t('importOffline') }}
         </button><br><br>
-        <button :disabled="exporting || importing || saving" class="btn btn-primary btn-sm" @click="downloadOffline">
+        <button :disabled="exporting || importing || deleting || saving || counting" class="btn btn-primary btn-sm" @click="downloadOffline">
           <font-awesome-icon v-if="saving" class="fa-spin" icon="spinner" />&nbsp;
           {{ $t('downloadOffline') }}
         </button>&nbsp;
-        <button :disabled="exporting || importing || saving" class="btn btn-primary btn-sm" @click="deleteOffline">
-          <font-awesome-icon v-if="saving" class="fa-spin" icon="spinner" />&nbsp;
+        <button :disabled="exporting || importing || deleting || saving || counting" class="btn btn-primary btn-sm" @click="deleteOffline">
+          <font-awesome-icon v-if="deleting" class="fa-spin" icon="spinner" />&nbsp;
           {{ $t('deleteOffline') }}
+        </button>&nbsp;
+        <button :disabled="exporting || importing || deleting || saving || counting" class="btn btn-primary btn-sm" @click="countOffline">
+          <font-awesome-icon v-if="counting" class="fa-spin" icon="spinner" />&nbsp;
+          {{ $t('countOffline') }}
         </button>
         <input id="importFileInputOffline" style="display:none;" type="file" accept=".txt" v-on:change="importFile" />
       </div>
@@ -42,6 +52,7 @@ import { formatDateSeconds } from '@/ts/utils';
 import { AlertStatus } from '@/ts/types';
 import streamSaver from 'streamsaver';
 import FileSaver from 'file-saver';
+import { TranslateResult } from 'vue-i18n';
 
 @Component
 export default class OfflineCard extends BaseComponent {
@@ -50,8 +61,34 @@ export default class OfflineCard extends BaseComponent {
   private exporting = false;
   private importing = false;
   private saving = false;
+  private deleting = false;
+  private counting = false;
+  private totalImported = 0;
+  private progress = 0;
+  private totalToSave = 0;
+  private layerName = '';
 
-  private chunkSize = 1024 * 1024 * 100;
+  private CHUNKSIZE = 1024 * 1024 * 100;
+
+  private setMessageClass(className: string) {
+    (this.$refs.messageClass as HTMLElement).className = 'alert border border-dark '+ className;
+  }
+
+  private showMessage(message: string | TranslateResult) {
+    (this.$refs.message as HTMLElement).innerHTML = (message as string);
+  }
+
+  private showMessageDiv(message: string | TranslateResult) {
+    (this.$refs.messageDiv as HTMLElement).style.display = 'block';
+    this.showMessage(message);
+    this.setMessageClass('alert-success');
+  }
+
+  private showMessageError(message: string | TranslateResult) {
+    (this.$refs.messageDiv as HTMLElement).style.display = 'block';
+    this.showMessage(message);
+    this.setMessageClass('alert-danger');
+  }
 
   private openImportFileInput() {
     $('#importFileInputOffline').click();
@@ -73,17 +110,34 @@ export default class OfflineCard extends BaseComponent {
   }
 
   private downloadOffline() {
-    this.$store.state.offlineControl._saveTiles();
+    if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline')) {
+      this.saving = true;
+      setTimeout(() => this.$store.state.offlineControl._saveTiles(), 100);
+    } else {
+      this.showMessageError(this.$t('mapNotOffline'));
+    }
   }
 
   private deleteOffline() {
+    this.deleting = true;
+    this.$store.state.offlineControl._baseLayer.on('tilesremoved', () => {
+      this.deleting = false;
+      this.showMessageDiv(this.$t('allBitmapsRemoved'))
+    });
     this.$store.state.offlineControl._rmTiles();
+  }
+
+  private countOffline() {
+    this.counting = true;
+    this.$store.state.offlineControl.getStorageSize((size: number) => {
+      this.showMessageDiv(this.$t('bitmapInDatabase', [size]));
+      this.counting = false;
+    });
   }
 
   private async exportOffline() {
     this.exporting = true;
-    document.getElementById('saveTitleMessageDiv').style.display = 'block';
-    document.getElementById('saveTitleMessageMessage').innerHTML = 'Starting...';
+    this.showMessageDiv(this.$t('starting'));
     const encode = TextEncoder.prototype.encode.bind(new TextEncoder)
     const results = await localforage.getItems(null);
     let done = 0;
@@ -91,54 +145,63 @@ export default class OfflineCard extends BaseComponent {
     for (const result in results) {
       total = total + 1;
     }
-    const date = formatDateSeconds(new Date());
-    const fileStream = streamSaver.createWriteStream('offline_maps_' + date + '.txt');
-    const writer = fileStream.getWriter();
-    for (const result in results) {
-      const data = results[result];
-      const reader = new FileReader();
-      reader.onload = () => {
-        let b64 = reader.result as string;
-        let lineToSave = result + '$$$' + b64 + '###';
-        writer.write(encode(lineToSave));
-        done = done + 1;
-        document.getElementById('saveTitleMessageMessage').innerHTML = '' + done + '/' + total;
-        if (done === total) {
-          writer.close();
-          this.exporting = false;
+    if (total > 0) {
+      const date = formatDateSeconds(new Date());
+      const fileStream = streamSaver.createWriteStream('offline_maps_' + date + '.txt');
+      const writer = fileStream.getWriter();
+      for (const result in results) {
+        const data = results[result];
+        const reader = new FileReader();
+        reader.onload = () => {
+          let b64 = reader.result as string;
+          let lineToSave = result + '$' + b64 + '#';
+          writer.write(encode(lineToSave));
+          done = done + 1;
+          this.showMessage('' + done + '/' + total)
+          if (done === total) {
+            writer.close();
+            this.exporting = false;
+          }
         }
+        reader.readAsDataURL(data);
       }
-      reader.readAsDataURL(data);
+    } else {
+      this.exporting = false;
+      this.showMessageError(this.$t('noBitmapsToExport'));
     }
   }
 
   private async exportOfflineAtOnce() {
     this.exporting = true;
-    document.getElementById('saveTitleMessageDiv').style.display = 'block';
-    document.getElementById('saveTitleMessageMessage').innerHTML = 'Starting...';
+    this.showMessageDiv(this.$t('starting'));
     const date = formatDateSeconds(new Date());
     const results = await localforage.getItems(null);
-    let tmpStra = '';
+    let tmpStr = '';
     let done = 0;
     let total = 0;
     for (const result in results) {
       total = total + 1;
     }
-    for (const result in results) {
-      const data = results[result];
-      const reader = new FileReader();
-      reader.onload = () => {
-        let b64 = reader.result as string
-        let lineToSave = result + '$$$' + b64 + '###';
-        tmpStra = tmpStra + lineToSave; 
-        done = done + 1;
-        if (done === total) {
-          this.saveFile(tmpStra, 'offline_maps_' + date + '.txt');
-          this.exporting = false;
+    if (total > 0) {
+      for (const result in results) {
+        const data = results[result];
+        const reader = new FileReader();
+        reader.onload = () => {
+          let b64 = reader.result as string
+          let lineToSave = result + '$' + b64 + '#';
+          tmpStr = tmpStr + lineToSave; 
+          done = done + 1;
+          if (done === total) {
+            this.saveFile(tmpStr, 'offline_maps_' + date + '.txt');
+            this.exporting = false;
+          }
+          this.showMessage('' + done + '/' + total)
         }
-        document.getElementById('saveTitleMessageMessage').innerHTML = '' + done + '/' + total;
+        reader.readAsDataURL(data);
       }
-      reader.readAsDataURL(data);
+    } else {
+      this.exporting = false;
+      this.showMessageError(this.$t('noBitmapsToExport'));
     }
   }
 
@@ -147,46 +210,74 @@ export default class OfflineCard extends BaseComponent {
     FileSaver.saveAs(blob, name);
   }
 
-  private async importToDB(file: File, chunkIndex: number, result: string) {
-    const chunks = Math.floor(file.size / this.chunkSize) + 1;
-    const tab = result.split('###');
-    let done = 0;
-    const total = tab.length;
+  private async setOnItem(key: string, value: any) {
+    const response = await fetch(value);
+    const blob = await response.blob();
+    const result = await localforage.setItem(key, blob);
+  }
+
+  private async importToDB(file: File, startByte: number, result: string) {
+    const obj: any = {}
+    const tab = result.split('#');
+    if (! result.endsWith('#')) {
+      this.showMessageError(this.$t('importToDBError'));
+      return;
+    }
+    const total = tab.length - 1;
     for (const el of tab) {
-      const tab2 = el.split('$$$');
+      const tab2 = el.split('$');
       if (tab2.length === 2) {
         const key = tab2[0];
         const value = tab2[1];
-        try {
-          const response = await fetch(value);
-          const blob = await response.blob(); 
-          const result = await localforage.setItem(key, blob);
-          done = done + 1
-          const chunkPlus1 = chunkIndex + 1;
-          document.getElementById('saveTitleMessageMessage').innerHTML = 'Chunk ' + chunkPlus1 + ' of ' + chunks + '; Bitmap ' + done + ' of '+ total;
-        } catch (error) {
-
+        const blobRegex = value.match('data:(.*);base64,(.*)');
+        obj[key] = '__lfsc__:blob~~local_forage_type~' + blobRegex[1] + '~' + blobRegex[2];
+        this.totalImported = this.totalImported + 1;
+        const MBs = Math.round((startByte + result.length) / (1024 * 1024))
+        this.showMessage(this.$t('importProgressLine', [MBs, this.totalImported]));
+      } else {
+        if (! (el.length === 0)) {
+          this.showMessageError(this.$t('importToDBError'));
+          return;
         }
       }
     }
-    this.processFile(file, chunkIndex + 1);
+    localforage.setItems(obj).then(() => {
+      this.processFile(file, startByte + result.length);
+    });
   }
 
-  private processFile(file: File, chunkIndex: number) {
+  private processFile(file: File, startByte: number) {
     const size = file.size;
-    const chunks = Math.floor(size / this.chunkSize) + 1;
-    if (chunkIndex >= chunks) {
+    if (startByte === file.size) {
       this.importing = false;
       $('#importFileInputOffline')!.val('');
       return;
     }
-    const chunk = file.slice(chunkIndex * this.chunkSize, (chunkIndex + 1) * this.chunkSize);
-    const reader = new FileReader();
-    reader.onload = (onLoadEvent: Event) => {
-      const result = reader.result as string;
-      this.importToDB(file, chunkIndex, result);
+    let chunk = file.slice(startByte, startByte + this.CHUNKSIZE);
+    const addedChunk = file.slice(startByte + this.CHUNKSIZE, startByte + this.CHUNKSIZE + (1024 * 1024));
+    const addedChunkReader = new FileReader();
+    addedChunkReader.onload = (event: Event) => {
+      const smallResult = addedChunkReader.result as string;
+      const firstHashIndex = smallResult.indexOf('#');
+      if (firstHashIndex >= 0) {
+        chunk = file.slice(startByte, startByte + this.CHUNKSIZE + firstHashIndex + 1);
+      } else {
+        chunk = file.slice(startByte, startByte + this.CHUNKSIZE + (1024 * 1024));
+      }
+      const reader = new FileReader();
+      reader.onload = (onLoadEvent: Event) => {
+        const result = reader.result as string;
+        this.importToDB(file, startByte, result);
+      }
+      reader.onerror = (event: Event) => {
+        this.showMessageError(this.$t('importToDBError'));
+      }
+      reader.readAsText(chunk);
+    };
+    addedChunkReader.onerror = (event: Event) => {
+      this.showMessageError(this.$t('importToDBError'));
     }
-    reader.readAsText(chunk);
+    addedChunkReader.readAsText(addedChunk);
   }
 
   private importFile(event: Event) {
@@ -196,10 +287,57 @@ export default class OfflineCard extends BaseComponent {
       return;
     }
     this.importing = true;
-    document.getElementById('saveTitleMessageDiv').style.display = 'block';
+    this.totalImported = 0;
     for (const file of files) {
+      this.showMessageDiv(this.$t('starting'));
       this.processFile(file, 0);
     }
+  }
+
+  private onBaseLayerChange(e: L.LayersControlEvent) {
+    this.layerName = e.name;
+    const offlineControl = this.$store.state.offlineControl;
+    if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline')) {
+      offlineControl.setLayer(this.$store.state.baseMaps[this.layerName]);
+      offlineControl._baseLayer.on('savestart', (e: any) => {
+        this.progress = 0;
+        this.totalToSave = e._tilesforSave.length;
+        this.showMessageDiv('' + this.progress + '/' + this.totalToSave);
+      });
+      offlineControl._baseLayer.on('savetileend', () => {
+        this.progress += 1;
+        this.showMessage('' + this.progress + '/' + this.totalToSave);
+        if (this.progress === this.totalToSave) {
+          this.saving = false;
+        }
+      });
+    }
+  }
+
+  @Watch('$store.state.map')
+  private onStoreMapChanged() {
+    this.$store.state.map.on('baselayerchange', this.onBaseLayerChange);
+  }
+
+  @Watch('$store.state.offlineControl')
+  private onStoreOfflineControlChange() {
+    this.$store.state.offlineControl.options.confirm = (layer, succescallback) => {
+      const firstUrl = layer._tilesforSave[0].key;
+      if (window.confirm(this.$t('saveAllTitles', [layer._tilesforSave.length, this.$store.state.offlineControl.options.zoomlevels, firstUrl]))) {
+        succescallback();
+      } else {
+        this.saving = false;
+      }
+    };
+    this.$store.state.offlineControl.options.confirmRemoval = (layer, successCallback) => {
+      this.$store.state.offlineControl.getStorageSize((size) => {
+        if (window.confirm(this.$t('removeAllTitles', [size]))) {
+          successCallback();
+        } else {
+          this.deleting = false;
+        }
+      });
+    };
   }
 
 }

@@ -32,6 +32,7 @@ export interface RootState {
   minimalZoom: number;
   maximalZoom: number;
   offlineControl: any;
+  baseMaps: any;
 }
 
 const store: StoreOptions<RootState> = {
@@ -64,6 +65,7 @@ const store: StoreOptions<RootState> = {
     minimalZoom: 4,
     maximalZoom: 18,
     offlineControl: null,
+    baseMaps: null,
   },
   getters: {
     selectedTracks: (state): Track[] => {

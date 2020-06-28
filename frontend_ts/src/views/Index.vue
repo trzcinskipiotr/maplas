@@ -1,11 +1,5 @@
 <template>
   <div id="appvue">
-    <div id="saveTitleMessageDiv" class="alertmessage" style="display: none">
-      <div id="saveTitleMessage" class="alert border border-dark alert-success" role="alert">
-        <span id="saveTitleMessageMessage"></span>&nbsp;
-        <span style="cursor: pointer" aria-hidden="true" @click="document.getElementById('saveTitleMessageDiv').style.display = 'none'">&times;</span>
-      </div>
-    </div>
     <div class="wrapper">
       <div id="sidebar">
         <div class="card">
@@ -450,26 +444,7 @@ export default class Index extends BaseComponent {
     //$('.leaflet-control-scale-line').html($('.leaflet-control-scale-line').html() + '<span style="float: right">(Zoom: ' + this.$store.state.map.getZoom() + ')</span>');
   }
 
-  private baseLayerChange(e: L.LayersControlEvent) {
-    this.layerName = e.name;
-    if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline')) {
-      this.offlineControl.setLayer(this.baseMaps[this.layerName]);
-      this.offlineControl._baseLayer.on('savestart', (e) => {
-        this.progress = 0;
-        this.totalToSave = e._tilesforSave.length
-        document.getElementById('saveTitleMessageDiv').style.display = 'block';
-        document.getElementById('saveTitleMessageMessage').innerHTML = '' + this.progress + '/' + this.totalToSave;
-      });
-      this.offlineControl._baseLayer.on('savetileend', () => {
-        this.progress += 1;
-        document.getElementById('saveTitleMessageMessage').innerHTML = '' + this.progress + '/' + this.totalToSave;
-      });
-    } else {
-      if (this.offlineControl) {
-        this.offlineControl.setLayer(this.baseMaps['OpenStreetMapOffline']);
-      }
-    }
-  }
+  
 
   private createMap(center: [number, number], zoom: number) {
     const map = L.map('map', {zoomAnimation: false});
@@ -481,7 +456,6 @@ export default class Index extends BaseComponent {
     this.$store.commit('setZoomLevel', zoom);
     map.on('click', this.mapClicked);
     map.on('moveend', this.mapMoveEnd);
-    map.on('baselayerchange', this.baseLayerChange);
     map.on('dragstart', () => {this.followLocation = false});
   }
 
@@ -648,6 +622,8 @@ export default class Index extends BaseComponent {
       'mapa-turystyczna.pl': layers['mapaTurystycznaPL'],
     };
 
+    this.$store.state.baseMaps = this.baseMaps;
+
     for (const layer in this.baseMaps) {
       if (this.baseMaps.hasOwnProperty(layer)) {
         this.baseMaps[layer].on('loading', (event) => {
@@ -683,24 +659,6 @@ export default class Index extends BaseComponent {
   private addOffline() {
     this.offlineControl = L.control.savetiles(this.baseMaps['OpenStreetMapOffline'], {
       zoomlevels: this.getOfflineZooms(),
-      confirm: (layer, succescallback) => {
-        if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline')) {
-          const firstUrl = layer._tilesforSave[0].key
-          if (window.confirm(this.$t('saveAllTitles', [layer._tilesforSave.length, this.offlineControl.options.zoomlevels, firstUrl]))) {
-            succescallback();
-          }
-        } else {
-          this.createAlert(AlertStatus.danger, this.$t('mapNotOffline'), 2000);
-          return false;
-        }
-      },
-      confirmRemoval: (layer, successCallback) => {
-        let size = -1;
-        this.offlineControl.getStorageSize((f) => {size = f});
-        if (window.confirm(this.$t('removeAllTitles', [size]))) {
-          successCallback();
-        }
-      },
       saveText: '<i class="fa fa-download" aria-hidden="true" title="Save tiles"></i>',
       rmText: '<i class="fa fa-trash" aria-hidden="true"  title="Remove tiles"></i>',
     });
