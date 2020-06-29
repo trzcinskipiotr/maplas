@@ -255,6 +255,8 @@ export default class Index extends BaseComponent {
   private locationActive = false;
   private locationMarker: L.CircleMarker = null;
 
+  private lastMouseDownTime: number = null;
+
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
     i18n.locale = this.language!.language;
@@ -462,6 +464,21 @@ export default class Index extends BaseComponent {
     map.on('click', this.mapClicked);
     map.on('moveend', this.mapMoveEnd);
     map.on('dragstart', () => {this.followLocation = false});
+
+    //Obejście na złe zachowanie zoomu na mobile, na desktopie niestety zostają tooltipy po kliknięciu, więc if tylko na mobile
+    if (! this.$store.state.isDesktop) {
+      $('.leaflet-control-zoom-in').replaceWith($('.leaflet-control-zoom-in').clone());
+      (document.getElementsByClassName('leaflet-control-zoom-in')[0]).addEventListener('click', (e) => {map.setZoom(Math.round(map.getZoom() + 1)); e.stopPropagation()});
+      $('.leaflet-control-zoom-out').replaceWith($('.leaflet-control-zoom-out').clone());
+      (document.getElementsByClassName('leaflet-control-zoom-out')[0]).addEventListener('click', (e) => {map.setZoom(Math.round(map.getZoom() - 1)); e.stopPropagation()});
+    }
+
+    map.on('mousedown', () => {this.lastMouseDownTime = Date.now()});
+    map.on('mouseup', () => {
+      if (Date.now() - this.lastMouseDownTime > 500) {
+        map.setZoom(Math.round(map.getZoom() - 1));
+      } 
+    });
   }
 
   private addLayers() {
