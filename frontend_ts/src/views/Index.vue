@@ -256,6 +256,7 @@ export default class Index extends BaseComponent {
   private locationMarker: L.CircleMarker = null;
 
   private lastMouseDownTime: number = null;
+  private lastMouseDownPoint: any = null;
 
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
@@ -437,17 +438,17 @@ export default class Index extends BaseComponent {
     if (! document.getElementById('currentZoomId')) {
       this.node = document.createElement("span");
       this.node.id = 'currentZoomId';
-      //this.node.style.backgroundColor = 'white';
-      //this.node.style.border = '1px solid black';
+      this.node.style.backgroundColor = 'rgba(255, 255, 255, 0.95)';
+      this.node.style.border = '2px solid #777';
+      this.node.style.paddingLeft = '4px';
       this.node.style.paddingRight = '4px';
-      this.node.style.position = 'absolute';
-      this.node.style.right = '0px';
-      const scale = document.getElementsByClassName('leaflet-control-scale-line');
+      this.node.style.borderTop = '0px';
+      const scale = document.getElementsByClassName('leaflet-control-scale leaflet-control');
       if (scale.length) {
         scale[0].appendChild(this.node);
       }
     }
-    this.node.innerHTML = '(Zoom: ' + this.$store.state.map.getZoom() + ')';
+    this.node.innerHTML = '' + this.$store.state.map.getZoom();
     //$('.leaflet-control-scale-line').html($('.leaflet-control-scale-line').html() + '<span style="float: right">(Zoom: ' + this.$store.state.map.getZoom() + ')</span>');
   }
 
@@ -473,9 +474,9 @@ export default class Index extends BaseComponent {
       (document.getElementsByClassName('leaflet-control-zoom-out')[0]).addEventListener('click', (e) => {map.setZoom(Math.round(map.getZoom() - 1)); e.stopPropagation()});
     }
 
-    map.on('mousedown', () => {this.lastMouseDownTime = Date.now()});
-    map.on('mouseup', () => {
-      if (Date.now() - this.lastMouseDownTime > 500) {
+    map.on('mousedown', (e: L.LeafletMouseEvent) => {this.lastMouseDownTime = Date.now(); this.lastMouseDownPoint = e.layerPoint});
+    map.on('mouseup', (e: L.LeafletMouseEvent) => {
+      if ((Date.now() - this.lastMouseDownTime > 400) && (Math.abs(e.layerPoint.x - this.lastMouseDownPoint.x) <= 2) && (Math.abs(e.layerPoint.y - this.lastMouseDownPoint.y) <= 2)) {
         map.setZoom(Math.round(map.getZoom() - 1));
       } 
     });
