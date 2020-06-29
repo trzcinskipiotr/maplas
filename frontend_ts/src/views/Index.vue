@@ -472,6 +472,8 @@ export default class Index extends BaseComponent {
       (document.getElementsByClassName('leaflet-control-zoom-in')[0]).addEventListener('click', (e) => {map.setZoom(Math.round(map.getZoom() + 1)); e.stopPropagation()});
       $('.leaflet-control-zoom-out').replaceWith($('.leaflet-control-zoom-out').clone());
       (document.getElementsByClassName('leaflet-control-zoom-out')[0]).addEventListener('click', (e) => {map.setZoom(Math.round(map.getZoom() - 1)); e.stopPropagation()});
+      map.off('dblclick');
+      map.on('dblclick', (e) => {map.setZoom(Math.round(map.getZoom() + 1))});
     }
 
     map.on('mousedown', (e: L.LeafletMouseEvent) => {this.lastMouseDownTime = Date.now(); this.lastMouseDownPoint = e.layerPoint});
