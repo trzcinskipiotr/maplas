@@ -98,6 +98,7 @@
                     <OfflineCard></OfflineCard>
                     <br>
                     <button class="btn btn-primary" @click="noSleepToggle">{{ noSleepActive ? $t('noSleepActive') : $t('noSleepInactive')}}</button>
+                    <br><br>
                   </div>
                 </div>
               </div>

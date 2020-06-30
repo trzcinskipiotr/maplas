@@ -155,6 +155,7 @@ export default class Track {
     }
     this.createMapObjects(map);
     if (this.gpsTrack.segments.length) {
+      this.gpsTrack.segments[0].calculateDistance();
       this.gpsTrack.distance = this.gpsTrack.segments[0].distance;
     }
     this.lastRefresh = Date.now();
