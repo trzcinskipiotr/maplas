@@ -133,40 +133,48 @@ export default class OfflineCard extends BaseComponent {
     });
   }
 
+  private readFile(data: any){
+    return new Promise((resolve, reject) => {
+      const fr = new FileReader();  
+      fr.onload = () => {
+        resolve(fr.result)
+      };
+      fr.readAsDataURL(data);
+    });
+  }
+
   private async exportOffline() {
     this.exporting = true;
     this.showMessageDiv(this.$t('starting'));
-    const encode = TextEncoder.prototype.encode.bind(new TextEncoder)
-    const results = await localforage.getItems(null);
-    let done = 0;
-    let total = 0;
-    for (const result in results) {
-      total = total + 1;
-    }
-    if (total > 0) {
-      const date = formatDateSeconds(new Date());
-      const fileStream = streamSaver.createWriteStream('offline_maps_' + date + '.txt');
-      const writer = fileStream.getWriter();
+    const encode = TextEncoder.prototype.encode.bind(new TextEncoder);
+    const date = formatDateSeconds(new Date());
+    const fileStream = streamSaver.createWriteStream('offline_maps_' + date + '.txt');
+    const writer = fileStream.getWriter();
+    let dbIndex = 1;
+    for(const db of window.dbs) {
+      const results = await db.getItems(null);
+      let done = 0;
+      let total = 0;
+      for (const result in results) {
+        total = total + 1;
+      }
+      let lineToSave = '';
       for (const result in results) {
         const data = results[result];
         const reader = new FileReader();
-        reader.onload = () => {
-          let b64 = reader.result as string;
-          let lineToSave = result + '$' + b64 + '#';
+        const b64 = await this.readFile(data) as string;
+        lineToSave = lineToSave + result + '$' + b64 + '#';
+        done = done + 1;
+        if ((lineToSave.length > 1024*1024*50) || (done === total)) {
           writer.write(encode(lineToSave));
-          done = done + 1;
-          this.showMessage('' + done + '/' + total)
-          if (done === total) {
-            writer.close();
-            this.exporting = false;
-          }
+          lineToSave = '';
         }
-        reader.readAsDataURL(data);
+        this.showMessage('' + dbIndex + '/' + window.dbCount + ': ' + done + '/' + total)
       }
-    } else {
-      this.exporting = false;
-      this.showMessageError(this.$t('noBitmapsToExport'));
+      dbIndex = dbIndex + 1;
     }
+    writer.close();
+    this.exporting = false;
   }
 
   private async exportOfflineAtOnce() {
@@ -216,6 +224,9 @@ export default class OfflineCard extends BaseComponent {
 
   private async importToDB(file: File, startByte: number, result: string) {
     const obj: any = {}
+    for (let index = 0; index < window.dbCount; index++) {
+      obj[index] = {};
+    }
     const tab = result.split('#');
     if (! result.endsWith('#')) {
       this.showMessageError(this.$t('importToDBError'));
@@ -228,7 +239,8 @@ export default class OfflineCard extends BaseComponent {
         const key = tab2[0];
         const value = tab2[1];
         const blobRegex = value.match('data:(.*);base64,(.*)');
-        obj[key] = '__lfsc__:blob~~local_forage_type~' + blobRegex[1] + '~' + blobRegex[2];
+        const dbIndex = window.getDBIndex(key);
+        obj[dbIndex][key] = '__lfsc__:blob~~local_forage_type~' + blobRegex[1] + '~' + blobRegex[2];
         this.totalImported = this.totalImported + 1;
         const MBs = Math.round((startByte + result.length) / (1024 * 1024))
         this.showMessage(this.$t('importProgressLine', [MBs, this.totalImported]));
@@ -239,7 +251,13 @@ export default class OfflineCard extends BaseComponent {
         }
       }
     }
-    localforage.setItems(obj).then(() => {
+    const promises = [];
+    for (let index = 0; index < window.dbCount; index++) {
+      const db = window.dbs[index];
+      const promise = db.setItems(obj[index]);
+      promises.push(promise);
+    }
+    Promise.all(promises).then(() => {
       this.processFile(file, startByte + result.length);
     });
   }

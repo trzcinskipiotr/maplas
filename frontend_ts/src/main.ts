@@ -132,6 +132,53 @@ window.detailsX = 50;
 window.detailsY = 50;
 window.detailsLastZIndex = 1;
 
+import localforage from 'localforage';
+
+window.dbCount = 1;
+window.dbs = [];
+
+if (document.documentElement.clientWidth >= 700) {
+  window.dbCount = 1;
+  const db = localforage.createInstance({name: 'leaflet_offline', version: 1.0, storeName: 'tiles', driver: localforage.WEBSQL});
+  window.dbs.push(db);
+} else {
+  window.dbCount = 50;
+  for (let index = 0; index < window.dbCount; index++) {
+    const db = localforage.createInstance({name: 'leaflet_offline' + index, version: 1.0, storeName: 'tiles', driver: localforage.WEBSQL});
+    window.dbs.push(db);
+  }
+}
+
+window.charCodeZero = '0'.charCodeAt(0);
+window.charCodeNine = '9'.charCodeAt(0);
+
+window.isDigit = function(key: string) {
+  return(key >= window.charCodeZero && key <= window.charCodeNine);
+};
+
+window.getDBIndex = function(key) {
+  let lastDigit: number = null;
+  let preLastDigit: number = null;
+  for (let index = key.length - 1; index >= 0; index--) {
+    const keyCode = key.charCodeAt(index);
+    if (window.isDigit(keyCode)) {
+      if (lastDigit === null) {
+        lastDigit = keyCode - window.charCodeZero;
+      } else {
+        preLastDigit = keyCode - window.charCodeZero;
+        break;
+      }
+    }
+  }
+  const sum = preLastDigit * 10 + lastDigit;
+  const dbIndex = sum % (window.dbCount);
+  return dbIndex;
+};
+
+window.getDB = function(key: string) {
+  return window.dbs[window.getDBIndex(key)];
+};
+
 window.GLOBALVUE = new Vue({
   // @ts-ignore
   i18n,

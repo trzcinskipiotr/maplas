@@ -1,14 +1,13 @@
 import L from 'leaflet';
-import localforage from 'localforage';
 
-localforage.config({
-  name: 'leaflet_offline',
-  version: 1.0,
-  size: 4980736,
-  storeName: 'tiles',
-  description: 'the tiles',
-  driver: localforage.WEBSQL,
-});
+//localforage.config({
+//  name: 'leaflet_offline',
+//  version: 1.0,
+//  size: 4980736,
+//  storeName: 'tiles',
+//  description: 'the tiles',
+//  driver: localforage.WEBSQL,
+//});
 
 /**
  * A layer that uses store tiles when available. Falls back to online.
@@ -44,7 +43,8 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     var this$1 = this;
 
     return new Promise(function (resolve, reject) {
-      localforage.getItem(this$1._getStorageKey(url)).then(function (data) {
+      const db = window.getDB(this$1._getStorageKey(url));
+      db.getItem(this$1._getStorageKey(url)).then(function (data) {
         if (data && typeof data === 'object') {
           resolve(URL.createObjectURL(data));
         } else {
@@ -226,19 +226,22 @@ var ControlSaveTiles = L.Control.extend(
         callback(this.status.storagesize);
         return;
       }
-      localforage
-        .length()
-        .then(function (numberOfKeys) {
-          self.status.storagesize = numberOfKeys;
-          self._baseLayer.fire('storagesize', self.status);
-          if (callback) {
-            callback(numberOfKeys);
-          }
-        })
-        .catch(function (err) {
-          callback(0);
-          throw err;
-        });
+      self.status.storagesize = 0;
+      const promises = [];
+      for(const db of window.dbs) {
+        promises.push(db.length());
+      }
+      Promise.all(promises).then((values) => {
+        let sum = 0;
+        for(const value of values) {
+          sum = sum + value;
+        }
+        self.status.storagesize = sum;
+        self._baseLayer.fire('storagesize', self.status);
+        if (callback) {
+          callback(sum);
+        }
+      });
     },
     /**
      * get number of saved files
@@ -415,10 +418,11 @@ var ControlSaveTiles = L.Control.extend(
      */
     _saveTile: function _saveTile(tileUrl, blob) {
       var self = this;
-      localforage
+      const db = window.getDB(tileUrl);
+      db
         .removeItem(tileUrl)
         .then(function () {
-          localforage
+          db
             .setItem(tileUrl, blob)
             .then(function () {
               self.status.lengthSaved += 1;
@@ -439,7 +443,11 @@ var ControlSaveTiles = L.Control.extend(
     _rmTiles: function _rmTiles() {
       var self = this;
       var successCallback = function () {
-        localforage.clear().then(function () {
+        const promises = [];
+        for(const db of window.dbs) {
+          promises.push(db.clear());
+        }
+        Promise.all(promises).then((values) => {
           self.status.storagesize = 0;
           self._baseLayer.fire('tilesremoved');
           self._baseLayer.fire('storagesize', self.status);
