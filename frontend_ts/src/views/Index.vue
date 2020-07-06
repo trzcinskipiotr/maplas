@@ -556,26 +556,28 @@ export default class Index extends BaseComponent {
       maxZoom: 19,
       attribution: attributionString || '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
+      subdomains: 'c',
     });
 
     layers['openStreetMapOffline'] = L.tileLayer.offline('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: attributionString || '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
-      subdomains: 'abcabcabca',
+      subdomains: 'c',
     });
 
     layers['openCycleMap'] = L.tileLayer('https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: attributionString || '&copy; OpenCycleMap, ' + 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
+      subdomains: 'abc',
     });
 
     layers['openCycleMapOffline'] = L.tileLayer.offline('https://{s}.tile.thunderforest.com/cycle/{z}/{x}/{y}.png', {
       maxZoom: 19,
       attribution: attributionString || '&copy; OpenCycleMap, ' + 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
-      subdomains: 'abcabcabca',
+      subdomains: 'abc',
     });
 
     layers['googleRoads'] = L.gridLayer.googleMutant({

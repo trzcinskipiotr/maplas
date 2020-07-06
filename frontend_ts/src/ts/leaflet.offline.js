@@ -73,7 +73,8 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
    * @return {number} Number of simultanous downloads from tile server
    */
   getSimultaneous: function getSimultaneous() {
-    return this.options.subdomains.length;
+    //return this.options.subdomains.length;
+    return this.options.sims;
   },
   /**
    * getTileUrls for single zoomlevel
@@ -204,6 +205,7 @@ var ControlSaveTiles = L.Control.extend(
       lengthLoaded: null,
       _tilesforSave: null,
     },
+    obj: {},
     /**
      * @private
      * @param  {Object} baseLayer
@@ -314,6 +316,14 @@ var ControlSaveTiles = L.Control.extend(
      * @return {void}
      */
     _saveTiles: function _saveTiles() {
+      this.obj = {};
+      const sim = this._baseLayer.getSimultaneous();
+      for(let i = 0; i < sim; i++) {
+        this.obj[i] = {};
+        for (let index = 0; index < window.dbCount; index++) {
+          this.obj[i][index] = {};
+        }
+      }
       var this$1 = this;
 
       var bounds;
@@ -352,7 +362,7 @@ var ControlSaveTiles = L.Control.extend(
         this$1._baseLayer.fire('savestart', this$1.status);
         var subdlength = this$1._baseLayer.getSimultaneous();
         for (var i = 0; i < subdlength; i += 1) {
-          this$1._loadTile();
+          this$1._loadTile(this$1.obj[i]);
         }
       };
       if (this.options.confirm) {
@@ -374,6 +384,15 @@ var ControlSaveTiles = L.Control.extend(
         _tilesforSave: tiles,
       };
     },
+    _readFile: function _readFile(data){
+      return new Promise((resolve, reject) => {
+        const fr = new FileReader();  
+        fr.onload = () => {
+          resolve(fr.result)
+        };
+        fr.readAsDataURL(data);
+      });
+    },
     /**
      * Loop over status._tilesforSave prop till all tiles are downloaded
      * Calls _saveTile for each download
@@ -381,31 +400,75 @@ var ControlSaveTiles = L.Control.extend(
      * @param  {string} tileUrl
      * @return {void}
      */
-    _loadTile: function _loadTile() {
+    _loadTile: function _loadTile(data) {
       var self = this;
       var tileUrl = self.status._tilesforSave.shift();
       var xhr = new XMLHttpRequest();
       xhr.open('GET', tileUrl.url);
       xhr.responseType = 'blob';
       xhr.send();
-      xhr.onreadystatechange = function () {
+      xhr.onreadystatechange = async function () {
         if (xhr.readyState === XMLHttpRequest.DONE && (xhr.status >= 200 && xhr.status <= 300)) {
           self.status.lengthLoaded += 1;
-          self._saveTile(tileUrl.key, xhr.response);
+          const toSave = await self._readFile(xhr.response);
+          const blobRegex = toSave.match('data:(.*);base64,(.*)');
+          const dbIndex = window.getDBIndex(tileUrl.key);
+          data[dbIndex][tileUrl.key] = '__lfsc__:blob~~local_forage_type~' + blobRegex[1] + '~' + blobRegex[2];
+          //self._saveTile(tileUrl.key, xhr.response);
+          if (Object.keys(data[dbIndex]).length >= 100) {
+            const db = window.getDB(tileUrl.key);
+            await db.setItems(data[dbIndex]);
+            self.status.lengthSaved += Object.keys(data[dbIndex]).length;
+            for(let i = 0; i < Object.keys(data[dbIndex]).length; i++) {
+              self._baseLayer.fire('savetileend', self.status);
+            }
+            if (self.status.lengthSaved === self.status.lengthToBeSaved) {
+              self._baseLayer.fire('saveend', self.status);
+              self.setStorageSize();  
+            }
+            data[dbIndex] = {};
+          }
           if (self.status._tilesforSave.length > 0) {
             self._baseLayer.fire('loadtileend', self.status);
-            self._loadTile();
+            self._loadTile(data);
           } else {
             self._baseLayer.fire('loadtileend', self.status);
             if (self.status.lengthLoaded === self.status.lengthToBeSaved) {
               self._baseLayer.fire('loadend', self.status);
+            }
+            for (let index = 0; index < window.dbCount; index++) {
+              const db = window.dbs[index];
+              await db.setItems(data[index]);
+              self.status.lengthSaved += Object.keys(data[index]).length;
+              for(let i = 0; i < Object.keys(data[index]).length; i++) {
+                self._baseLayer.fire('savetileend', self.status);
+              }
+              if (self.status.lengthSaved === self.status.lengthToBeSaved) {
+                self._baseLayer.fire('saveend', self.status);
+                self.setStorageSize();
+              }
+              data[index] = {};
             }
           }
           return;
         }
         if (xhr.readyState === XMLHttpRequest.DONE) {
           self._baseLayer.fire('loadtileenderror', self.status);
+          for (let index = 0; index < window.dbCount; index++) {
+            const db = window.dbs[index];
+            await db.setItems(data[index]);
+            self.status.lengthSaved += Object.keys(data[index]).length;
+            for(let i = 0; i < Object.keys(data[index]).length; i++) {
+              self._baseLayer.fire('savetileend', self.status);
+            }
+            if (self.status.lengthSaved === self.status.lengthToBeSaved) {
+              self._baseLayer.fire('saveend', self.status);
+              self.setStorageSize();
+            }
+            data[index] = {};
+          }
           console.error(("Request failed with status " + (xhr.status)));
+          self._loadTile(data);
         }
       };
     },

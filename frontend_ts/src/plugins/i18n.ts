@@ -148,6 +148,7 @@ en: {
   noBitmapsToExport: 'No bitmaps to export',
   importToDBError: 'Import to DB error',
   bitmapDownloadErrors: 'errors',
+  threads: 'Threads',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -294,6 +295,7 @@ pl: {
   noBitmapsToExport: 'Brak bitmap do exportu',
   importToDBError: 'Błąd importu',
   bitmapDownloadErrors: 'błędy',
+  threads: 'Wątki',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

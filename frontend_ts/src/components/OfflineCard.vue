@@ -36,7 +36,10 @@
         <button :disabled="exporting || importing || deleting || saving || counting" class="btn btn-primary btn-sm" @click="countOffline">
           <font-awesome-icon v-if="counting" class="fa-spin" icon="spinner" />&nbsp;
           {{ $t('countOffline') }}
-        </button>
+        </button><br><br>
+        {{ $t('threads') }} <select v-model="$store.state.downloadThreads">
+          <option v-for="thread in allowDownloadThreads" :value="thread" :key="thread">{{ thread }}</option>
+        </select>
         <input id="importFileInputOffline" style="display:none;" type="file" accept=".txt" v-on:change="importFile" />
       </div>
     </div>    
@@ -65,6 +68,7 @@ export default class OfflineCard extends BaseComponent {
   private counting = false;
   private totalImported = 0;
   private layerName = '';
+  private allowDownloadThreads = [1, 3, 5, 10, 20, 30, 40, 50];
 
   private CHUNKSIZE = 1024 * 1024 * 100;
 
@@ -110,6 +114,7 @@ export default class OfflineCard extends BaseComponent {
   private downloadOffline() {
     if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline')) {
       this.saving = true;
+      this.$store.state.offlineControl._baseLayer.options.sims = this.$store.state.downloadThreads;
       setTimeout(() => this.$store.state.offlineControl._saveTiles(), 100);
     } else {
       this.showMessageError(this.$t('mapNotOffline'));
@@ -253,7 +258,7 @@ export default class OfflineCard extends BaseComponent {
     }
     const promises = [];
     for (let index = 0; index < window.dbCount; index++) {
-      const db = window.dbs[index];
+      const db = window.dbs[index] as LocalForage;
       const promise = db.setItems(obj[index]);
       promises.push(promise);
     }
