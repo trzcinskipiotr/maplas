@@ -13,6 +13,13 @@ export function formatDateSeconds(value: Date) {
   }
 }
 
+export function formatDateSecondsEpoch(value: string) {
+  if (value) {
+    const date = new Date(parseInt(value, 10) * 1000);
+    return moment(String(date)).format('DD.MM.YYYY H:mm:ss');
+  }
+}
+
 export function formatTimeSeconds(value: Date) {
   if (value) {
     return moment(String(value)).format('H:mm:ss');

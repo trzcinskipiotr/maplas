@@ -149,6 +149,7 @@ en: {
   importToDBError: 'Import to DB error',
   bitmapDownloadErrors: 'errors',
   threads: 'Threads',
+  buildDate: 'Build date',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -296,6 +297,7 @@ pl: {
   importToDBError: 'Błąd importu',
   bitmapDownloadErrors: 'błędy',
   threads: 'Wątki',
+  buildDate: 'Data buildu',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

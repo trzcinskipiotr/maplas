@@ -98,6 +98,7 @@
                     <OfflineCard></OfflineCard>
                     <br>
                     <button class="btn btn-primary" @click="noSleepToggle">{{ noSleepActive ? $t('noSleepActive') : $t('noSleepInactive')}}</button>
+                    <span v-if="VUE_BUILD_DATE"><br><br>{{ $t('buildDate') }}: {{ VUE_BUILD_DATE | formatDateSecondsEpoch }}<br></span>
                     <br><br>
                   </div>
                 </div>
@@ -183,7 +184,7 @@
 /* tslint:disable:no-string-literal */
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
-import L from 'leaflet';
+import L, { LatLngBounds, latLngBounds } from 'leaflet';
 import 'leaflet.gridlayer.googlemutant';
 import 'leaflet.fullscreen';
 import 'leaflet.locatecontrol';
@@ -258,6 +259,8 @@ export default class Index extends BaseComponent {
 
   private lastMouseDownTime: number = null;
   private lastMouseDownPoint: any = null;
+
+  private VUE_BUILD_DATE: string = null;
 
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
@@ -384,6 +387,7 @@ export default class Index extends BaseComponent {
   private node: any = null;
 
   private mounted() {
+    this.VUE_BUILD_DATE = process.env.VUE_BUILD_DATE;
     this.setLanguage();
     this.setAppHost();
     this.setStoreToken();
@@ -592,6 +596,11 @@ export default class Index extends BaseComponent {
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
+    layers['googleSatelliteOffline'] = L.tileLayer.offline('https://khms1.googleapis.com/kh?v=871&hl=en-US&x={x}&y={y}&z={z}', {
+      maxZoom: 21,
+      errorTileUrl: 'img/tiledownloadfailed.jpg',
+    });
+
     layers['googleTerrain'] = L.gridLayer.googleMutant({
       maxZoom: 21,
       type: 'terrain',
@@ -628,6 +637,11 @@ export default class Index extends BaseComponent {
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
+    //const corner1 = new L.LatLng(50.654115, 15.421577);
+    //const corner2 = new L.LatLng(50.882941, 15.873678);
+    //layers['karkonosze2016'] = L.imageOverlay('karkonosze2016.png', new L.LatLngBounds(corner1, corner2)).addTo(this.$store.state.map);
+
+
     this.baseMaps = {
       'OpenStreetMap': layers['openStreetMap'],
       'OpenStreetMapOffline': layers['openStreetMapOffline'],
@@ -644,6 +658,7 @@ export default class Index extends BaseComponent {
       'Hike bike': layers['hikeBike'],
       'Google roads': layers['googleRoads'],
       'Google satellite': layers['googleSatellite'],
+      'Google satellite Offline': layers['googleSatelliteOffline'],
       'Google terrain': layers['googleTerrain'],
       'Google hybrid': layers['googleHybrid'],
       'Hydda base': layers['hyddaBase'],
@@ -745,7 +760,7 @@ export default class Index extends BaseComponent {
      }
   }
 
-  private toggleLocation() {
+  private toggleLocation(e) {
     if (this.locationActive) {
       this.locationMarker.removeFrom(this.$store.state.map);
       this.currentLocation = null;
@@ -765,6 +780,7 @@ export default class Index extends BaseComponent {
         this.locationActive = true;
       }
     }
+    e.stopPropagation();
   }
 
   private addLocationButton() {
@@ -779,13 +795,14 @@ export default class Index extends BaseComponent {
     this.$store.state.map.addControl(new locationControl());
   }
 
-  private togglePanel() {
+  private togglePanel(e) {
     $('#sidebar').toggleClass('active');
     this.menuOpened = !this.menuOpened;
     setTimeout(() => {
       // @ts-ignore
       this.$store.state.map.invalidateSize({pan: false, animate: false});
     }, 1000);
+    e.stopPropagation();
   }
 
   private closeFullscreenTooltip() {
@@ -824,8 +841,9 @@ export default class Index extends BaseComponent {
     }));
   }
 
-  private openImportFileInput() {
+  private openImportFileInput(e) {
     $('#importFileInput').click();
+    e.stopPropagation();
   }
 
   private updated() {

@@ -112,7 +112,7 @@ export default class OfflineCard extends BaseComponent {
   }
 
   private downloadOffline() {
-    if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline')) {
+    if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline')) {
       this.saving = true;
       this.$store.state.offlineControl._baseLayer.options.sims = this.$store.state.downloadThreads;
       setTimeout(() => this.$store.state.offlineControl._saveTiles(), 100);
@@ -321,7 +321,7 @@ export default class OfflineCard extends BaseComponent {
     let errors: number;
     let totalToSave: number;
     const offlineControl = this.$store.state.offlineControl;
-    if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline')) {
+    if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline')) {
       offlineControl.setLayer(this.$store.state.baseMaps[this.layerName]);
       offlineControl._baseLayer.on('savestart', (e: any) => {
         progress = 0;

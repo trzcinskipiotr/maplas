@@ -93,7 +93,7 @@ Vue.component('PlannedTracks', PlannedTracks);
 Vue.component('TrackDetails', TrackDetails);
 Vue.component('OfflineCard', OfflineCard);
 
-import {formatDate, formatDateSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
+import {formatDate, formatDateSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes, formatDateSecondsEpoch} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);
 Vue.filter('formatDateSeconds', formatDateSeconds);
 Vue.filter('formatDateDay', formatDateDay);
@@ -103,6 +103,7 @@ Vue.filter('sumTracksDistance', sumTracksDistance);
 Vue.filter('sumTracksDistanceWalk', sumTracksDistanceWalk);
 Vue.filter('sumTracksDistanceBicycle', sumTracksDistanceBicycle);
 Vue.filter('sumTracksDistanceMushroom', sumTracksDistanceMushroom);
+Vue.filter('formatDateSecondsEpoch', formatDateSecondsEpoch);
 
 import { Sketch } from 'vue-color';
 Vue.component('sketch-picker', Sketch);

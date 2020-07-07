@@ -55,7 +55,7 @@ export default class MapPlace extends BaseComponent {
   private makeGallery() {
     const fullHDs: Array<{src: string, thumb: string}> = [];
     for (const photo of this.place.photos) {
-      const fullHD = {src: photo.image_fullhd, thumb: photo.image_thumb};
+      const fullHD = {src: photo.image_fullhd.replace('http://', 'https://'), thumb: photo.image_thumb.replace('http://', 'https://')};
       fullHDs.push(fullHD);
     }
     const time = new Date().getTime();
@@ -71,7 +71,7 @@ export default class MapPlace extends BaseComponent {
   private makeFullResGallery() {
     const fullRess: Array<{src: string, thumb: string}> = [];
     for (const photo of this.place.photos) {
-      const fullRes = {src: photo.image, thumb: photo.image_thumb};
+      const fullRes = {src: photo.image.replace('http://', 'https://'), thumb: photo.image_thumb.replace('http://', 'https://')};
       fullRess.push(fullRes);
     }
     const time = new Date().getTime();
