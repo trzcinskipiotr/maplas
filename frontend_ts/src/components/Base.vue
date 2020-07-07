@@ -16,7 +16,6 @@ export default class BaseComponent extends Vue {
   private alertId: number = 1;
   // @ts-ignore
   public TrackStatus = TrackStatus;
-  public process = process;
 
   public isBicycleTrack(track: GpsTrack) {
     return track.type === TrackType.bicycle;

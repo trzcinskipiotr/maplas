@@ -98,7 +98,7 @@
                     <OfflineCard></OfflineCard>
                     <br>
                     <button class="btn btn-primary" @click="noSleepToggle">{{ noSleepActive ? $t('noSleepActive') : $t('noSleepInactive')}}</button>
-                    <span v-if="process.env.VUE_APP_BUILD_DATE"><br><br>{{ $t('buildDate') }}: {{ process.env.VUE_APP_BUILD_DATE | formatDateSecondsEpoch }}<br></span>
+                    <span v-if="VUE_APP_BUILD_DATE"><br><br>{{ $t('buildDate') }}: {{ VUE_APP_BUILD_DATE | formatDateSecondsEpoch }}<br></span>
                     <br><br>
                   </div>
                 </div>
@@ -383,8 +383,10 @@ export default class Index extends BaseComponent {
   }
 
   private node: any = null;
+  private VUE_APP_BUILD_DATE: string = null;
 
   private mounted() {
+    this.VUE_APP_BUILD_DATE = process.env.VUE_APP_BUILD_DATE;
     this.setLanguage();
     this.setAppHost();
     this.setStoreToken();
