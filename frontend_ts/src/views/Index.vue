@@ -388,6 +388,8 @@ export default class Index extends BaseComponent {
 
   private mounted() {
     this.VUE_BUILD_DATE = process.env.VUE_BUILD_DATE;
+    console.log(this.VUE_BUILD_DATE);
+    console.log(process.env);
     this.setLanguage();
     this.setAppHost();
     this.setStoreToken();
