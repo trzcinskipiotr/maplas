@@ -59,8 +59,22 @@ export default class Place {
         return 'fa-parking';
       } else if (this.type.name === 'road') {
         return 'fa-road';
+      } else if (this.type.name === 'stop') {
+        return 'fa-hourglass';
+      } else if (this.type.name === 'building') {
+        return ' fa-building';
+      } else if (this.type.name === 'vantagepoint') {
+        return 'fa-binoculars';
+      } else if (this.type.name === 'map') {
+        return 'fa-map';
+      } else if (this.type.name === 'table') {
+        return 'fa-info-circle';
+      } else if (this.type.name === 'nature') {
+        return 'fa-tree';
+      } else if (this.type.name === 'tomb') {
+        return 'fa-cross';
       } else {
-        return 'fa-question';
+        return 'fa-map-marker';
       }
     }
   }

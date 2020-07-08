@@ -150,6 +150,14 @@ en: {
   bitmapDownloadErrors: 'errors',
   threads: 'Threads',
   buildDate: 'Build date',
+  stop: 'Stop',
+  building: 'Building',
+  other: 'Other',
+  vantagepoint: 'Vantage point',
+  map: 'Map',
+  table: 'Board',
+  nature: 'Nature',
+  tomb: 'Tomb',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -298,6 +306,14 @@ pl: {
   bitmapDownloadErrors: 'błędy',
   threads: 'Wątki',
   buildDate: 'Data buildu',
+  stop: 'Postój',
+  building: 'Budowla',
+  other: 'Inne',
+  vantagepoint: 'Punkt widokowy',
+  map: 'Mapa',
+  table: 'Tablica',
+  nature: 'Natura',
+  tomb: 'Groby',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

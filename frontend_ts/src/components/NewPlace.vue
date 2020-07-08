@@ -61,6 +61,7 @@
                   </td></tr>
                   <tr><td>
                     <font-awesome-icon style="cursor: pointer; width: 16px; height: 16px;" icon="trash" v-on:click="removePhoto(photo)"/>
+                    <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
                   </td></tr>    
                 </table>
                 <div id="photouploaddivinner2" style="width: 48px; height: 48px;" @click="openPhotoImportFileInput" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="$t('importPhotoFile')">
