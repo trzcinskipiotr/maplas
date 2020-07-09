@@ -13,7 +13,7 @@ export default class Place {
   public marker: L.Marker;
   public photos: Photo[];
 
-  constructor(public id: number, public name: string, public description: string, public lat: number, public lon: number, public type: PlaceType, zoomLevel: number, draggable: boolean) {
+  constructor(public id: number, public name: string, public description: string, public lat: number, public lon: number, public type: PlaceType, public approved: boolean, zoomLevel: number, draggable: boolean) {
     const markerSizeClass = this.getMarkerSizeClass(zoomLevel);
     const markerIconClass = this.getMarkerIconClass();
     const iconHtml = '<i style="color: blue" class="fas ' + markerIconClass + ' ' + markerSizeClass + '"></i>';

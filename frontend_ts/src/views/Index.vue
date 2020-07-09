@@ -178,6 +178,7 @@
     <template v-if="$store.state.isDesktop">
       <TrackDetails v-for="track in $store.state.tracks" :track="track" :key="track.gpsTrack.id"></TrackDetails>
     </template>  
+    <NewPlace></NewPlace>
   </div>  
 </template>
 
@@ -208,6 +209,7 @@ import listTranslator from '@/ts/list_translator';
 import PlaceType from '@/ts/PlaceType';
 import Photo from '../ts/Photo';
 import NoSleep from 'nosleep.js';
+import { EventBus } from '@/ts/EventBus';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -456,10 +458,24 @@ export default class Index extends BaseComponent {
     //$('.leaflet-control-scale-line').html($('.leaflet-control-scale-line').html() + '<span style="float: right">(Zoom: ' + this.$store.state.map.getZoom() + ')</span>');
   }
 
-  
+  private openNewPlaceModal (e: L.LeafletMouseEvent) {
+    if (this.$store.state.user) {
+      EventBus.$emit('NewPlaceRequested', false, e.latlng);
+    } else {
+      this.createAlert(AlertStatus.danger, this.$t('notLoggedToAddPlace') as string, 2000);
+    }
+  }
 
   private createMap(center: [number, number], zoom: number) {
-    const map = L.map('map', {zoomAnimation: false});
+    const map = L.map('map', {
+      zoomAnimation: false,
+      contextmenu: true,
+      contextmenuWidth: 140,
+	  contextmenuItems: [{
+	    text: this.$t('addPlace'),
+	    callback: this.openNewPlaceModal
+	  }],
+    });
     map.setView(center, zoom);
     map.on('zoomend', () => {
       this.$store.commit('setZoomLevel', map.getZoom())
@@ -480,9 +496,14 @@ export default class Index extends BaseComponent {
       map.on('dblclick', (e) => {map.setZoom(Math.round(map.getZoom() + 1))});
     }
 
-    map.on('mousedown', (e: L.LeafletMouseEvent) => {this.lastMouseDownTime = Date.now(); this.lastMouseDownPoint = e.layerPoint});
+    map.on('mousedown', (e: L.LeafletMouseEvent) => {
+      const now = Date.now();
+      this.lastMouseDownTime = now; 
+      this.lastMouseDownPoint = e.containerPoint
+    });
     map.on('mouseup', (e: L.LeafletMouseEvent) => {
-      if ((Date.now() - this.lastMouseDownTime > 400) && (Math.abs(e.layerPoint.x - this.lastMouseDownPoint.x) <= 2) && (Math.abs(e.layerPoint.y - this.lastMouseDownPoint.y) <= 2)) {
+      const now = Date.now();
+      if ((now - this.lastMouseDownTime > 400) && (Math.abs(e.containerPoint.x - this.lastMouseDownPoint.x) <= 3) && (Math.abs(e.containerPoint.y - this.lastMouseDownPoint.y) <= 3)) {
         map.setZoom(Math.round(map.getZoom() - 1));
       } 
     });
@@ -941,7 +962,7 @@ export default class Index extends BaseComponent {
         const places = [];
         for (const responsePlace of response.data.results) {
           const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name);
-          const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, this.$store.state.map.getZoom(), !!this.$store.state.user);
+          const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, responsePlace.approved, this.$store.state.map.getZoom(), !!this.$store.state.user);
           for (const responsePhoto of responsePlace.photo_set) {
             const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
             place.addPhoto(photo);

@@ -13,6 +13,8 @@ import 'leaflet/dist/leaflet.css';
 import 'leaflet.motion/dist/leaflet.motion.min';
 import 'localforage';
 import './ts/leaflet.offline';
+import './ts/leaflet.contextmenu';
+import './ts/leaflet.contextmenu.css';
 
 import 'localforage-getitems';
 import 'localforage-setitems';
@@ -21,7 +23,7 @@ import './ts/L.CanvasLayer';
 
 import '@fortawesome/fontawesome-free/css/all.css';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle, faFileUpload, faBars, faUpload, faCamera, faTrash, faUndo, faSearchPlus, faLock, faLockOpen, faMapMarker } from '@fortawesome/free-solid-svg-icons';
+import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle, faFileUpload, faBars, faUpload, faCamera, faTrash, faUndo, faSearchPlus, faLock, faLockOpen, faMapMarker, faQuestion, faCheck, faQuestionCircle } from '@fortawesome/free-solid-svg-icons';
 import { faCalendarTimes, faCalendarCheck, faWindowClose, faTimesCircle, faWindowMaximize } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 library.add(faShoePrints);
@@ -51,6 +53,8 @@ library.add(faSearchPlus);
 library.add(faLock);
 library.add(faLockOpen);
 library.add(faMapMarker);
+library.add(faCheck);
+library.add(faQuestionCircle);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 import BootstrapVue from 'bootstrap-vue';

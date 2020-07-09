@@ -1,6 +1,5 @@
 <template>
   <span>
-    <button v-if="($store.state.user) && ($store.state.isDesktop)" class="btn btn-primary btn-sm" @click="openNewPlaceModal(true)">{{ $t('addPlace') }}</button>
     <div ref="newPlaceModal" class="modal fade" tabindex="-1" role="dialog">
       <info-modal :title="$t('newPlace')">
         <table class="table table-sm">
@@ -23,6 +22,15 @@
               </td>
             </tr>
             <tr>
+              <th scope="row">{{ $t('isApproved') }}</th>
+              <td>
+                <div class="custom-control custom-checkbox">
+                  <input id="isApprovedCheckbox" type="checkbox" class="custom-control-input" v-model="approved" />
+                  <label class="custom-control-label" for="isApprovedCheckbox"> </label>
+                </div>
+              </td>
+            </tr>
+            <tr>
               <th scope="row">{{ $t('description') }}</th>
               <td>
                 <textarea v-model="description" class="form-control" rows="2" style="width: 500px"></textarea>
@@ -41,7 +49,7 @@
                 <div class="form-check">
                   <input class="form-check-input" type="radio" name="coordinatesRadio2" id="coordsradio2" value="2" v-model="coordinatesRadio">
                   <label class="form-check-label" for="coordsradio2">
-                    {{ $t('fromMapCenter') }}: {{ mapCenterLat }}, {{ mapCenterLon }}
+                    {{ fromContextMenu ? $t('fromContextMenuPosition') : $t('fromMapCenter') }}: {{ mapCenterLat }}, {{ mapCenterLon }}
                   </label>
                 </div>
                 <div class="form-check disabled">
@@ -101,6 +109,7 @@ import axios from 'axios';
 import Place from '@/ts/Place';
 import Photo from '@/ts/Photo';
 import {checkString, splitCoords} from '@/ts/utils/coords';
+import {EventBus} from '@/ts/EventBus';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -114,6 +123,7 @@ export default class NewPlace extends BaseComponent {
   public photos = [];
   public mapCenterLat = 0;
   public mapCenterLon = 0;
+  public approved = true;
   public firstPhotoLat: Number = null;
   public firstPhotoLon: Number = null;
   public placeSaving = false;
@@ -122,6 +132,8 @@ export default class NewPlace extends BaseComponent {
   public progress = 0;
   private photosToUpload = 0;
   private photosUploaded = 0;
+
+  private fromContextMenu = false;
 
   private firstSwitchToPhotoCoords = false;
 
@@ -145,14 +157,23 @@ export default class NewPlace extends BaseComponent {
     this.refreshFirstPhotoCoords();
   }
 
-  public openNewPlaceModal() {
+  public openNewPlaceModal(local: boolean, contextMenuLatLng: L.LatLng) {
     this.name = '';
     this.description = '';
     this.photos = [];
     this.coordinatesRadio = 2;
     this.savePlaceType = null;
-    this.mapCenterLat = Math.round(this.$store.state.map.getCenter().lat * 100000) / 100000;
-    this.mapCenterLon = Math.round(this.$store.state.map.getCenter().lng * 100000) / 100000;
+    this.manualCords = '';
+    this.approved = true;
+    if (local) {
+      this.mapCenterLat = Math.round(this.$store.state.map.getCenter().lat * 100000) / 100000;
+      this.mapCenterLon = Math.round(this.$store.state.map.getCenter().lng * 100000) / 100000;
+      this.fromContextMenu = false;
+    } else {
+      this.mapCenterLat = Math.round(contextMenuLatLng.lat * 100000) / 100000;
+      this.mapCenterLon = Math.round(contextMenuLatLng.lng * 100000) / 100000;
+      this.fromContextMenu = true;
+    }
     this.firstPhotoLat = null;
     this.firstPhotoLon = null;
     this.firstSwitchToPhotoCoords = false;
@@ -236,7 +257,7 @@ export default class NewPlace extends BaseComponent {
       (response) => {
         let responsePlace = response.data;
         const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name);
-        const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, this.$store.state.map.getZoom(), !!this.$store.state.user);
+        const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, responsePlace.approved, this.$store.state.map.getZoom(), !!this.$store.state.user);
         for (const responsePhoto of responsePlace.photo_set) {
           const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
           place.addPhoto(photo);
@@ -267,6 +288,7 @@ export default class NewPlace extends BaseComponent {
     obj.name = this.name;
     obj.description = this.description;
     obj.type = this.savePlaceType.value.id;
+    obj.approved = this.approved;
     obj.photo_set = [];
     if (this.coordinatesRadio == 1) {
       if (! checkString(this.manualCords)) {
@@ -323,6 +345,12 @@ export default class NewPlace extends BaseComponent {
     } finally {
       this.placeSaving = false;
     }
+  }
+
+  private mounted() {
+    EventBus.$on('NewPlaceRequested', (local: boolean, latlng: L.LatLng) => {
+      this.openNewPlaceModal(local, latlng);
+    });
   }
 
 }

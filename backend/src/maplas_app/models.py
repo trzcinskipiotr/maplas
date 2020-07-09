@@ -98,6 +98,7 @@ class Place(models.Model):
     lon = models.FloatField(null=False, blank=False)
     name = models.CharField(max_length=2000, null=False, default='', blank=True)
     description = models.CharField(max_length=2000, null=False, default='', blank=True)
+    approved = models.BooleanField(null=False, default=True)
 
     class Meta:
         unique_together = ['lat', 'lon']

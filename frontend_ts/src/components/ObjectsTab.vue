@@ -5,10 +5,15 @@
       <b-form-checkbox style="display: inline;" v-model="checkedAll" :indeterminate="indeterminate">
       </b-form-checkbox>
       {{ $t('places') }}
-      <NewPlace></NewPlace>
+      <button v-if="($store.state.user) && ($store.state.isDesktop)" class="btn btn-primary btn-sm" @click="openNewPlaceModal(true, null)">{{ $t('addPlace') }}</button>
       <div style="float: right;">
         <font-awesome-icon @click="togglePanel" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
       </div>
+      <br>
+      <b-form-checkbox style="display: inline;" v-model="showApproved">
+      </b-form-checkbox>{{ $t('showApproved') }}
+      <b-form-checkbox style="display: inline;" v-model="showNotApproved">
+      </b-form-checkbox>{{ $t('showNotApproved') }}
     </div>
     <div ref="places" class="card-body p-2">
       <div v-for="placeGroup of placeGroups" :key="placeGroup.name">
@@ -32,6 +37,7 @@ import $ from 'jquery';
 import FileSaver from 'file-saver';
 import localforage from 'localforage';
 import { formatDateSeconds } from '@/ts/utils';
+import { EventBus } from '@/ts/EventBus';
 
 @Component
 export default class ObjectsTab extends BaseComponent {
@@ -39,6 +45,8 @@ export default class ObjectsTab extends BaseComponent {
   private checkedAll: Boolean = false;
   private iconsVisible: boolean = true;
   private placeGroups: any = [];
+  private showApproved = true;
+  private showNotApproved = true;
 
   @Watch('$store.state.places')
   private onStorePlacesChanged(value: string, oldValue: string) {
@@ -125,6 +133,20 @@ export default class ObjectsTab extends BaseComponent {
     }
   }
 
+  @Watch('showApproved')
+  private refreshApproved() {
+    for (const placeGroup in this.placeGroups) {
+      this.showOrHidePlaces(this.placeGroups[placeGroup].id)
+    }
+  }
+
+  @Watch('showNotApproved')
+  private refreshNotApproved() {
+    for (const placeGroup in this.placeGroups) {
+      this.showOrHidePlaces(this.placeGroups[placeGroup].id)
+    }
+  }
+
   private onPlaceGroupsChanged(event: boolean, id: number) {
     this.placeGroups[id].checked = event;
     for (const placeGroup in this.placeGroups) {
@@ -134,7 +156,7 @@ export default class ObjectsTab extends BaseComponent {
 
   private showOrHidePlaces(groupId: number) {
     for (const place of this.placeGroups[groupId].places) {
-      if (this.placeGroups[groupId].checked) {
+      if ((this.placeGroups[groupId].checked) && (((place.approved) && (this.showApproved)) || ((!place.approved) && (this.showNotApproved)))) {
         place.marker.addTo(this.$store.state.map)
       } else {
         place.marker.removeFrom(this.$store.state.map)
@@ -158,6 +180,10 @@ export default class ObjectsTab extends BaseComponent {
   private togglePanel() {
     $(this.$refs.places).slideToggle('slow');
     this.iconsVisible = !this.iconsVisible;
+  }
+
+  private openNewPlaceModal() {
+    EventBus.$emit('NewPlaceRequested', true, null);
   }
 
 }

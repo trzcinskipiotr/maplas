@@ -30,7 +30,7 @@ class PlaceTypeAdmin(admin.ModelAdmin):
 
 @admin.register(Place)
 class PlaceAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'description', 'lat', 'lon', 'type')
+    list_display = ('id', 'name', 'description', 'lat', 'lon', 'type', 'approved')
     search_fields = ('id', 'name', 'description')
 
 @admin.register(Photo)

@@ -2,13 +2,15 @@
   <div style="display: none">
     <div ref="tooltip" style="minWidth: 200px">
       {{ place.id }} <b>{{ place.name }}</b> {{ place.lat}}, {{ place.lon }}
-      <span style="float: right" v-if="place.photos.length">
-        <span style='margin-right: 3px;' v-b-tooltip.hover :title="$t('fullRes')"><font-awesome-icon ref="fullResImage" @click="makeFullResGallery" style="height: 24px; cursor: pointer" icon="search-plus"/></span>
+      <span style="float: right">
+        <span :id="'tooltipPlace' + place.id" style='margin-right: 3px;'><font-awesome-icon style="height: 24px; cursor: pointer" :icon="place.approved ? 'check' : 'question-circle'"/></span>
+        <b-tooltip v-if="$store.state.isDesktop" :target="'tooltipPlace' + place.id">{{ place.approved ? $t('placeApproved') : $t('placeNotApproved') }}</b-tooltip>
+        <span v-if="place.photos.length" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('fullRes')"><font-awesome-icon ref="fullResImage" @click="makeFullResGallery" style="height: 24px; cursor: pointer" icon="search-plus"/></span>
       </span>  
       <span v-if="place.photos.length">
         <br><img ref="smallImage" :src="replaceHTTP(place.photos[0].image_thumb)" style="cursor: pointer; maxWidth: 300px; maxHeight: 300px" @click="makeGallery"><br>
+        <span style="float: right; color: gray">{{ place.photos[0].org_filename }} {{ place.photos[0].exif_time_taken | formatDateSeconds }}</span><br>
       </span>
-      <span style="float: right; color: gray">{{ place.photos[0].org_filename }} {{ place.photos[0].exif_time_taken | formatDateSeconds }}</span><br>
       {{ place.description }}<br>
       <span v-if="(place.marker.getLatLng().lat != place.lat) && (place.marker.getLatLng().lng != place.lon)">
         <font-awesome-icon style="cursor: pointer" icon="undo" @click="undoLocation" />&nbsp;

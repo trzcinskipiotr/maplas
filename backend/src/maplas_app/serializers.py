@@ -66,10 +66,10 @@ class PlaceSerializerTypeNested(serializers.ModelSerializer):
 
     class Meta:
         model = Place
-        fields = ['id', 'name', 'description', 'lat', 'lon', 'type', 'photo_set']
+        fields = ['id', 'name', 'description', 'lat', 'lon', 'type', 'approved', 'photo_set']
 
 class PlaceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Place
-        fields = ['id', 'name', 'description', 'lat', 'lon', 'type']
+        fields = ['id', 'name', 'description', 'lat', 'lon', 'type', 'approved']

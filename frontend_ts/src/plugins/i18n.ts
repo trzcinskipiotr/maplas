@@ -158,6 +158,13 @@ en: {
   table: 'Board',
   nature: 'Nature',
   tomb: 'Tomb',
+  notLoggedToAddPlace: 'You must be logged to add places',
+  isApproved: 'Approved',
+  fromContextMenuPosition: 'From click position',
+  placeApproved: 'Approved',
+  placeNotApproved: 'Unapproved',
+  showApproved: 'Approved',
+  showNotApproved: 'Unapproved',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -314,6 +321,13 @@ pl: {
   table: 'Tablica',
   nature: 'Natura',
   tomb: 'Groby',
+  notLoggedToAddPlace: 'Musisz być zalogowany by dodawać miejsca',
+  isApproved: 'Potwierdzone',
+  fromContextMenuPosition: 'Z punktu kliknięcia',
+  placeApproved: 'Potwierdzone',
+  placeNotApproved: 'Niepotwierdzone',
+  showApproved: 'Potwierdzone',
+  showNotApproved: 'Niepotwierdzone',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});
