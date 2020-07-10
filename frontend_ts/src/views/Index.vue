@@ -76,7 +76,7 @@
                           <form @submit.prevent="logInToApi" class="form-inline">
                             <div style="width: 100%" class="form-group">
                               <input style="width: 33%" type="text" v-model="login" class="form-control mr-2" :placeholder="$t('login')">
-                              <input style="width: 33%" type="password" v-model="password" class="form-control mr-2" :placeholder="$t('password')">
+                              <input style="width: 33%" type="password" autocomplete="off" v-model="password" class="form-control mr-2" :placeholder="$t('password')">
                               <button type="submit" class="btn btn-primary">{{ $t('logIn') }}</button>
                             </div>
                           </form> 
