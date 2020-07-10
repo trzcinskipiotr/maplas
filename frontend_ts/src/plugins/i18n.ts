@@ -168,6 +168,9 @@ en: {
   showApproved: 'Approved',
   showNotApproved: 'Unapproved',
   useCache: 'Use cache',
+  showOffline: 'Show offline covarage',
+  hideOffline: 'Hide offline coverage',
+  showZoom: 'Zoom',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -334,6 +337,9 @@ pl: {
   showApproved: 'Potwierdzone',
   showNotApproved: 'Niepotwierdzone',
   useCache: 'Użyj cache',
+  showOffline: 'Pokaż pokrycie',
+  hideOffline: 'Ukryj pokrycie',
+  showZoom: 'Zoom',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

@@ -41,7 +41,13 @@
           <option v-for="thread in allowDownloadThreads" :value="thread" :key="thread">{{ thread }}</option>
         </select>&nbsp;
         <b-form-checkbox style="display: inline;" v-model="useCache">
-        </b-form-checkbox>{{ $t('useCache') }}
+        </b-form-checkbox>{{ $t('useCache') }}<br><br>
+        {{ $t('showZoom') }} <select v-model="showZoom">
+          <option v-for="zoom in allowZoomToShow" :value="zoom" :key="zoom">{{ zoom }}</option>
+        </select>&nbsp;
+        <button class="btn btn-primary btn-sm" @click="toggleOffline">
+          {{ offlineShowing ? $t('hideOffline') : $t('showOffline') }}
+        </button><br><br>
         <input id="importFileInputOffline" style="display:none;" type="file" accept=".txt" v-on:change="importFile" />
       </div>
     </div>    
@@ -58,6 +64,7 @@ import { AlertStatus } from '@/ts/types';
 import streamSaver from 'streamsaver';
 import FileSaver from 'file-saver';
 import { TranslateResult } from 'vue-i18n';
+import { point } from 'leaflet';
 
 @Component
 export default class OfflineCard extends BaseComponent {
@@ -113,6 +120,15 @@ export default class OfflineCard extends BaseComponent {
     }
     return allow;
   }
+
+  private get allowZoomToShow() {
+    const allow = [];
+    for(let i = 1; i <= 19; i++) {
+      allow.push(i);
+    }
+    return allow;
+  }
+
 
   private downloadOffline() {
     if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline')) {
@@ -318,12 +334,20 @@ export default class OfflineCard extends BaseComponent {
     }
   }
 
+  private currentLayer: L.Layer = null;
+  private showZoom = 18;
+
   private onBaseLayerChange(e: L.LayersControlEvent) {
     this.layerName = e.name;
     let progress: number;
     let errors: number;
     let totalToSave: number;
     const offlineControl = this.$store.state.offlineControl;
+    this.currentLayer = this.$store.state.baseMaps[this.layerName];
+    if (this.offlineShowing) {
+      this.removeShowOffline();
+      this.showShowOffline();
+    }
     if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline')) {
       offlineControl.setLayer(this.$store.state.baseMaps[this.layerName]);
       offlineControl._baseLayer.on('savestart', (e: any) => {
@@ -364,6 +388,7 @@ export default class OfflineCard extends BaseComponent {
   @Watch('$store.state.map')
   private onStoreMapChanged() {
     this.$store.state.map.on('baselayerchange', this.onBaseLayerChange);
+    this.currentLayer = this.$store.state.baseMaps['OpenStreetMap'];
   }
 
   @Watch('$store.state.offlineControl')
@@ -385,6 +410,87 @@ export default class OfflineCard extends BaseComponent {
         }
       });
     };
+  }
+
+  private showOfflineLayer: any = null;
+  private offlineShowing = false;
+  private rects = [];
+
+  public onDrawLayer(info: any) {
+    let ctx = info.canvas.getContext('2d');
+    ctx.clearRect(0, 0, info.canvas.width, info.canvas.height);
+    ctx.fillStyle = 'rgba(0, 0, 255, 0.3)';
+    for(const rect of this.rects) {
+      const point1 = (info.layer._map as L.Map).latLngToContainerPoint([rect[0].lat, rect[0].lng]);
+      const point2 = info.layer._map.latLngToContainerPoint([rect[1].lat, rect[1].lng]);
+      ctx.fillRect(point1.x, point1.y, (point2.x - point1.x), (point2.y - point1.y));
+    }
+  };
+
+  @Watch('showZoom')
+  private onShowZoomChanged() {
+    if (this.offlineShowing) {
+      this.removeShowOffline();
+      this.showShowOffline();
+    }
+  }
+
+  private removeShowOffline() {
+    this.rects = [];
+    this.showOfflineLayer.removeFrom(this.$store.state.map);
+    this.showOfflineLayer = null;
+  }
+
+  private async showShowOffline() {
+    this.rects = [];
+    if ((this.currentLayer) && (this.showZoom)) {
+      let url = this.currentLayer._url;
+      const subdomainpos = url.indexOf('{s}');
+      if (subdomainpos > 0) {
+        url = url.substring(0, subdomainpos) + this.currentLayer.options.subdomains['0'] + url.substring(subdomainpos + 3, url.length);
+      }
+      url = (url as string).replace('{z}', this.showZoom);
+      url = url.replace('{x}', '(.*)');
+      url = url.replace('{y}', '(.*)');
+      const promises = [];
+      let keys: string[] = [];
+      for(const db of window.dbs) {
+        promises.push(db.keys());
+      }
+      const values = await Promise.all(promises);
+      for(const value of values) {
+        keys = keys.concat(value);
+      }
+      let indexes: any = [];
+      for(const key of keys) {
+        const match = key.match(url);
+        if (match) {
+          indexes.push([match[1], match[2]])
+        }
+      }
+      this.rects = [];
+      for (const index of indexes) {
+        const map = this.$store.state.map as L.Map;
+        const point1 = new L.Point(index[0] * 256, index[1] * 256);
+        const point2 = new L.Point(index[0] * 256 + 256, index[1] * 256 + 256);
+        const latlng1 = map.unproject(point1, this.showZoom);
+        const latlng2 = map.unproject(point2, this.showZoom);
+        this.rects.push([latlng1, latlng2]);
+      }
+    }
+    this.showOfflineLayer = L.canvasLayer();
+    this.showOfflineLayer.delegate(this).addTo(this.$store.state.map);
+    this.showOfflineLayer._onLayerDidMove();
+    this.showOfflineLayer.needRedraw();
+  }
+
+  private async toggleOffline() {
+    if (this.offlineShowing) {
+      this.removeShowOffline();
+    } else {
+      this.showShowOffline();
+    }
+    this.offlineShowing = !this.offlineShowing; 
   }
 
 }
