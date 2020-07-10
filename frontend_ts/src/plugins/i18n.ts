@@ -133,7 +133,7 @@ en: {
   zoomTo: 'to',
   mapNotOffline: 'Map is not offline layer',
   removeAllTitles: 'Remove all {0} titles?',
-  saveAllTitles: 'Save {0} titles?\nZooms: {1}\nFirst url: {2}',
+  saveAllTitles: 'Save {0} titles?\nZooms: {1}\nFirst url: {2}\nUse cache tiles: {3}',
   exportOffline: 'Export maps',
   importOffline: 'Import maps',
   downloadOffline: 'Download',
@@ -167,6 +167,7 @@ en: {
   placeNotApproved: 'Unapproved',
   showApproved: 'Approved',
   showNotApproved: 'Unapproved',
+  useCache: 'Use cache',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -298,7 +299,7 @@ pl: {
   zoomTo: 'do',
   mapNotOffline: 'Mapa nie jest warstwą offline',
   removeAllTitles: 'Usunąć wszystkie {0} bitmapy?',
-  saveAllTitles: 'Zapisać {0} bitmapy?\nZoomy: {1}\nPierwszy url: {2}',
+  saveAllTitles: 'Zapisać {0} bitmapy?\nZoomy: {1}\nPierwszy url: {2}\nWczytaj z cache: {3}',
   exportOffline: 'Exportuj mapy',
   importOffline: 'Importuj mapy',
   downloadOffline: 'Ściągnij',
@@ -332,6 +333,7 @@ pl: {
   placeNotApproved: 'Niepotwierdzone',
   showApproved: 'Potwierdzone',
   showNotApproved: 'Niepotwierdzone',
+  useCache: 'Użyj cache',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

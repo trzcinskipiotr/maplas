@@ -39,7 +39,9 @@
         </button><br><br>
         {{ $t('threads') }} <select v-model="$store.state.downloadThreads">
           <option v-for="thread in allowDownloadThreads" :value="thread" :key="thread">{{ thread }}</option>
-        </select>
+        </select>&nbsp;
+        <b-form-checkbox style="display: inline;" v-model="useCache">
+        </b-form-checkbox>{{ $t('useCache') }}
         <input id="importFileInputOffline" style="display:none;" type="file" accept=".txt" v-on:change="importFile" />
       </div>
     </div>    
@@ -69,6 +71,7 @@ export default class OfflineCard extends BaseComponent {
   private totalImported = 0;
   private layerName = '';
   private allowDownloadThreads = [1, 3, 5, 10, 20, 30, 40, 50];
+  private useCache = true;
 
   private CHUNKSIZE = 1024 * 1024 * 100;
 
@@ -115,7 +118,7 @@ export default class OfflineCard extends BaseComponent {
     if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline')) {
       this.saving = true;
       this.$store.state.offlineControl._baseLayer.options.sims = this.$store.state.downloadThreads;
-      setTimeout(() => this.$store.state.offlineControl._saveTiles(), 100);
+      setTimeout(() => this.$store.state.offlineControl._saveTiles(this.useCache), 100);
     } else {
       this.showMessageError(this.$t('mapNotOffline'));
     }
@@ -340,6 +343,9 @@ export default class OfflineCard extends BaseComponent {
           this.saving = false;
         }
       });
+      offlineControl._baseLayer.on('notilestosave', () => {
+        this.saving = false;
+      });
       offlineControl._baseLayer.on('loadtileenderror', () => {
         errors += 1;
         progress += 1;
@@ -363,8 +369,8 @@ export default class OfflineCard extends BaseComponent {
   @Watch('$store.state.offlineControl')
   private onStoreOfflineControlChange() {
     this.$store.state.offlineControl.options.confirm = (layer, succescallback) => {
-      const firstUrl = layer._tilesforSave[0].key;
-      if (window.confirm(this.$t('saveAllTitles', [layer._tilesforSave.length, this.$store.state.offlineControl.options.zoomlevels, firstUrl]))) {
+      const firstUrl = layer._tilesforSave[0] ? layer._tilesforSave[0].key : '';
+      if (window.confirm(this.$t('saveAllTitles', [layer._tilesforSave.length, this.$store.state.offlineControl.options.zoomlevels, firstUrl, layer.lengthInDB]))) {
         succescallback();
       } else {
         this.saving = false;

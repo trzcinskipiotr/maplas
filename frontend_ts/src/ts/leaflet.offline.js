@@ -201,6 +201,7 @@ var ControlSaveTiles = L.Control.extend(
     status: {
       storagesize: null,
       lengthToBeSaved: null,
+      lengthInDB: null,
       lengthSaved: null,
       lengthLoaded: null,
       _tilesforSave: null,
@@ -315,7 +316,7 @@ var ControlSaveTiles = L.Control.extend(
      * @private
      * @return {void}
      */
-    _saveTiles: function _saveTiles() {
+    _saveTiles: async function _saveTiles(useCache) {
       this.obj = {};
       const sim = this._baseLayer.getSimultaneous();
       for(let i = 0; i < sim; i++) {
@@ -357,12 +358,43 @@ var ControlSaveTiles = L.Control.extend(
         );
         tiles = tiles.concat(this$1._baseLayer.getTileUrls(bounds, zoomlevels[i]));
       }
-      this._resetStatus(tiles);
+      if (useCache) {
+        let lengthInDB = 0;
+        const promises = [];
+        let keys = [];
+        for(const db of window.dbs) {
+          promises.push(db.keys());
+        }
+        const values = await Promise.all(promises);
+        for(const value of values) {
+          keys = keys.concat(value);
+        }
+        const newTiles = [];
+        const cacheKeysSet = new Set(keys);
+        for (const tile of tiles) {
+          if (cacheKeysSet.has(tile.key)) {
+            lengthInDB += 1;
+          } else {
+            newTiles.push(tile);
+          }
+        }
+        this._resetStatus(newTiles);
+        this.status.lengthInDB = lengthInDB;
+      } else {
+        this._resetStatus(tiles);
+      }
       var succescallback = function () {
         this$1._baseLayer.fire('savestart', this$1.status);
         var subdlength = this$1._baseLayer.getSimultaneous();
-        for (var i = 0; i < subdlength; i += 1) {
+        let atLeastOne = false;
+        for (var i = 0; i < Math.min(subdlength, this$1.status._tilesforSave.length); i += 1) {
           this$1._loadTile(this$1.obj[i]);
+          atLeastOne = true;
+        }
+        if (atLeastOne === false) {
+          this$1._baseLayer.fire('saveend', this$1.status);
+          this$1._baseLayer.fire('loadend', this$1.status);
+          this$1._baseLayer.fire('notilestosave', this$1.status);
         }
       };
       if (this.options.confirm) {
@@ -380,6 +412,7 @@ var ControlSaveTiles = L.Control.extend(
       this.status = {
         lengthLoaded: 0,
         lengthToBeSaved: tiles.length,
+        lengthInDB: 0,
         lengthSaved: 0,
         _tilesforSave: tiles,
       };
@@ -424,7 +457,7 @@ var ControlSaveTiles = L.Control.extend(
             }
             if (self.status.lengthSaved === self.status.lengthToBeSaved) {
               self._baseLayer.fire('saveend', self.status);
-              self.setStorageSize();  
+              self.setStorageSize();
             }
             data[dbIndex] = {};
           }
