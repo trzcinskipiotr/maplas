@@ -262,6 +262,8 @@ export default class Index extends BaseComponent {
   private lastMouseDownTime: number = null;
   private lastMouseDownPoint: any = null;
 
+  private cache: boolean = false;
+
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
     i18n.locale = this.language!.language;
@@ -389,6 +391,7 @@ export default class Index extends BaseComponent {
 
   private mounted() {
     this.VUE_APP_BUILD_DATE = process.env.VUE_APP_BUILD_DATE;
+    this.cache = !!this.$route.query.cache
     this.setLanguage();
     this.setAppHost();
     this.setStoreToken();
@@ -956,27 +959,36 @@ export default class Index extends BaseComponent {
     );
   }
 
+  private processPlaces(results: any) {
+    const places = [];
+    for (const responsePlace of results) {
+      const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name);
+      const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, responsePlace.approved, this.$store.state.map.getZoom(), !!this.$store.state.user);
+      for (const responsePhoto of responsePlace.photo_set) {
+        const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
+        place.addPhoto(photo);
+      }
+      places.push(place);
+    }
+    this.$store.commit('setPlaces', places);
+  } 
+
   private downloadPlaces() {
-    axios.get(this.$store.state.appHost + 'api/places/').then(
-      (response) => {
-        const places = [];
-        for (const responsePlace of response.data.results) {
-          const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name);
-          const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, responsePlace.approved, this.$store.state.map.getZoom(), !!this.$store.state.user);
-          for (const responsePhoto of responsePlace.photo_set) {
-            const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
-            place.addPhoto(photo);
-          }
-          places.push(place);
-        }
-        this.$store.commit('setPlaces', places);
+    const endPoint = this.$store.state.appHost + 'api/places/';
+    if (this.cache) {
+      const results = (window.cacheDB as LocalForage).getItem(endPoint).then((result: any) => {
+        this.processPlaces(result);
+        this.createAlert(AlertStatus.success, this.$t('placesCache', [result.length]).toString(), 2000);
+      })
+    } else {
+      axios.get(endPoint).then((response) => {
+        this.processPlaces(response.data.results);
+        (window.cacheDB as LocalForage).setItem(endPoint, response.data.results);
         this.createAlert(AlertStatus.success, this.$t('placesDownloaded', [response.data.results.length]).toString(), 2000);
-      },
-    ).catch(
-      (response) => {
+      }).catch((response) => {
         this.createAlert(AlertStatus.danger, this.$t('placesError').toString(), 2000);
-      },
-    );
+      });
+    }
   }
 
   private downloadPlaceTypes() {
@@ -997,67 +1009,75 @@ export default class Index extends BaseComponent {
     );
   }
 
+  private processTracks(results: any) {
+    const tracks = [];
+    const plannedTracks = [];
+    for (const gpstrack of results) {
+      try {
+        const region: Region = gpstrack.region ? new Region(gpstrack.region.id, gpstrack.region.name) : undefined;
+        const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color ? gpstrack.color : '#ff0000', gpstrack.distance, gpstrack.status, gpstrack.type, gpstrack.start_time ? new Date(gpstrack.start_time) : null, gpstrack.end_time ? new Date(gpstrack.end_time) : null, undefined, region);
+        let checked = false;
+        if (typeof this.$route.query.tracks === 'string') {
+          const tracksIds = this.$route.query.tracks.split(',');
+          checked = tracksIds.includes(String(gpstrack.id));
+        } else {
+          if (newGpstrack.status === TrackStatus.done) {
+            checked = true;
+          } else {
+            checked = false;
+          }
+        }
+        const track = new Track(newGpstrack, checked, true);
+        if (newGpstrack.isDoneTrack()) {
+          tracks.push(track);
+        } else {
+          plannedTracks.push(track);
+        }
+      } catch (error) {
+        this.createAlert(AlertStatus.danger, this.$t('oneTrackError').toString(), 2000);
+      }
+    }
+    this.$store.commit('setTracks', tracks);
+    this.$store.commit('setPlannedTracks', plannedTracks);
+    if (this.$route.query.tracks) {
+      let trackBounds: L.LatLngBounds | undefined;
+      for (const track of this.$store.getters.selectedTracks as Track[]) {
+        if (trackBounds) {
+          for (const mapTrack of track.mapTracks) {
+            trackBounds.extend(mapTrack.getBounds());
+          }
+        } else {
+          trackBounds = new L.LatLngBounds(track.mapTracks[0].getBounds().getNorthEast(), track.mapTracks[0].getBounds().getSouthWest());
+          for (const mapTrack of track.mapTracks) {
+            trackBounds.extend(mapTrack.getBounds());
+          }
+        }
+      }
+      if (trackBounds) {
+        this.$store.state.map!.fitBounds(trackBounds);
+      }
+    }
+  }
+
   private downloadTracks() {
-    axios.get(this.$store.state.appHost + 'api/tracks/' + (process.env.VUE_APP_TRACKS_QUERY || '')).then(
-      (response) => {
-        const tracks = [];
-        const plannedTracks = [];
-        for (const gpstrack of response.data.results) {
-          try {
-            const region: Region = gpstrack.region ? new Region(gpstrack.region.id, gpstrack.region.name) : undefined;
-            const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color ? gpstrack.color : '#ff0000', gpstrack.distance, gpstrack.status, gpstrack.type, gpstrack.start_time ? new Date(gpstrack.start_time) : null, gpstrack.end_time ? new Date(gpstrack.end_time) : null, undefined, region);
-            let checked = false;
-            if (typeof this.$route.query.tracks === 'string') {
-              const tracksIds = this.$route.query.tracks.split(',');
-              checked = tracksIds.includes(String(gpstrack.id));
-            } else {
-              if (newGpstrack.status === TrackStatus.done) {
-                checked = true;
-              } else {
-                checked = false;
-              }
-            }
-            const track = new Track(newGpstrack, checked, true);
-            if (newGpstrack.isDoneTrack()) {
-              tracks.push(track);
-            } else {
-              plannedTracks.push(track);
-            }
-          } catch (error) {
-            this.createAlert(AlertStatus.danger, this.$t('oneTrackError').toString(), 2000);
-          }
-        }
-        this.$store.commit('setTracks', tracks);
-        this.$store.commit('setPlannedTracks', plannedTracks);
-        if (this.$route.query.tracks) {
-          let trackBounds: L.LatLngBounds | undefined;
-          for (const track of this.$store.getters.selectedTracks as Track[]) {
-            if (trackBounds) {
-              for (const mapTrack of track.mapTracks) {
-                trackBounds.extend(mapTrack.getBounds());
-              }
-            } else {
-              trackBounds = new L.LatLngBounds(track.mapTracks[0].getBounds().getNorthEast(), track.mapTracks[0].getBounds().getSouthWest());
-              for (const mapTrack of track.mapTracks) {
-                trackBounds.extend(mapTrack.getBounds());
-              }
-            }
-          }
-          if (trackBounds) {
-            this.$store.state.map!.fitBounds(trackBounds);
-          }
-        }
-        this.createAlert(AlertStatus.success, this.$t('tracksDownloaded', [response.data.results.length]).toString(), 2000);
-      },
-    ).catch(
-      (response) => {
-        this.createAlert(AlertStatus.danger, this.$t('tracksError').toString(), 2000);
-      },
-    ).finally(
-      () => {
+    const endPoint = this.$store.state.appHost + 'api/tracks/' + (process.env.VUE_APP_TRACKS_QUERY || '');
+    if (this.cache) {
+      const results = (window.cacheDB as LocalForage).getItem(endPoint).then((result: any) => {
+        this.processTracks(result);
+        this.createAlert(AlertStatus.success, this.$t('tracksCache', [result.length]).toString(), 2000);
         this.loading = false;
-      },
-    );
+      })
+    } else {
+      axios.get(endPoint).then((response) => {
+        this.processTracks(response.data.results);
+        this.createAlert(AlertStatus.success, this.$t('tracksDownloaded', [response.data.results.length]).toString(), 2000);
+        (window.cacheDB as LocalForage).setItem(endPoint, response.data.results);
+      }).catch((response) => {
+        this.createAlert(AlertStatus.danger, this.$t('tracksError').toString(), 2000);
+      }).finally(() => {
+        this.loading = false;
+      });
+    }
   }
 
 }

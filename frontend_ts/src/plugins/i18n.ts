@@ -6,6 +6,8 @@ const messages = {
 en: {
   tracksDownloaded: '{0} tracks downloaded',
   placesDownloaded: '{0} places downloaded',
+  tracksCache: '{0} tracks readed from cache',
+  placesCache: '{0} places readed from cache',
   placeTypesDownloaded: '{0} place types downloaded',
   tracksError: 'Error during tracks download',
   trackError: 'Error during track download',
@@ -169,6 +171,8 @@ en: {
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
   placesDownloaded: '{0} miejsca ściągnięte',
+  tracksCache: '{0} trasy pobrane z cache',
+  placesCache: '{0} miejsca pobrane z cache',
   placeTypesDownloaded: '{0} typy miejsc ściągnięte',
   tracksError: 'Błąd podczas ściągania tras',
   trackError: 'Błąd podczas ściągania trasy',

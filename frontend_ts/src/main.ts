@@ -142,6 +142,8 @@ import localforage from 'localforage';
 window.dbCount = 1;
 window.dbs = [];
 
+window.cacheDB = localforage.createInstance({name: 'leaflet_cache', version: 1.0, storeName: 'cache', driver: localforage.INDEXEDDB});
+
 if (document.documentElement.clientWidth >= 700) {
   window.dbCount = 1;
   const db = localforage.createInstance({name: 'leaflet_offline', version: 1.0, storeName: 'tiles', driver: localforage.WEBSQL});
