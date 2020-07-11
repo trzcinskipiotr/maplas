@@ -452,6 +452,8 @@ export default class OfflineCard extends BaseComponent {
       url = (url as string).replace('{z}', this.showZoom);
       url = url.replace('{x}', '(.*)');
       url = url.replace('{y}', '(.*)');
+      url = url.replace('?', '\\?');
+      const regex = url;
       const promises = [];
       let keys: string[] = [];
       for(const db of window.dbs) {
@@ -462,17 +464,58 @@ export default class OfflineCard extends BaseComponent {
         keys = keys.concat(value);
       }
       let indexes: any = [];
+      let xindexes: any = {};
       for(const key of keys) {
-        const match = key.match(url);
+        const match = key.match(regex);
         if (match) {
-          indexes.push([match[1], match[2]])
+          const x = parseInt(match[1]);
+          const y = parseInt(match[2]);
+          indexes.push([x, y]);
+          if (! (x in xindexes)) {
+            xindexes[x] = [];
+          }
+          xindexes[x].push(y);
         }
       }
+      for(const index in xindexes) {
+        xindexes[index] = xindexes[index].sort()
+      }
+      const ranges = [];
+      for(const index in xindexes) {
+        let lastValue = xindexes[index][0];
+        let rangeStart = lastValue;
+        let rangeEnd = lastValue;
+        let firstDone = false;
+        for(const y of xindexes[index]) {
+          if (firstDone) {
+            if (y === lastValue + 1) {
+              rangeEnd = y;
+              lastValue = y;
+            } else {
+              ranges.push([parseInt(index), rangeStart, rangeEnd]);
+              rangeStart = y;
+              rangeEnd = y;
+              lastValue = y;
+            }
+          } else {
+            firstDone = true;
+          }
+        }
+        ranges.push([parseInt(index), rangeStart, rangeEnd]);
+      }
       this.rects = [];
-      for (const index of indexes) {
+      //for (const index of indexes) {
+      //  const map = this.$store.state.map as L.Map;
+      //  const point1 = new L.Point(index[0] * 256, index[1] * 256);
+      //  const point2 = new L.Point(index[0] * 256 + 256, index[1] * 256 + 256);
+      //  const latlng1 = map.unproject(point1, this.showZoom);
+      //  const latlng2 = map.unproject(point2, this.showZoom);
+      //  this.rects.push([latlng1, latlng2]);
+      //}
+      for (const range of ranges) {
         const map = this.$store.state.map as L.Map;
-        const point1 = new L.Point(index[0] * 256, index[1] * 256);
-        const point2 = new L.Point(index[0] * 256 + 256, index[1] * 256 + 256);
+        const point1 = new L.Point(range[0] * 256, range[1] * 256);
+        const point2 = new L.Point(range[0] * 256 + 256, range[2] * 256 + 256);
         const latlng1 = map.unproject(point1, this.showZoom);
         const latlng2 = map.unproject(point2, this.showZoom);
         this.rects.push([latlng1, latlng2]);
