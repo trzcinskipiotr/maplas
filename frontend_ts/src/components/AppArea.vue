@@ -43,7 +43,7 @@ export default class AppArea extends BaseComponent {
 
   public constructor() {
     super();
-    this.checked = true;
+    this.checked = false;
     this.createMapObjects();
   }
 
