@@ -623,7 +623,7 @@ export default class Index extends BaseComponent {
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
-    layers['googleSatelliteOffline'] = L.tileLayer.offline('https://khms1.googleapis.com/kh?v=871&hl=en-US&x={x}&y={y}&z={z}', {
+    layers['googleSatelliteOffline'] = L.tileLayer.offline('https://khms1.googleapis.com/kh?v=871&hl=en-US&z={z}&x={x}&y={y}', {
       maxZoom: 21,
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
