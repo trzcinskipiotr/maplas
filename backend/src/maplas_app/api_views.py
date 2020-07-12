@@ -3,7 +3,7 @@ from rest_framework.mixins import ListModelMixin, UpdateModelMixin, CreateModelM
 from rest_framework.pagination import PageNumberPagination
 
 from maplas_app import serializers
-from maplas_app.models import Track, Region, Place, PlaceType, Photo
+from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area
 from maplas_app.utils import fill_array_from_gpx_file
 
 
@@ -85,3 +85,8 @@ class PhotoViewSet(ListModelMixin, CreateModelMixin, viewsets.GenericViewSet):
         if self.action == 'retrieve':
             return self.retrieve_serializer_class
         return self.create_update_serializer_class
+
+class AreaViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
+    queryset = Area.objects.all().order_by('id')
+    pagination_class = LargeResultsSetPagination
+    serializer_class = serializers.AreaSerializer

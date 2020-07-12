@@ -163,3 +163,9 @@ def auto_delete_file_on_delete(sender, instance, **kwargs):
     delete_file(instance.image)
     delete_file(instance.image_thumb)
     delete_file(instance.image_fullhd)
+
+class Area(models.Model):
+    name = models.CharField(max_length=1000, null=False, blank=False)
+    description = models.TextField(null=False, default='', blank=True)
+    points_json = models.TextField(null=False, default='', blank=True)
+    color = ColorField(null=True, blank=True)

@@ -1,4 +1,5 @@
 import L from 'leaflet';
+import {isPointInPolygon} from 'geolib';
 
 //localforage.config({
 //  name: 'leaflet_offline',
@@ -82,27 +83,69 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
    * @param  {number} zoom
    * @return {object[]} the tile urls, key, url
    */
-  getTileUrls: function getTileUrls(bounds, zoom) {
+  getTileUrls: function getTileUrls(bounds, zoom, area) {
     var this$1 = this;
 
     var tiles = [];
     var origurl = this._url;
     // getTileUrl uses current zoomlevel, we want to overwrite it
     this.setUrl(this._url.replace('{z}', zoom), true);
-    var tileBounds = L.bounds(
-      bounds.min.divideBy(this.getTileSize().x).floor(),
-      bounds.max.divideBy(this.getTileSize().x).floor()
-    );
+    let tileBounds = null;
+    if (area) {
+      const p1 = window.GLOBALVUE.$store.state.map.project(area.bounds().getNorthWest(), zoom);
+      const p2 = window.GLOBALVUE.$store.state.map.project(area.bounds().getSouthEast(), zoom);
+      const areaBounds = L.bounds(p1, p2);
+      tileBounds = L.bounds(
+        areaBounds.min.divideBy(this.getTileSize().x).floor(),
+        areaBounds.max.divideBy(this.getTileSize().x).floor()
+      );
+    } else {
+      tileBounds = L.bounds(
+        bounds.min.divideBy(this.getTileSize().x).floor(),
+        bounds.max.divideBy(this.getTileSize().x).floor()
+      );
+    }
+      
     var url;
+    const indexSet = new Set();
+    const points = {};
+    for (var i = tileBounds.min.x - 1; i <= tileBounds.max.x + 1; i += 1) {
+      points[i] = {};
+      for (var j = tileBounds.min.y - 1; j <= tileBounds.max.y + 1; j += 1) {
+        points[i][j] = new L.Point(i, j);
+      }
+    }
     for (var j = tileBounds.min.y; j <= tileBounds.max.y; j += 1) {
       for (var i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
-        var tilePoint = new L.Point(i, j);
-        url = L.TileLayer.prototype.getTileUrl.call(this$1, tilePoint);
-        tiles.push({
-          key: this$1._getStorageKey(url),
-          url: url,
-        });
+        const tileToUnproject = new L.Point(i * 256 + 128, j * 256 + 128)
+        const latLng = window.GLOBALVUE.$store.state.map.unproject(tileToUnproject, zoom);
+        const tileToAdd = false;
+        if (area) {
+          if (isPointInPolygon({latitude: latLng.lat, longitude: latLng.lng}, area.pointsGeoLib())) {
+            tileToAdd = true;
+          }
+        } else {
+          tileToAdd = true;
+        }
+        if (zoom <= 13) {
+          tileToAdd = true;
+        }
+        if (tileToAdd) {
+          for (let k = -1; k <= 1; k++) {
+            for (let l = -1; l <= 1; l++) {
+              indexSet.add(points[i + k][j + l]);
+            }
+          }
+        }
       }
+    }
+    for (const index of indexSet) {
+      const tilePoint = new L.Point(index.x, index.y);
+      url = L.TileLayer.prototype.getTileUrl.call(this$1, tilePoint);
+      tiles.push({
+        key: this$1._getStorageKey(url),
+        url: url,
+      });
     }
     // restore url
     this.setUrl(origurl, true);
@@ -316,7 +359,7 @@ var ControlSaveTiles = L.Control.extend(
      * @private
      * @return {void}
      */
-    _saveTiles: async function _saveTiles(useCache) {
+    _saveTiles: async function _saveTiles(useCache, area) {
       this.obj = {};
       const sim = this._baseLayer.getSimultaneous();
       for(let i = 0; i < sim; i++) {
@@ -356,7 +399,7 @@ var ControlSaveTiles = L.Control.extend(
           this$1._map.project(latlngBounds.getNorthWest(), zoomlevels[i]),
           this$1._map.project(latlngBounds.getSouthEast(), zoomlevels[i])
         );
-        tiles = tiles.concat(this$1._baseLayer.getTileUrls(bounds, zoomlevels[i]));
+        tiles = tiles.concat(this$1._baseLayer.getTileUrls(bounds, zoomlevels[i], area));
       }
       if (useCache) {
         let lengthInDB = 0;

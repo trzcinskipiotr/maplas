@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from maplas_app.models import Track, Region, Place, PlaceType, Photo
+from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area
 
 
 class RegionSerializer(serializers.ModelSerializer):
@@ -73,3 +73,9 @@ class PlaceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Place
         fields = ['id', 'name', 'description', 'lat', 'lon', 'type', 'approved']
+
+class AreaSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Area
+        fields = ['id', 'name', 'description', 'points_json', 'color']

@@ -171,6 +171,15 @@ en: {
   showOffline: 'Show offline covarage',
   hideOffline: 'Hide offline coverage',
   showZoom: 'Zoom',
+  areasDownloaded: '{0} areas downloaded',
+  areasError: 'Error during areas download',
+  saveArea: 'Save area',
+  pleaseAreaName: 'Enter name: ',
+  areaSaved: 'Area saved',
+  areaSavedError: 'Error during area saving',
+  areas: 'Areas',
+  newArea: 'New',
+  selectArea: 'Area',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -340,6 +349,15 @@ pl: {
   showOffline: 'Pokaż pokrycie',
   hideOffline: 'Ukryj pokrycie',
   showZoom: 'Zoom',
+  areasDownloaded: '{0} obszary ściągnięte',
+  areasError: 'Błąd podczas ściągania obszarów',
+  saveArea: 'Zapisz obszar',
+  pleaseAreaName: 'Podaj nazwę: ',
+  areaSaved: 'Obszar zapisany',
+  areaSavedError: 'Błąd zapisu obszaru',
+  areas: 'Obszary',
+  newArea: 'Nowy',
+  selectArea: 'Obszar',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

@@ -210,6 +210,7 @@ import PlaceType from '@/ts/PlaceType';
 import Photo from '../ts/Photo';
 import NoSleep from 'nosleep.js';
 import { EventBus } from '@/ts/EventBus';
+import Area from '@/ts/Area';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -409,6 +410,7 @@ export default class Index extends BaseComponent {
     this.downloadRegions();
     this.downloadPlaces();
     this.downloadPlaceTypes();
+    this.downloadAreas();
     this.noSleep = new NoSleep();
   }
 
@@ -435,6 +437,8 @@ export default class Index extends BaseComponent {
   private mapClicked(e) {
     if (this.$store.state.editedTrack) {
       this.$store.state.editedTrack.addPoint(e.latlng.lat, e.latlng.lng, this.$store.state.map)
+    } else if (this.$store.state.editedArea) {
+      this.$store.state.editedArea.addPoint(e.latlng)
     } else {
       this.followLocation = true;
       if (this.currentLocation) {
@@ -1005,6 +1009,24 @@ export default class Index extends BaseComponent {
     ).catch(
       (response) => {
         this.createAlert(AlertStatus.danger, this.$t('placeTypesError').toString(), 2000);
+      },
+    );
+  }
+
+  private downloadAreas() {
+    axios.get(this.$store.state.appHost + 'api/areas/').then(
+      (response) => {
+        const areas = [];
+        for (const responseAreas of response.data.results) {
+          const area = new Area(responseAreas.id, responseAreas.name, responseAreas.description, responseAreas.points_json, responseAreas.color, true);
+          areas.push(area);
+        }
+        this.$store.state.areas = areas;
+        this.createAlert(AlertStatus.success, this.$t('areasDownloaded', [response.data.results.length]).toString(), 2000);
+      },
+    ).catch(
+      (response) => {
+        this.createAlert(AlertStatus.danger, this.$t('areasError').toString(), 2000);
       },
     );
   }

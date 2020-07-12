@@ -1,7 +1,7 @@
 from django.contrib import admin
 from imagekit.admin import AdminThumbnail
 
-from maplas_app.models import Track, Region, Place, PlaceType, Photo
+from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area
 
 
 @admin.register(Track)
@@ -39,3 +39,8 @@ class PhotoAdmin(admin.ModelAdmin):
     admin_thumbnail = AdminThumbnail(image_field='image')
     search_fields = ('id', 'name', 'description', 'place__name')
     readonly_fields = ('image',)
+
+@admin.register(Area)
+class AreaAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'description', 'points_json', 'color')
+    search_fields = ('id', 'name', 'description')

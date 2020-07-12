@@ -7,6 +7,7 @@ import Region from './Region';
 import Place from './Place';
 import PlaceType from './PlaceType';
 import axios from 'axios';
+import Area from './Area';
 
 Vue.use(Vuex);
 
@@ -28,12 +29,14 @@ export interface RootState {
   speedThresholds: number[];
   speedColors: Array<{color: string}>;
   editedTrack: Track;
+  editedArea: Area;
   isDesktop: boolean;
   minimalZoom: number;
   maximalZoom: number;
   offlineControl: any;
   baseMaps: any;
   downloadThreads: number;
+  areas: Area[];
 }
 
 const store: StoreOptions<RootState> = {
@@ -62,12 +65,14 @@ const store: StoreOptions<RootState> = {
       {color: 'rgb(230,12,229)'}
     ],
     editedTrack: null,
+    editedArea: null,
     isDesktop: document.documentElement.clientWidth >= 700,
-    minimalZoom: 4,
+    minimalZoom: 5,
     maximalZoom: 18,
     offlineControl: null,
     baseMaps: null,
     downloadThreads: 10,
+    areas: Array<Area>(),
   },
   getters: {
     selectedTracks: (state): Track[] => {
@@ -146,6 +151,11 @@ const store: StoreOptions<RootState> = {
     },
     setEditedTrack(state, track) {
       state.editedTrack = track;
+      state.editedArea = null;
+    },
+    setEditedArea(state, area) {
+      state.editedArea = area;
+      state.editedTrack = null;
     },
     addPlace(state, place) {
       state.places.push(place);

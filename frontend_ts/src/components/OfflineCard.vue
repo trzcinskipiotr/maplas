@@ -40,12 +40,16 @@
         {{ $t('threads') }} <select v-model="$store.state.downloadThreads">
           <option v-for="thread in allowDownloadThreads" :value="thread" :key="thread">{{ thread }}</option>
         </select>&nbsp;
+        {{ $t('selectArea') }} <select v-model="area">
+          <option :value="null" :key="0">Widoczny obszar</option>
+          <option v-for="area in $store.state.areas" :value="area" :key="area.unique">{{ area.name }}</option>
+        </select><br>
         <b-form-checkbox style="display: inline;" v-model="useCache">
         </b-form-checkbox>{{ $t('useCache') }}<br><br>
         {{ $t('showZoom') }} <select v-model="showZoom">
           <option v-for="zoom in allowZoomToShow" :value="zoom" :key="zoom">{{ zoom }}</option>
         </select>&nbsp;
-        <button class="btn btn-primary btn-sm" @click="toggleOffline">
+        <font-awesome-icon v-if="showZoomLoading" class="fa-spin" icon="spinner" />&nbsp;<button class="btn btn-primary btn-sm" @click="toggleOffline">
           {{ offlineShowing ? $t('hideOffline') : $t('showOffline') }}
         </button><br><br>
         <input id="importFileInputOffline" style="display:none;" type="file" accept=".txt" v-on:change="importFile" />
@@ -65,11 +69,12 @@ import streamSaver from 'streamsaver';
 import FileSaver from 'file-saver';
 import { TranslateResult } from 'vue-i18n';
 import { point } from 'leaflet';
+import Area from '@/ts/Area';
 
 @Component
 export default class OfflineCard extends BaseComponent {
 
-  private allowMinimalZoom = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+  private allowMinimalZoom = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
   private exporting = false;
   private importing = false;
   private saving = false;
@@ -79,6 +84,7 @@ export default class OfflineCard extends BaseComponent {
   private layerName = '';
   private allowDownloadThreads = [1, 3, 5, 10, 20, 30, 40, 50];
   private useCache = true;
+  private area: Area = null;
 
   private CHUNKSIZE = 1024 * 1024 * 100;
 
@@ -123,7 +129,7 @@ export default class OfflineCard extends BaseComponent {
 
   private get allowZoomToShow() {
     const allow = [];
-    for(let i = 1; i <= 19; i++) {
+    for(let i = 5; i <= 19; i++) {
       allow.push(i);
     }
     return allow;
@@ -134,7 +140,7 @@ export default class OfflineCard extends BaseComponent {
     if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline')) {
       this.saving = true;
       this.$store.state.offlineControl._baseLayer.options.sims = this.$store.state.downloadThreads;
-      setTimeout(() => this.$store.state.offlineControl._saveTiles(this.useCache), 100);
+      setTimeout(() => this.$store.state.offlineControl._saveTiles(this.useCache, this.area), 100);
     } else {
       this.showMessageError(this.$t('mapNotOffline'));
     }
@@ -441,9 +447,12 @@ export default class OfflineCard extends BaseComponent {
     this.showOfflineLayer = null;
   }
 
+  private showZoomLoading = false;
+
   private async showShowOffline() {
     this.rects = [];
     if ((this.currentLayer) && (this.showZoom)) {
+      setTimeout(() => {this.showZoomLoading = true}, 0);
       let url = this.currentLayer._url;
       const subdomainpos = url.indexOf('{s}');
       if (subdomainpos > 0) {
@@ -520,6 +529,7 @@ export default class OfflineCard extends BaseComponent {
         const latlng2 = map.unproject(point2, this.showZoom);
         this.rects.push([latlng1, latlng2]);
       }
+      this.showZoomLoading = false;
     }
     this.showOfflineLayer = L.canvasLayer();
     this.showOfflineLayer.delegate(this).addTo(this.$store.state.map);

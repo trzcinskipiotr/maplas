@@ -25,6 +25,8 @@
     <MapPlace v-for="place of $store.state.places" :key="place.id" :place="place"></MapPlace>
   </div>
   <br>
+  <Areas></Areas>
+  <br>
   <PlannedTracks></PlannedTracks>
   </div>
 </template>

@@ -82,6 +82,8 @@ import MapPlace from '@/components/MapPlace.vue';
 import PlannedTracks from '@/components/PlannedTracks.vue';
 import TrackDetails from '@/components/TrackDetails.vue';
 import OfflineCard from '@/components/OfflineCard.vue';
+import AppArea from '@/components/AppArea.vue';
+import Areas from '@/components/Areas.vue';
 Vue.component('AppTrack', AppTrack);
 Vue.component('AppTrackGroup', AppTrackGroup);
 Vue.component('TrackStatusIcon', TrackStatusIcon);
@@ -96,6 +98,8 @@ Vue.component('MapPlace', MapPlace);
 Vue.component('PlannedTracks', PlannedTracks);
 Vue.component('TrackDetails', TrackDetails);
 Vue.component('OfflineCard', OfflineCard);
+Vue.component('AppArea', AppArea);
+Vue.component('Areas', Areas);
 
 import {formatDate, formatDateSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes, formatDateSecondsEpoch} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);
@@ -184,6 +188,13 @@ window.getDBIndex = function(key) {
 
 window.getDB = function(key: string) {
   return window.dbs[window.getDBIndex(key)];
+};
+
+window.unique = 0;
+
+window.getUnique = function() {
+  window.unique = window.unique + 1;
+  return window.unique;
 };
 
 window.GLOBALVUE = new Vue({

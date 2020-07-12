@@ -25,6 +25,10 @@ export function roundCoord(value: number) {
   return Math.round(value * 100000) / 100000;
 }
 
+export function roundLatLng(value: L.LatLng) {
+  return new L.LatLng(roundCoord(value.lat), roundCoord(value.lng));
+}
+
 function deg2rad(deg: number) {
   return deg * (Math.PI / 180)
 }
