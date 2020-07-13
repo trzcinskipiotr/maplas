@@ -77,19 +77,8 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     //return this.options.subdomains.length;
     return this.options.sims;
   },
-  /**
-   * getTileUrls for single zoomlevel
-   * @param  {object} L.latLngBounds
-   * @param  {number} zoom
-   * @return {object[]} the tile urls, key, url
-   */
-  getTileUrls: function getTileUrls(bounds, zoom, area) {
-    var this$1 = this;
 
-    var tiles = [];
-    var origurl = this._url;
-    // getTileUrl uses current zoomlevel, we want to overwrite it
-    this.setUrl(this._url.replace('{z}', zoom), true);
+  getIndexSetForArea: function(bounds, zoom, area) {
     let tileBounds = null;
     if (area) {
       const p1 = window.GLOBALVUE.$store.state.map.project(area.bounds().getNorthWest(), zoom);
@@ -106,7 +95,6 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
       );
     }
       
-    var url;
     const indexSet = new Set();
     const points = {};
     for (var i = tileBounds.min.x - 1; i <= tileBounds.max.x + 1; i += 1) {
@@ -139,9 +127,59 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
         }
       }
     }
+    return indexSet;
+  },
+
+  getIndexSetForAreaZooms: function getIndexSetForAreaZooms(zoomMin, zoomMax, area) {
+    const set = new Set();
+    for(let zoom = zoomMin; zoom <= zoomMax; zoom++) {
+      const zoomSet = this.getIndexSetForArea(null, zoom, area);
+      for (const entry of zoomSet) {
+        set.add(entry);
+      }
+    }
+    return set;
+  },
+
+  getUrlsForAreaZooms: function getUrlsForAreaZooms(zoomMin, zoomMax, area) {
+    var this$1 = this;
+    var tiles = [];
+    var origurl = this._url;
+    // getTileUrl uses current zoomlevel, we want to overwrite it
+    for(let zoom = zoomMin; zoom <= zoomMax; zoom++) {
+      this.setUrl(origurl.replace('{z}', zoom), true);
+      const indexSet = this.getIndexSetForArea(null, zoom, area);
+      for (const index of indexSet) {
+        const tilePoint = new L.Point(index.x, index.y);
+        const url = L.TileLayer.prototype.getTileUrl.call(this$1, tilePoint);
+        tiles.push({
+          key: this$1._getStorageKey(url),
+          url: url,
+        });
+      }
+    }
+    // restore url
+    this.setUrl(origurl, true);
+    return tiles;
+  },
+
+  /**
+   * getTileUrls for single zoomlevel
+   * @param  {object} L.latLngBounds
+   * @param  {number} zoom
+   * @return {object[]} the tile urls, key, url
+   */
+  getTileUrls: function getTileUrls(bounds, zoom, area) {
+    var this$1 = this;
+
+    var tiles = [];
+    var origurl = this._url;
+    // getTileUrl uses current zoomlevel, we want to overwrite it
+    this.setUrl(this._url.replace('{z}', zoom), true);
+    const indexSet = this.getIndexSetForArea(bounds, zoom, area);
     for (const index of indexSet) {
       const tilePoint = new L.Point(index.x, index.y);
-      url = L.TileLayer.prototype.getTileUrl.call(this$1, tilePoint);
+      const url = L.TileLayer.prototype.getTileUrl.call(this$1, tilePoint);
       tiles.push({
         key: this$1._getStorageKey(url),
         url: url,

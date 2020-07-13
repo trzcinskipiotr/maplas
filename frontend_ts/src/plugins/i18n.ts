@@ -180,6 +180,10 @@ en: {
   areas: 'Areas',
   newArea: 'New',
   selectArea: 'Area',
+  clearOffline: 'Clear DBs',
+  countGlobalOffline: 'Count everything',
+  removeTiles: 'Remove {0} tiles?',
+  bitmapsRemoved: 'Bitmaps removed',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -358,6 +362,10 @@ pl: {
   areas: 'Obszary',
   newArea: 'Nowy',
   selectArea: 'Obszar',
+  clearOffline: 'Wyczyść bazy',
+  countGlobalOffline: 'Policz wszystko',
+  removeTiles: 'Usunąć {0} bitmapy?',
+  bitmapsRemoved: 'Bitmapy usunięte',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

@@ -11,47 +11,68 @@
         {{ $t('offlineMaps' )}}
       </div>
       <div class="card-body p-2">
-        {{ $t('zoomFrom') }} <select v-model="$store.state.minimalZoom">
-          <option v-for="zoom in allowMinimalZoom" :value="zoom" :key="zoom">{{ zoom }}</option>
-        </select>
-        {{ $t('zoomTo') }} <select v-model="$store.state.maximalZoom">
-          <option v-for="zoom in allowMaximalZoom" :value="zoom" :key="zoom">{{ zoom }}</option>
-        </select><br><br>  
-        <button :disabled="exporting || importing || deleting || saving || counting" class="btn btn-primary btn-sm" @click="exportOffline">
-          <font-awesome-icon v-if="exporting" class="fa-spin" icon="spinner" />&nbsp;
-          {{ $t('exportOffline') }}
-        </button>&nbsp;
-        <button :disabled="exporting || importing || deleting || saving || counting" class="btn btn-primary btn-sm" @click="openImportFileInput">
-          <font-awesome-icon v-if="importing" class="fa-spin" icon="spinner" />&nbsp;
-          {{ $t('importOffline') }}
-        </button><br><br>
-        <button :disabled="exporting || importing || deleting || saving || counting" class="btn btn-primary btn-sm" @click="downloadOffline">
-          <font-awesome-icon v-if="saving" class="fa-spin" icon="spinner" />&nbsp;
-          {{ $t('downloadOffline') }}
-        </button>&nbsp;
-        <button :disabled="exporting || importing || deleting || saving || counting" class="btn btn-primary btn-sm" @click="deleteOffline">
+        <div class="buttongroup">
+          {{ $t('zoomFrom') }} <select v-model="$store.state.minimalZoom">
+            <option v-for="zoom in allowMinimalZoom" :value="zoom" :key="zoom">{{ zoom }}</option>
+          </select>
+          {{ $t('zoomTo') }} <select v-model="$store.state.maximalZoom">
+            <option v-for="zoom in allowMaximalZoom" :value="zoom" :key="zoom">{{ zoom }}</option>
+          </select><br>
+          {{ $t('selectArea') }} <select v-model="area">
+            <option :value="null" :key="0">Cała warstwa / widoczny obszar</option>
+            <option v-for="area in $store.state.areas" :value="area" :key="area.unique">{{ area.name }}</option>
+          </select><br>
+        </div>
+        <div class="buttongroup">
+        <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="deleteOffline">
           <font-awesome-icon v-if="deleting" class="fa-spin" icon="spinner" />&nbsp;
           {{ $t('deleteOffline') }}
         </button>&nbsp;
-        <button :disabled="exporting || importing || deleting || saving || counting" class="btn btn-primary btn-sm" @click="countOffline">
+        <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="countOffline">
           <font-awesome-icon v-if="counting" class="fa-spin" icon="spinner" />&nbsp;
           {{ $t('countOffline') }}
-        </button><br><br>
+        </button>
+        </div>
+        <div class="buttongroup">
+          <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="exportOffline">
+            <font-awesome-icon v-if="exporting" class="fa-spin" icon="spinner" />&nbsp;
+            {{ $t('exportOffline') }}
+          </button>&nbsp;
+          <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="openImportFileInput">
+            <font-awesome-icon v-if="importing" class="fa-spin" icon="spinner" />&nbsp;
+            {{ $t('importOffline') }}
+          </button>
+        </div>
+        <div class="buttongroup">
         {{ $t('threads') }} <select v-model="$store.state.downloadThreads">
           <option v-for="thread in allowDownloadThreads" :value="thread" :key="thread">{{ thread }}</option>
         </select>&nbsp;
-        {{ $t('selectArea') }} <select v-model="area">
-          <option :value="null" :key="0">Widoczny obszar</option>
-          <option v-for="area in $store.state.areas" :value="area" :key="area.unique">{{ area.name }}</option>
-        </select><br>
         <b-form-checkbox style="display: inline;" v-model="useCache">
-        </b-form-checkbox>{{ $t('useCache') }}<br><br>
+        </b-form-checkbox>{{ $t('useCache') }}
+        <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="downloadOffline">
+          <font-awesome-icon v-if="saving" class="fa-spin" icon="spinner" />&nbsp;
+          {{ $t('downloadOffline') }}
+        </button>&nbsp;
+        </div>
+        <div class="buttongroup">
         {{ $t('showZoom') }} <select v-model="showZoom">
           <option v-for="zoom in allowZoomToShow" :value="zoom" :key="zoom">{{ zoom }}</option>
         </select>&nbsp;
-        <font-awesome-icon v-if="showZoomLoading" class="fa-spin" icon="spinner" />&nbsp;<button class="btn btn-primary btn-sm" @click="toggleOffline">
+        <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="toggleOffline">
+          <font-awesome-icon v-if="showZoomLoading" class="fa-spin" icon="spinner" />&nbsp;
           {{ offlineShowing ? $t('hideOffline') : $t('showOffline') }}
-        </button><br><br>
+        </button><template v-if="offlineShowing">&nbsp;{{ offlineShowingCount }}</template>
+        </div>
+        <div class="buttongroup">
+          <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="clearOffline">
+            <font-awesome-icon v-if="clearing" class="fa-spin" icon="spinner" />&nbsp;
+            {{ $t('clearOffline') }}
+          </button>&nbsp;
+          <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="countGlobalOffline">
+            <font-awesome-icon v-if="countingGlobal" class="fa-spin" icon="spinner" />&nbsp;
+            {{ $t('countGlobalOffline') }}
+          </button>
+        </div>
         <input id="importFileInputOffline" style="display:none;" type="file" accept=".txt" v-on:change="importFile" />
       </div>
     </div>    
@@ -70,6 +91,7 @@ import FileSaver from 'file-saver';
 import { TranslateResult } from 'vue-i18n';
 import { point } from 'leaflet';
 import Area from '@/ts/Area';
+import {getAllKeys, removeKeyFromDB, clearDBs, countKeysInDBs, countKeysInDBsSum} from '@/ts/utils/db';
 
 @Component
 export default class OfflineCard extends BaseComponent {
@@ -80,6 +102,8 @@ export default class OfflineCard extends BaseComponent {
   private saving = false;
   private deleting = false;
   private counting = false;
+  private clearing = false;
+  private countingGlobal = false;
   private totalImported = 0;
   private layerName = '';
   private allowDownloadThreads = [1, 3, 5, 10, 20, 30, 40, 50];
@@ -87,6 +111,10 @@ export default class OfflineCard extends BaseComponent {
   private area: Area = null;
 
   private CHUNKSIZE = 1024 * 1024 * 100;
+
+  private get operationInProgess() {
+    return this.exporting || this.importing || this.deleting || this.saving || this.counting || this.showZoomLoading || this.clearing || this.countingGlobal;
+  }
 
   private setMessageClass(className: string) {
     (this.$refs.messageClass as HTMLElement).className = 'alert border border-dark '+ className;
@@ -146,21 +174,137 @@ export default class OfflineCard extends BaseComponent {
     }
   }
 
-  private deleteOffline() {
-    this.deleting = true;
-    this.$store.state.offlineControl._baseLayer.on('tilesremoved', () => {
-      this.deleting = false;
-      this.showMessageDiv(this.$t('allBitmapsRemoved'))
-    });
-    this.$store.state.offlineControl._rmTiles();
+  private async getTilesForAreaInCache(zoomMin: number, zoomMax: number) {
+    const cacheKeysSet = await getAllKeys();
+    const set = this.$store.state.offlineControl._baseLayer.getUrlsForAreaZooms(zoomMin, zoomMax, this.area) as Set<any>;
+    let count = 0;
+    const tiles = [];
+    for(const url of set) {
+      if (cacheKeysSet.has(url.key)) {
+        tiles.push(url.key);
+      }
+    }
+    return tiles;
   }
 
-  private countOffline() {
+  private async getTilesForLayerInCache() {
+    const cacheKeysSet = await getAllKeys();
+    return this.getKeysForKeySet(cacheKeysSet);
+  }
+
+  private getKeysForKeySet(cacheKeysSet: any) {
+    let keys = [];
+    for(let zoom = this.$store.state.minimalZoom; zoom <= this.$store.state.maximalZoom; zoom++) {
+      let url = this.currentLayer._url;
+      const subdomainpos = url.indexOf('{s}');
+      if (subdomainpos > 0) {
+        url = url.substring(0, subdomainpos) + this.currentLayer.options.subdomains['0'] + url.substring(subdomainpos + 3, url.length);
+      }
+      url = (url as string).replace('{z}', zoom);
+      url = url.replace('{x}', '(.*)');
+      url = url.replace('{y}', '(.*)');
+      url = url.replace('?', '\\?');
+      const regex = url;
+      for(const key of cacheKeysSet) {
+        const match = key.match(regex);
+        if (match) {
+          keys.push(key);
+        }
+      }
+    }
+    return keys;
+  }
+
+  private getMatchesForKeySet(cacheKeysSet: any, zoomMin: number, zoomMax: number) {
+    let keys = [];
+    for(let zoom = zoomMin; zoom <= zoomMax; zoom++) {
+      let url = this.currentLayer._url;
+      const subdomainpos = url.indexOf('{s}');
+      if (subdomainpos > 0) {
+        url = url.substring(0, subdomainpos) + this.currentLayer.options.subdomains['0'] + url.substring(subdomainpos + 3, url.length);
+      }
+      url = (url as string).replace('{z}', zoom);
+      url = url.replace('{x}', '(.*)');
+      url = url.replace('{y}', '(.*)');
+      url = url.replace('?', '\\?');
+      const regex = url;
+      for(const key of cacheKeysSet) {
+        const match = key.match(regex);
+        if (match) {
+          keys.push(match);
+        }
+      }
+    }
+    return keys;
+  }
+
+  private async getMatchesForAreaInCache(zoomMin: number, zoomMax: number) {
+    const cacheKeysSet = await this.getTilesForAreaInCache(zoomMin, zoomMax);
+    return await this.getMatchesForKeySet(cacheKeysSet, zoomMin, zoomMax);
+  }
+
+  private async getMatchesForLayerInCache(zoomMin: number, zoomMax: number) {
+    const cacheKeysSet = await getAllKeys();
+    return await this.getMatchesForKeySet(cacheKeysSet, zoomMin, zoomMax);
+  }
+
+  private async deleteOffline() {
+    this.deleting = true;
+    let tiles = [];
+    if (this.area) {
+      tiles = await this.getTilesForAreaInCache(this.$store.state.minimalZoom, this.$store.state.maximalZoom);
+    } else {
+      tiles = await this.getTilesForLayerInCache();
+    }
+    if (window.confirm(this.$t('removeTiles', [tiles.length]))) {
+      for(const tile of tiles) {
+        removeKeyFromDB(tile)
+      }
+      this.deleting = false;
+      this.showMessageDiv(this.$t('bitmapsRemoved'));
+    } else {
+      this.deleting = false;  
+    }
+  }
+
+  private async clearOffline() {
+    this.clearing = true;
+    const sum = await countKeysInDBsSum()
+    if(window.confirm(this.$t('removeAllTitles', [sum]))) {
+      await clearDBs();
+      this.showMessageDiv(this.$t('allBitmapsRemoved'));
+      this.clearing = false;
+    } else {
+      this.clearing = false;
+    }
+  }
+
+  private async countGlobalOffline() {
+    this.countingGlobal = true;
+    const values = await countKeysInDBs();
+    let result = '';
+    let sum = 0;
+    for(const value of values) {
+      result = result + value + ', ';
+      sum = sum + value;
+    }
+    result = result + sum;
+    this.showMessageDiv(result);
+    this.countingGlobal = false;
+  }
+
+  private async countOffline() {
     this.counting = true;
-    this.$store.state.offlineControl.getStorageSize((size: number) => {
-      this.showMessageDiv(this.$t('bitmapInDatabase', [size]));
+    setTimeout(async () => {
+      if (this.area) {
+        const tiles = await this.getMatchesForAreaInCache(this.$store.state.minimalZoom, this.$store.state.maximalZoom);
+        this.showMessageDiv(this.$t('bitmapInDatabase', [tiles.length]));
+      } else {
+        const tiles = await this.getMatchesForLayerInCache(this.$store.state.minimalZoom, this.$store.state.maximalZoom);
+        this.showMessageDiv(this.$t('bitmapInDatabase', [tiles.length]));
+      }
       this.counting = false;
-    });
+    }, 100);
   }
 
   private readFile(data: any){
@@ -420,6 +564,7 @@ export default class OfflineCard extends BaseComponent {
 
   private showOfflineLayer: any = null;
   private offlineShowing = false;
+  private offlineShowingCount = 0;
   private rects = [];
 
   public onDrawLayer(info: any) {
@@ -452,39 +597,24 @@ export default class OfflineCard extends BaseComponent {
   private async showShowOffline() {
     this.rects = [];
     if ((this.currentLayer) && (this.showZoom)) {
-      setTimeout(() => {this.showZoomLoading = true}, 0);
-      let url = this.currentLayer._url;
-      const subdomainpos = url.indexOf('{s}');
-      if (subdomainpos > 0) {
-        url = url.substring(0, subdomainpos) + this.currentLayer.options.subdomains['0'] + url.substring(subdomainpos + 3, url.length);
-      }
-      url = (url as string).replace('{z}', this.showZoom);
-      url = url.replace('{x}', '(.*)');
-      url = url.replace('{y}', '(.*)');
-      url = url.replace('?', '\\?');
-      const regex = url;
-      const promises = [];
-      let keys: string[] = [];
-      for(const db of window.dbs) {
-        promises.push(db.keys());
-      }
-      const values = await Promise.all(promises);
-      for(const value of values) {
-        keys = keys.concat(value);
+      setTimeout(() => {this.showZoomLoading = true; this.offlineShowingCount = 0}, 0);
+      let matches: any;
+      if (this.area) {
+        matches = await this.getMatchesForAreaInCache(this.showZoom, this.showZoom);
+      } else {
+        matches = await this.getMatchesForLayerInCache(this.showZoom, this.showZoom);
       }
       let indexes: any = [];
       let xindexes: any = {};
-      for(const key of keys) {
-        const match = key.match(regex);
-        if (match) {
-          const x = parseInt(match[1]);
-          const y = parseInt(match[2]);
-          indexes.push([x, y]);
-          if (! (x in xindexes)) {
-            xindexes[x] = [];
-          }
-          xindexes[x].push(y);
+      for(const match of matches) {
+        this.offlineShowingCount = this.offlineShowingCount + 1;
+        const x = parseInt(match[1]);
+        const y = parseInt(match[2]);
+        indexes.push([x, y]);
+        if (! (x in xindexes)) {
+          xindexes[x] = [];
         }
+        xindexes[x].push(y);
       }
       for(const index in xindexes) {
         xindexes[index] = xindexes[index].sort()
@@ -513,14 +643,6 @@ export default class OfflineCard extends BaseComponent {
         ranges.push([parseInt(index), rangeStart, rangeEnd]);
       }
       this.rects = [];
-      //for (const index of indexes) {
-      //  const map = this.$store.state.map as L.Map;
-      //  const point1 = new L.Point(index[0] * 256, index[1] * 256);
-      //  const point2 = new L.Point(index[0] * 256 + 256, index[1] * 256 + 256);
-      //  const latlng1 = map.unproject(point1, this.showZoom);
-      //  const latlng2 = map.unproject(point2, this.showZoom);
-      //  this.rects.push([latlng1, latlng2]);
-      //}
       for (const range of ranges) {
         const map = this.$store.state.map as L.Map;
         const point1 = new L.Point(range[0] * 256, range[1] * 256);
@@ -549,3 +671,14 @@ export default class OfflineCard extends BaseComponent {
 }
 
 </script>
+
+<style>
+
+.buttongroup {
+  border-radius: 5px 5px 5px;
+  border: 1px solid gray;
+  padding: 8px;
+  margin-bottom: 10px;
+}
+
+</style>
