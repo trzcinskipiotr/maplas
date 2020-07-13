@@ -42,10 +42,19 @@
                       <div v-if="$store.state.imports.length" class="mb-2">
                         <AppTrackGroup :trackGroup="importGroup"></AppTrackGroup>
                       </div>
+                      <div style="width: 100%" class="form-group">
+                        <input class="form-control mr-2" type="text" v-model="searchText" :placeholder="$t('search')" />
+                      </div>
+                      <div style="margin-bottom: 10px">
+                        <button class="btn btn-primary btn-sm btn-nopadding" @click="showAllTracks">{{ $t('showAllTracks') }}</button>&nbsp;
+                        <button class="btn btn-primary btn-sm btn-nopadding" @click="hideAllTracks">{{ $t('hideAllTracks') }}</button>&nbsp;
+                        <button class="btn btn-primary btn-sm btn-nopadding" @click="expandAllGroups">{{ $t('expandAllGroups') }}</button>&nbsp;
+                        <button class="btn btn-primary btn-sm btn-nopadding" @click="hideAllGroups">{{ $t('hideAllGroups') }}</button>&nbsp;
+                      </div>
                       <div v-for="(trackGroupGroup, key) in trackGroupsDict" :key="key">
                         <div v-show="groupBy.id === key">
                           <div v-for="trackGroup in trackGroupGroup" :key="trackGroup.label" class="mb-2">
-                            <AppTrackGroup :trackGroup="trackGroup"></AppTrackGroup>
+                            <AppTrackGroup :trackGroup="trackGroup" :searchText="searchText"></AppTrackGroup>
                           </div>
                         </div>
                       </div>
@@ -265,6 +274,8 @@ export default class Index extends BaseComponent {
 
   private cache: boolean = false;
 
+  private searchText: string = '';
+
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
     i18n.locale = this.language!.language;
@@ -412,6 +423,26 @@ export default class Index extends BaseComponent {
     this.downloadPlaceTypes();
     this.downloadAreas();
     this.noSleep = new NoSleep();
+  }
+
+  private showAllTracks() {
+    for(const track of this.$store.state.tracks) {
+      track.checked = true;
+    }
+  }
+
+  private hideAllTracks() {
+    for(const track of this.$store.state.tracks) {
+      track.checked = false;
+    }
+  }
+
+  private expandAllGroups() {
+    EventBus.$emit('expandAllGroups');
+  }
+
+  private hideAllGroups() {
+    EventBus.$emit('hideAllGroups');
   }
 
   private setLanguage() {
@@ -1247,6 +1278,11 @@ export default class Index extends BaseComponent {
 
   .slider {
     width: 98% !important;
+  }
+
+  .btn-nopadding {
+    padding-left: 0.1rem !important;
+    padding-right: 0.1rem !important;
   }
 
 </style>

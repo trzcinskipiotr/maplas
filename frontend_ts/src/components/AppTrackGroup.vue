@@ -17,7 +17,7 @@
         <li v-if="countTracksByType(trackGroup.tracks, TrackType.mushroom) > 0">{{ $t('tracksSelectedDistanceMushroom') }}: {{ checkedTracks|sumTracksDistanceMushroom|roundTrackDistance }}</li>
       </ul>
       <div v-for="track in trackGroup.tracks" :key="track.gpsTrack.id">
-        <AppTrack :track="track" :highlightOnStart="highlightOnStart(track)"></AppTrack>
+        <AppTrack v-show="showAppTrack(track)" :track="track" :highlightOnStart="highlightOnStart(track)"></AppTrack>
       </div>
     </div>  
   </div>
@@ -30,6 +30,7 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import $ from 'jquery';
 import Track from '@/ts/Track';
 import {TrackType} from '@/ts/types';
+import {EventBus} from '@/ts/EventBus';
 
 @Component
 export default class AppTrackGroup extends BaseComponent {
@@ -40,6 +41,7 @@ export default class AppTrackGroup extends BaseComponent {
   private TrackType = TrackType;
 
   @Prop({ required: true }) private trackGroup: TrackGroup;
+  @Prop({ required: true }) private searchText: string;
 
   public constructor() {
     super();
@@ -56,6 +58,18 @@ export default class AppTrackGroup extends BaseComponent {
       this.checkedAll = true;
     } else {
       this.checkedAll = false;
+    }
+  }
+
+  private showAppTrack(track: Track) {
+    if (this.searchText) {
+      if (track.gpsTrack.name.toLowerCase().includes(this.searchText.toLowerCase())) {
+        return true;
+      } else {
+        return false;
+      }
+    } else {
+      return true;
     }
   }
 
@@ -146,6 +160,19 @@ export default class AppTrackGroup extends BaseComponent {
 
   private highlightOnStart(track: Track) {
     return ! track.onServer;
+  }
+
+  private mounted() {
+    EventBus.$on('expandAllGroups', () => {
+      if (! this.iconsVisible) {
+        this.togglePanel();
+      }
+    })
+    EventBus.$on('hideAllGroups', () => {
+      if (this.iconsVisible) {
+        this.togglePanel();
+      }
+    })
   }
 
 }

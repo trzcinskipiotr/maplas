@@ -184,6 +184,10 @@ en: {
   countGlobalOffline: 'Count everything',
   removeTiles: 'Remove {0} tiles?',
   bitmapsRemoved: 'Bitmaps removed',
+  showAllTracks: 'Show all',
+  hideAllTracks: 'Hide all',
+  expandAllGroups: 'Exapnd all',
+  hideAllGroups: 'Hide all',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -366,6 +370,10 @@ pl: {
   countGlobalOffline: 'Policz wszystko',
   removeTiles: 'Usunąć {0} bitmapy?',
   bitmapsRemoved: 'Bitmapy usunięte',
+  showAllTracks: 'Pokaż trasy',
+  hideAllTracks: 'Ukryj trasy',
+  expandAllGroups: 'Rozwiń grupy',
+  hideAllGroups: 'Zwiń grupy',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});
