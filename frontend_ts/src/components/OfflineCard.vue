@@ -258,7 +258,7 @@ export default class OfflineCard extends BaseComponent {
     }
     if (window.confirm(this.$t('removeTiles', [tiles.length]))) {
       for(const tile of tiles) {
-        removeKeyFromDB(tile)
+        await removeKeyFromDB(tile)
       }
       this.deleting = false;
       this.showMessageDiv(this.$t('bitmapsRemoved'));
@@ -496,7 +496,7 @@ export default class OfflineCard extends BaseComponent {
     this.currentLayer = this.$store.state.baseMaps[this.layerName];
     if (this.offlineShowing) {
       this.removeShowOffline();
-      this.showShowOffline();
+      this.offlineShowing = false;
     }
     if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline')) {
       offlineControl.setLayer(this.$store.state.baseMaps[this.layerName]);
@@ -583,6 +583,14 @@ export default class OfflineCard extends BaseComponent {
     if (this.offlineShowing) {
       this.removeShowOffline();
       this.showShowOffline();
+    }
+  }
+
+  @Watch('area')
+  private onShowZoomChanged() {
+    if (this.offlineShowing) {
+      this.removeShowOffline();
+      this.offlineShowing = false;
     }
   }
 
