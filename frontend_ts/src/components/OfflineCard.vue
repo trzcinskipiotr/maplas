@@ -391,7 +391,7 @@ export default class OfflineCard extends BaseComponent {
           results = {...results, ...loopResults};
         }
       } else {
-        const results = await db.getItems(null);
+        results = await db.getItems(null);
       }
       let done = 0;
       let total = 0;
