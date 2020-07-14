@@ -40,7 +40,7 @@
                     </ul>
                     <div style="font-size: 0.95rem">
                       <div v-if="$store.state.imports.length" class="mb-2">
-                        <AppTrackGroup :trackGroup="importGroup"></AppTrackGroup>
+                        <AppTrackGroup :searchText="''" :trackGroup="importGroup"></AppTrackGroup>
                       </div>
                       <div style="width: 100%" class="form-group">
                         <input class="form-control mr-2" type="text" v-model="searchText" :placeholder="$t('search')" />
@@ -73,7 +73,7 @@
                       <div class="card-body p-2">        
                         <div v-if="$store.state.user">
                           <form @submit.prevent="logOutFromApi" class="form-inline">
-                            <div style="width: 100%" class="form-group">
+                            <div style="width: 100%" class="form-group flex-form-group">
                               <div style="width: 66%;">
                                 {{ $t('welcome') }}: {{ $store.state.user.username }}
                              </div>
@@ -83,7 +83,7 @@
                         </div>
                         <div v-else>
                           <form @submit.prevent="logInToApi" class="form-inline">
-                            <div style="width: 100%" class="form-group">
+                            <div style="width: 100%" class="form-group flex-form-group">
                               <input style="width: 33%" type="text" v-model="login" class="form-control mr-2" :placeholder="$t('login')">
                               <input style="width: 33%" type="password" autocomplete="off" v-model="password" class="form-control mr-2" :placeholder="$t('password')">
                               <button type="submit" class="btn btn-primary">{{ $t('logIn') }}</button>
@@ -167,6 +167,12 @@
       <div class="flexcenter"><font-awesome-icon v-if="loading" class="fa-spin" icon="spinner" size="3x"/></div>
       <div v-for="alert in $store.state.alerts" class="alert border border-dark" v-bind:class="{ 'alert-success': isSuccessAlert(alert), 'alert-danger': isDangerAlert(alert) }" v-bind:key="alert.date" role="alert">
         {{ alert.message }}
+      </div>
+    </div>
+    <div id="messageDivTop" class="alertmessage" style="display: none">
+      <div id="messageClassTop" class="alert border border-dark" role="alert">
+        <span id="messageTop"></span>&nbsp;
+        <span style="cursor: pointer" aria-hidden="true" @click="document.getElementById('messageDivTop').style.display = 'none'">&times;</span>
       </div>
     </div>
     <div v-for="language in languages" :key="language.flag" style="position: absolute; left: -10000px">
@@ -1283,6 +1289,10 @@ export default class Index extends BaseComponent {
   .btn-nopadding {
     padding-left: 0.1rem !important;
     padding-right: 0.1rem !important;
+  }
+
+  .flex-form-group {
+    display: flex !important;
   }
 
 </style>

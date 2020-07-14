@@ -62,8 +62,8 @@ export default class AppTrackGroup extends BaseComponent {
   }
 
   private showAppTrack(track: Track) {
-    if (this.searchText) {
-      if (track.gpsTrack.name.toLowerCase().includes(this.searchText.toLowerCase())) {
+    if (this.searchText.trim()) {
+      if (track.gpsTrack.name.toLowerCase().includes(this.searchText.toLowerCase().trim())) {
         return true;
       } else {
         return false;

@@ -5,7 +5,7 @@
       </b-form-checkbox>-->
       {{ $t('areas') }}
       <div style="float: right;">
-        <button v-if="($store.state.user) && ($store.state.isDesktop)" class="btn btn-primary btn-sm" @click="newArea">{{ $t('newArea') }}</button>&nbsp;
+        <button v-if="$store.state.isDesktop" class="btn btn-primary btn-sm" @click="newArea">{{ $t('newArea') }}</button>&nbsp;
         <font-awesome-icon @click="togglePanel" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
       </div>
     </div>

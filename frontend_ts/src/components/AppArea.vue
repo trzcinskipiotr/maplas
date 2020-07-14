@@ -6,14 +6,14 @@
         <label style="margin-right: 2px;" class="custom-control-label" :for="'acheckbox' + area.id">{{ area.name }}</label>
       </div>
       <span v-if="area === $store.state.editedArea">
-        <font-awesome-icon @click="setEdited(null)" style="height: 24px; cursor: pointer" icon="lock-open"/>
+        <font-awesome-icon v-if="$store.state.isDesktop" @click="setEdited(null)" style="height: 24px; cursor: pointer" icon="lock-open"/>
       </span>
       <span v-else>
-        <font-awesome-icon @click="setEdited(area)" style="height: 24px; cursor: pointer" icon="lock"/>
+        <font-awesome-icon v-if="$store.state.isDesktop" @click="setEdited(area)" style="height: 24px; cursor: pointer" icon="lock"/>
       </span>
       &nbsp;
       <template v-if="areaSaving"><font-awesome-icon class="fa-spin" icon="spinner" />&nbsp;</template>
-      <span v-b-tooltip.hover :title="$t('saveArea')"><font-awesome-icon @click="saveArea" style="height: 24px; cursor: pointer" icon="save"/></span>
+        <span v-if="($store.state.user) && ($store.state.isDesktop)" v-b-tooltip.hover :title="$t('saveArea')"><font-awesome-icon @click="saveArea" style="height: 24px; cursor: pointer" icon="save"/></span>
       <br>
     </div>
   </div>  

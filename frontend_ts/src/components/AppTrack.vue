@@ -36,6 +36,7 @@
           <span v-else v-b-tooltip.hover :title="$t('uploadTrack')"><font-awesome-icon @click="showUploadModal" style="height: 24px; cursor: pointer" icon="upload"/></span>
           <span style='margin-right: 3px;'></span>
         </span>
+        <span style="display: inline-block; margin-right: 3px;" @click="toggleRuler"><font-awesome-icon :style="{'cursor': 'pointer', 'height': $store.state.isDesktop ? '24px' : '32px', 'width': $store.state.isDesktop ? null : '32px'}" :icon="rulerActive ? 'ruler-vertical' : 'ruler-horizontal'"></font-awesome-icon></span>
         <span v-if="(track.gpsTrack.status === TrackStatus.planned) && ($store.state.isDesktop)">
           <span v-if="track === $store.state.editedTrack">
             <font-awesome-icon @click="setEdited(null)" style="height: 24px; cursor: pointer" icon="lock-open"/>
@@ -137,7 +138,7 @@ import Region from '@/ts/Region';
 import FileSaver from 'file-saver';
 import {formatDate, formatTimeSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
 import gpxParse from 'gpx-parse';
-import { speedBetweenPoints, roundCoord } from '@/ts/utils/coords';
+import { speedBetweenPoints, roundCoord, distanceBetweenPoints } from '@/ts/utils/coords';
 
 @Component
 export default class AppTrack extends BaseComponent {
@@ -151,6 +152,7 @@ export default class AppTrack extends BaseComponent {
   private uploadTrackType: {translate: string, label: string, value: number, icon?: string, imgsrc?: string};
   private uploadRegion: {translate: string, label: string, value: Region} = null;
   private uploadRegions: Array<{translate: string, label: string, value: Region}> = [];
+  private rulerActive = false;
 
   private trackSaving: boolean = false;
 
@@ -451,10 +453,52 @@ export default class AppTrack extends BaseComponent {
     }
   }
 
+  private rulerMarkers: L.CircleMarker[] = [];
+
+  private createRulerMarkers() {
+    this.rulerMarkers = [];
+    for (const segment of this.track.gpsTrack.segments) {
+      let lastDistance = -2000;
+      let lastPoint: L.LatLng = null;
+      let distance = 0;
+      for (const point of segment.pointsArray) {
+        if (lastPoint) {
+           distance = distance + distanceBetweenPoints(point.lat, point.lng, lastPoint.lat, lastPoint.lng);
+           if (distance >= lastDistance + 1000) {
+             lastDistance = distance;
+             const marker = new L.CircleMarker(point, {radius: 5});
+             marker.bindTooltip((distance / 1000).toFixed(1), {permanent: true, className: 'smallTooltip', direction: 'right'});
+             this.rulerMarkers.push(marker);
+           }
+           lastPoint = point;
+        } else {
+          lastPoint = point;
+        }
+      }
+    }
+  }
+
+  private toggleRuler() {
+    if (this.rulerMarkers.length === 0) {
+      this.createRulerMarkers();
+    }
+    this.rulerActive = ! this.rulerActive;
+    this.showOrHideTrack();
+  }
+
   private showOrHideTrack() {
     if (this.checked) {
       for (const mapTrack of this.track.mapTracks) {
         mapTrack.addTo(this.$store.state.map);
+      }
+      if (this.rulerActive) {
+        for (const marker of this.rulerMarkers) {
+          marker.addTo(this.$store.state.map);
+        }
+      } else {
+        for (const marker of this.rulerMarkers) {
+          marker.removeFrom(this.$store.state.map);
+        }
       }
       if (this.$store.state.editedTrack === this.track) {
         for (const marker of this.track.plannedMarkers) {
@@ -473,6 +517,9 @@ export default class AppTrack extends BaseComponent {
         marker.removeFrom(this.$store.state.map);
       }
       for (const marker of this.track.middleMarkers) {
+        marker.removeFrom(this.$store.state.map);
+      }
+      for (const marker of this.rulerMarkers) {
         marker.removeFrom(this.$store.state.map);
       }
       this.track.checked = false;

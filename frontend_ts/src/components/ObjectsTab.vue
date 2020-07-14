@@ -9,17 +9,20 @@
       <div style="float: right;">
         <font-awesome-icon @click="togglePanel" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
       </div>
-      <br>
-      <b-form-checkbox style="display: inline;" v-model="showApproved">
-      </b-form-checkbox>{{ $t('showApproved') }}
-      <b-form-checkbox style="display: inline;" v-model="showNotApproved">
-      </b-form-checkbox>{{ $t('showNotApproved') }}
+      <div :style="{'margin-top': $store.state.isDesktop ? '3px' : '15px'}">
+        <b-form-checkbox style="display: inline;" v-model="showApproved">
+        </b-form-checkbox>{{ $t('showApproved') }}
+        <b-form-checkbox style="display: inline;" v-model="showNotApproved">
+        </b-form-checkbox>{{ $t('showNotApproved') }}
+      </div>  
     </div>
     <div ref="places" class="card-body p-2">
       <div v-for="placeGroup of placeGroups" :key="placeGroup.name">
-        <b-form-checkbox style="display: inline;" v-model="placeGroup.checked" @change="onPlaceGroupsChanged($event, placeGroup.id)">
-        </b-form-checkbox>
-        {{ $t(placeGroup.name) }}
+        <div :style="{'margin-bottom': $store.state.isDesktop ? 0 : '15px'}">
+          <b-form-checkbox style="display: inline;" v-model="placeGroup.checked" @change="onPlaceGroupsChanged($event, placeGroup.id)">
+          </b-form-checkbox>
+          {{ $t(placeGroup.name) }}
+        </div>  
       </div>
     </div>
     <MapPlace v-for="place of $store.state.places" :key="place.id" :place="place"></MapPlace>

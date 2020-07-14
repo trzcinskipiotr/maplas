@@ -1,11 +1,5 @@
 <template>
   <div>
-    <div ref="messageDiv" class="alertmessage" style="display: none">
-      <div ref="messageClass" class="alert border border-dark" role="alert">
-        <span ref="message"></span>&nbsp;
-        <span style="cursor: pointer" aria-hidden="true" @click="$refs.messageDiv.style.display = 'none'">&times;</span>
-      </div>
-    </div>
     <div class="card">
       <div class="card-header py-2">
         {{ $t('offlineMaps' )}}
@@ -24,14 +18,18 @@
           </select><br>
         </div>
         <div class="buttongroup">
-        <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="deleteOffline">
-          <font-awesome-icon v-if="deleting" class="fa-spin" icon="spinner" />&nbsp;
-          {{ $t('deleteOffline') }}
-        </button>&nbsp;
-        <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="countOffline">
-          <font-awesome-icon v-if="counting" class="fa-spin" icon="spinner" />&nbsp;
-          {{ $t('countOffline') }}
-        </button>
+          <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="deleteOffline">
+            <font-awesome-icon v-if="deleting" class="fa-spin" icon="spinner" />&nbsp;
+            {{ $t('deleteOffline') }}
+          </button>&nbsp;
+          <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="countOffline">
+            <font-awesome-icon v-if="counting" class="fa-spin" icon="spinner" />&nbsp;
+            {{ $t('countOffline') }}
+          </button>&nbsp;
+          <button :disabled="operationInProgess || (! area)" class="btn btn-primary btn-sm" @click="addToExport">
+            <font-awesome-icon v-if="addingToExport" class="fa-spin" icon="spinner" />&nbsp;
+            {{ $t('addToExport') }}
+          </button>
         </div>
         <div class="buttongroup">
           <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="exportOffline">
@@ -42,6 +40,23 @@
             <font-awesome-icon v-if="importing" class="fa-spin" icon="spinner" />&nbsp;
             {{ $t('importOffline') }}
           </button>
+          <template v-if="areasToExport.length">
+            <br>
+            {{ $t('areasToExport') }}:
+            <ul style="font-size: 0.8rem">
+              <li :key="line" v-for="line of areasToExport">{{ line }}</li>
+            </ul>
+            {{ $t('sum') }}: {{ keysToExport.length }}
+            &nbsp;
+            <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="exportOfflineSelection">
+              <font-awesome-icon v-if="exporting" class="fa-spin" icon="spinner" />&nbsp;
+              {{ $t('exportOfflineSelection') }}
+            </button>
+            &nbsp;
+            <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="keysToExport = []; areasToExport = []">
+              {{ $t('clearSelection') }}
+            </button>
+          </template>  
         </div>
         <div class="buttongroup">
         {{ $t('threads') }} <select v-model="$store.state.downloadThreads">
@@ -104,6 +119,7 @@ export default class OfflineCard extends BaseComponent {
   private counting = false;
   private clearing = false;
   private countingGlobal = false;
+  private addingToExport = false;
   private totalImported = 0;
   private layerName = '';
   private allowDownloadThreads = [1, 3, 5, 10, 20, 30, 40, 50];
@@ -112,26 +128,29 @@ export default class OfflineCard extends BaseComponent {
 
   private CHUNKSIZE = 1024 * 1024 * 100;
 
+  private keysToExport: string[] = [];
+  private areasToExport: string[] = [];
+
   private get operationInProgess() {
-    return this.exporting || this.importing || this.deleting || this.saving || this.counting || this.showZoomLoading || this.clearing || this.countingGlobal;
+    return this.exporting || this.importing || this.deleting || this.saving || this.counting || this.showZoomLoading || this.clearing || this.countingGlobal || this.addingToExport;
   }
 
   private setMessageClass(className: string) {
-    (this.$refs.messageClass as HTMLElement).className = 'alert border border-dark '+ className;
+    document.getElementById('messageClassTop').className = 'alert border border-dark '+ className;
   }
 
   private showMessage(message: string | TranslateResult) {
-    (this.$refs.message as HTMLElement).innerHTML = (message as string);
+    document.getElementById('messageTop').innerHTML = (message as string);
   }
 
   private showMessageDiv(message: string | TranslateResult) {
-    (this.$refs.messageDiv as HTMLElement).style.display = 'block';
+    document.getElementById('messageDivTop').style.display = 'block';
     this.showMessage(message);
     this.setMessageClass('alert-success');
   }
 
   private showMessageError(message: string | TranslateResult) {
-    (this.$refs.messageDiv as HTMLElement).style.display = 'block';
+    document.getElementById('messageDivTop').style.display = 'block';
     this.showMessage(message);
     this.setMessageClass('alert-danger');
   }
@@ -307,6 +326,35 @@ export default class OfflineCard extends BaseComponent {
     }, 100);
   }
 
+  private async addToExport() {
+    this.addingToExport = true;
+    setTimeout(async () => {
+      const cacheKeysSet = await getAllKeys();
+      const set = this.$store.state.offlineControl._baseLayer.getUrlsForAreaZooms(this.$store.state.minimalZoom, this.$store.state.maximalZoom, this.area) as Set<any>;
+      let missing = 0;
+      let ok = 0;
+      for(const url of set) {
+        if (cacheKeysSet.has(url.key)) {
+          this.keysToExport.push(url.key);
+          ok = ok + 1;
+        } else {
+          missing = missing + 1;
+        }
+      }
+      if (missing) {
+        if (window.confirm(this.$t('someTilesMissing', [missing]))) {
+          this.areasToExport.push(this.area.name + ': ' + this.layerName + ' (' + this.$store.state.minimalZoom + '-' + this.$store.state.maximalZoom + '): ' + ok);
+          this.addingToExport = false;
+        } else {
+          this.addingToExport = false;
+        }
+      } else {
+        this.areasToExport.push(this.area.name + ': ' + this.layerName + ' (' + this.$store.state.minimalZoom + '-' + this.$store.state.maximalZoom + '): ' + ok);
+        this.addingToExport = false;
+      }
+    }, 100);
+  }
+
   private readFile(data: any){
     return new Promise((resolve, reject) => {
       const fr = new FileReader();  
@@ -317,7 +365,15 @@ export default class OfflineCard extends BaseComponent {
     });
   }
 
-  private async exportOffline() {
+  private exportOffline() {
+    this.exportOfflineGeneric(null);
+  }
+
+  private exportOfflineSelection() {
+    this.exportOfflineGeneric(this.keysToExport);
+  }
+
+  private async exportOfflineGeneric(keys: string[]) {
     this.exporting = true;
     this.showMessageDiv(this.$t('starting'));
     const encode = TextEncoder.prototype.encode.bind(new TextEncoder);
@@ -326,7 +382,17 @@ export default class OfflineCard extends BaseComponent {
     const writer = fileStream.getWriter();
     let dbIndex = 1;
     for(const db of window.dbs) {
-      const results = await db.getItems(null);
+      let results = {};
+      if (keys) {
+        const maxVar = 999;
+        const iterNum = Math.floor(keys.length / maxVar) + 1;
+        for(let iter = 0; iter <= iterNum; iter++) {
+          const loopResults = await (db as LocalForage).getItems(keys.slice(iter * maxVar, iter * maxVar + maxVar));
+          results = {...results, ...loopResults};
+        }
+      } else {
+        const results = await db.getItems(null);
+      }
       let done = 0;
       let total = 0;
       for (const result in results) {
@@ -539,6 +605,7 @@ export default class OfflineCard extends BaseComponent {
   private onStoreMapChanged() {
     this.$store.state.map.on('baselayerchange', this.onBaseLayerChange);
     this.currentLayer = this.$store.state.baseMaps['OpenStreetMap'];
+    this.layerName = 'OpenStreetMap';
   }
 
   @Watch('$store.state.offlineControl')
