@@ -169,3 +169,4 @@ class Area(models.Model):
     description = models.TextField(null=False, default='', blank=True)
     points_json = models.TextField(null=False, default='', blank=True)
     color = ColorField(null=True, blank=True)
+    tile_indexes = models.TextField(null=False, default='', blank=True)

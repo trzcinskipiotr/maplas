@@ -81,64 +81,20 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
   getIndexSetForArea: function(bounds, zoom, area) {
     let tileBounds = null;
     if (area) {
-      const p1 = window.GLOBALVUE.$store.state.map.project(area.bounds().getNorthWest(), zoom);
-      const p2 = window.GLOBALVUE.$store.state.map.project(area.bounds().getSouthEast(), zoom);
-      const areaBounds = L.bounds(p1, p2);
-      tileBounds = L.bounds(
-        areaBounds.min.divideBy(this.getTileSize().x).floor(),
-        areaBounds.max.divideBy(this.getTileSize().x).floor()
-      );
+      return area.tileZoomIndexes[zoom];
     } else {
       tileBounds = L.bounds(
         bounds.min.divideBy(this.getTileSize().x).floor(),
         bounds.max.divideBy(this.getTileSize().x).floor()
       );
-    }
-      
-    const indexSet = new Set();
-    const points = {};
-    for (var i = tileBounds.min.x - 1; i <= tileBounds.max.x + 1; i += 1) {
-      points[i] = {};
-      for (var j = tileBounds.min.y - 1; j <= tileBounds.max.y + 1; j += 1) {
-        points[i][j] = new L.Point(i, j);
-      }
-    }
-    for (var j = tileBounds.min.y; j <= tileBounds.max.y; j += 1) {
-      for (var i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
-        const tileToUnproject = new L.Point(i * 256 + 128, j * 256 + 128)
-        const latLng = window.GLOBALVUE.$store.state.map.unproject(tileToUnproject, zoom);
-        const tileToAdd = false;
-        if (area) {
-          if (isPointInPolygon({latitude: latLng.lat, longitude: latLng.lng}, area.pointsGeoLib())) {
-            tileToAdd = true;
-          }
-        } else {
-          tileToAdd = true;
-        }
-        if (zoom <= 13) {
-          tileToAdd = true;
-        }
-        if (tileToAdd) {
-          for (let k = -1; k <= 1; k++) {
-            for (let l = -1; l <= 1; l++) {
-              indexSet.add(points[i + k][j + l]);
-            }
-          }
+      const indexSet = new Set();
+      for (let j = tileBounds.min.y; j <= tileBounds.max.y; j += 1) {
+        for (let i = tileBounds.min.x; i <= tileBounds.max.x; i += 1) {
+          indexSet.add([i, j]);
         }
       }
+      return indexSet;
     }
-    return indexSet;
-  },
-
-  getIndexSetForAreaZooms: function getIndexSetForAreaZooms(zoomMin, zoomMax, area) {
-    const set = new Set();
-    for(let zoom = zoomMin; zoom <= zoomMax; zoom++) {
-      const zoomSet = this.getIndexSetForArea(null, zoom, area);
-      for (const entry of zoomSet) {
-        set.add(entry);
-      }
-    }
-    return set;
   },
 
   getUrlsForAreaZooms: function getUrlsForAreaZooms(zoomMin, zoomMax, area) {
@@ -150,7 +106,7 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
       this.setUrl(origurl.replace('{z}', zoom), true);
       const indexSet = this.getIndexSetForArea(null, zoom, area);
       for (const index of indexSet) {
-        const tilePoint = new L.Point(index.x, index.y);
+        const tilePoint = new L.Point(index[0], index[1]);
         const url = L.TileLayer.prototype.getTileUrl.call(this$1, tilePoint);
         tiles.push({
           key: this$1._getStorageKey(url),
@@ -178,7 +134,7 @@ var TileLayerOffline = L.TileLayer.extend(/** @lends  TileLayerOffline */ {
     this.setUrl(this._url.replace('{z}', zoom), true);
     const indexSet = this.getIndexSetForArea(bounds, zoom, area);
     for (const index of indexSet) {
-      const tilePoint = new L.Point(index.x, index.y);
+      const tilePoint = new L.Point(index[0], index[1]);
       const url = L.TileLayer.prototype.getTileUrl.call(this$1, tilePoint);
       tiles.push({
         key: this$1._getStorageKey(url),

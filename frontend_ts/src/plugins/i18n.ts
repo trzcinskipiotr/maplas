@@ -194,6 +194,7 @@ en: {
   areasToExport: 'Areas to export',
   exportOfflineSelection: 'Export',
   clearSelection: 'Clear',
+  activateAreas: 'Activate areas',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -386,6 +387,7 @@ pl: {
   areasToExport: 'Obszary do exportu',
   exportOfflineSelection: 'Exportuj',
   clearSelection: 'Resetuj',
+  activateAreas: 'Aktywuj obszary',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

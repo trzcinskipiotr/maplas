@@ -135,6 +135,13 @@ import vSelect from 'vue-select';
 Vue.component('v-select', vSelect);
 import 'vue-select/dist/vue-select.css';
 
+declare global {
+  interface Window {
+    GLOBALVUE: Vue;
+    unique: number;
+  }
+}
+
 // @ts-ignore
 import VueSession from 'vue-session';
 Vue.use(VueSession, {persist: true});

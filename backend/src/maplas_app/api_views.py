@@ -89,4 +89,11 @@ class PhotoViewSet(ListModelMixin, CreateModelMixin, viewsets.GenericViewSet):
 class AreaViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
     queryset = Area.objects.all().order_by('id')
     pagination_class = LargeResultsSetPagination
-    serializer_class = serializers.AreaSerializer
+    basic_serializer_class = serializers.AreaSerializer
+    full_serializer_class =serializers.AreaSerializerFull
+
+    def get_serializer_class(self):
+        full = self.request.query_params.get('full', None)
+        if full:
+            return self.full_serializer_class
+        return self.basic_serializer_class

@@ -79,3 +79,9 @@ class AreaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Area
         fields = ['id', 'name', 'description', 'points_json', 'color']
+
+class AreaSerializerFull(serializers.ModelSerializer):
+
+    class Meta:
+        model = Area
+        fields = ['id', 'name', 'description', 'points_json', 'color', 'tile_indexes']

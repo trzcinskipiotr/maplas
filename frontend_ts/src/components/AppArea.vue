@@ -52,20 +52,24 @@ export default class AppArea extends BaseComponent {
     const obj = this.area.convertToApiSave();
     if (! this.area.onServer) {
       const name = prompt(this.$t('pleaseAreaName'));
-      obj.name = name;
-      axios.post(this.$store.state.appHost + `api/areas/`, obj)
-      .then((response: object) => {
-        this.area.id = response.data.id;
-        this.area.onServer = true;
-        this.area.name = name;
-        this.createAlert(AlertStatus.success, this.$t('areaSaved').toString(), 2000);
-      }).catch((response: object) => {
-        this.createAlert(AlertStatus.danger, this.$t('areaSavedError').toString(), 2000);
-      }).finally(() => {
+      if (name) {
+        obj.name = name;
+        axios.post(this.$store.state.appHost + `api/areas/?full=true`, obj)
+        .then((response: object) => {
+          this.area.id = response.data.id;
+          this.area.onServer = true;
+          this.area.name = name;
+          this.createAlert(AlertStatus.success, this.$t('areaSaved').toString(), 2000);
+        }).catch((response: object) => {
+          this.createAlert(AlertStatus.danger, this.$t('areaSavedError').toString(), 2000);
+        }).finally(() => {
+         this.areaSaving = false;
+        });
+      } else {
         this.areaSaving = false;
-      });
+      } 
     } else {
-      axios.put(this.$store.state.appHost + `api/areas/${this.area.id}/`, obj)
+      axios.put(this.$store.state.appHost + `api/areas/${this.area.id}/?full=true`, obj)
       .then((response: object) => {
         this.createAlert(AlertStatus.success, this.$t('areaSaved').toString(), 2000);
       }).catch((response: object) => {

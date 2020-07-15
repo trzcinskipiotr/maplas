@@ -14,8 +14,14 @@
           </select><br>
           {{ $t('selectArea') }} <select v-model="area">
             <option :value="null" :key="0">Cała warstwa / widoczny obszar</option>
-            <option v-for="area in $store.state.areas" :value="area" :key="area.unique">{{ area.name }}</option>
+            <template v-for="area in $store.state.areas">
+              <option :value="area" :key="area.unique" v-if="area.tile_indexes">{{ area.name }}</option>
+            </template>
           </select><br>
+          <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="activateAreas">
+            <font-awesome-icon v-if="activatingAreas" class="fa-spin" icon="spinner" />&nbsp;
+            {{ $t('activateAreas') }}
+          </button>&nbsp;
         </div>
         <div class="buttongroup">
           <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="deleteOffline">
@@ -107,6 +113,7 @@ import { TranslateResult } from 'vue-i18n';
 import { point } from 'leaflet';
 import Area from '@/ts/Area';
 import {getAllKeys, removeKeyFromDB, clearDBs, countKeysInDBs, countKeysInDBsSum} from '@/ts/utils/db';
+import axios from 'axios';
 
 @Component
 export default class OfflineCard extends BaseComponent {
@@ -120,6 +127,7 @@ export default class OfflineCard extends BaseComponent {
   private clearing = false;
   private countingGlobal = false;
   private addingToExport = false;
+  private activatingAreas = false;
   private totalImported = 0;
   private layerName = '';
   private allowDownloadThreads = [1, 3, 5, 10, 20, 30, 40, 50];
@@ -132,7 +140,7 @@ export default class OfflineCard extends BaseComponent {
   private areasToExport: string[] = [];
 
   private get operationInProgess() {
-    return this.exporting || this.importing || this.deleting || this.saving || this.counting || this.showZoomLoading || this.clearing || this.countingGlobal || this.addingToExport;
+    return this.exporting || this.importing || this.deleting || this.saving || this.counting || this.showZoomLoading || this.clearing || this.countingGlobal || this.addingToExport || this.activatingAreas;
   }
 
   private setMessageClass(className: string) {
@@ -654,7 +662,7 @@ export default class OfflineCard extends BaseComponent {
   }
 
   @Watch('area')
-  private onShowZoomChanged() {
+  private onShowAreaChanged() {
     if (this.offlineShowing) {
       this.removeShowOffline();
       this.offlineShowing = false;
@@ -681,10 +689,18 @@ export default class OfflineCard extends BaseComponent {
       }
       let indexes: any = [];
       let xindexes: any = {};
+      const xFirst = this.currentLayer._url.indexOf('{x}') < this.currentLayer._url.indexOf('{y}');
       for(const match of matches) {
         this.offlineShowingCount = this.offlineShowingCount + 1;
-        const x = parseInt(match[1]);
-        const y = parseInt(match[2]);
+        let x = 0;
+        let y = 0;
+        if (xFirst) {
+          x = parseInt(match[1]);
+          y = parseInt(match[2]);
+        } else {
+          x = parseInt(match[2]);
+          y = parseInt(match[1]);
+        }
         indexes.push([x, y]);
         if (! (x in xindexes)) {
           xindexes[x] = [];
@@ -741,6 +757,20 @@ export default class OfflineCard extends BaseComponent {
       this.showShowOffline();
     }
     this.offlineShowing = !this.offlineShowing; 
+  }
+
+  private async activateArea(area: Area) {
+    const response = await axios.get(this.$store.state.appHost + 'api/areas/' + area.id + '/?full=true')
+    area.tile_indexes = response.data.tile_indexes;
+    area.parseTileIndexes();
+  }
+
+  private async activateAreas() {
+    this.activatingAreas = true;
+    for(const area of this.$store.state.areas) {
+      await this.activateArea(area);
+    }
+    this.activatingAreas = false;
   }
 
 }
