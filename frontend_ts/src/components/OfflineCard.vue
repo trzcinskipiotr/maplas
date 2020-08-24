@@ -118,7 +118,7 @@ import axios from 'axios';
 @Component
 export default class OfflineCard extends BaseComponent {
 
-  private allowMinimalZoom = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19];
+  private allowMinimalZoom = [5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18];
   private exporting = false;
   private importing = false;
   private saving = false;
@@ -176,7 +176,7 @@ export default class OfflineCard extends BaseComponent {
 
   private get allowMaximalZoom() {
     const allow = [];
-    for(let i = this.$store.state.minimalZoom; i <= 19; i++) {
+    for(let i = this.$store.state.minimalZoom; i <= 18; i++) {
       allow.push(i);
     }
     return allow;
@@ -184,7 +184,7 @@ export default class OfflineCard extends BaseComponent {
 
   private get allowZoomToShow() {
     const allow = [];
-    for(let i = 5; i <= 19; i++) {
+    for(let i = 5; i <= 18; i++) {
       allow.push(i);
     }
     return allow;
@@ -192,7 +192,7 @@ export default class OfflineCard extends BaseComponent {
 
 
   private downloadOffline() {
-    if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline')) {
+    if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline') || (this.layerName == 'mapa-turystyczna.pl Offline')) {
       this.saving = true;
       this.$store.state.offlineControl._baseLayer.options.sims = this.$store.state.downloadThreads;
       setTimeout(() => this.$store.state.offlineControl._saveTiles(this.useCache, this.area), 100);
@@ -572,7 +572,7 @@ export default class OfflineCard extends BaseComponent {
       this.removeShowOffline();
       this.offlineShowing = false;
     }
-    if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline')) {
+    if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline') || (this.layerName == 'mapa-turystyczna.pl Offline')) {
       offlineControl.setLayer(this.$store.state.baseMaps[this.layerName]);
       offlineControl._baseLayer.on('savestart', (e: any) => {
         progress = 0;

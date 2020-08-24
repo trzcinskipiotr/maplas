@@ -701,6 +701,12 @@ export default class Index extends BaseComponent {
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
+    layers['mapaTurystycznaPLOffline'] = L.tileLayer.offline('https://m0.mapa-turystyczna.pl/map-xhdpi/{z}/{x}/{y}.v2224.png', {
+      maxZoom: 18,
+      attribution: attributionString || '<a target="_blank" href="https://mapa-turystyczna.pl" title="Serwis mapa-turystyczna.pl"><img alt="Serwis mapa-turystyczna.pl" src="https://mapa-turystyczna.pl/images/mapa-turystyczna-baner.png" width="100" height="36" /></a>',
+      errorTileUrl: 'img/tiledownloadfailed.jpg',
+    });
+
     //const corner1 = new L.LatLng(50.654115, 15.421577);
     //const corner2 = new L.LatLng(50.882941, 15.873678);
     //layers['karkonosze2016'] = L.imageOverlay('karkonosze2016.png', new L.LatLngBounds(corner1, corner2)).addTo(this.$store.state.map);
@@ -727,6 +733,7 @@ export default class Index extends BaseComponent {
       'Google hybrid': layers['googleHybrid'],
       'Hydda base': layers['hyddaBase'],
       'mapa-turystyczna.pl': layers['mapaTurystycznaPL'],
+      'mapa-turystyczna.pl Offline': layers['mapaTurystycznaPLOffline'],
     };
 
     this.$store.state.baseMaps = this.baseMaps;
