@@ -23,6 +23,7 @@
           <b>{{ $t('type') }}: </b><TrackTypeIcon :gpsTrack="track.gpsTrack" height=12 imgheight=12 verticalAlign="-2px"></TrackTypeIcon><br>
           <b>{{ $t('status') }}: </b><TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br>
           <b>{{ $t('id') }}: </b>{{ track.gpsTrack.id }}<br>
+          <b>{{ $t('photos') }}: </b>{{ track.gpsTrack.photos.length }} <font-awesome-icon v-if="track.gpsTrack.photos.length" ref="fullResImage" @click="makeFullResGallery" style="height: 24px; cursor: pointer" icon="search-plus"/><br>
           <template v-if="track.gpsTrack.gpx_file"><b>{{ $t('gpxFile') }}: </b>{{ track.gpsTrack.gpx_file.length|roundFileBytes }} <button @click="saveGPX" type="button" class="btn btn-primary btn-sm">Download</button><br><br></template>
           <template v-if="track.gpsTrack.gpx_file"><button @click="showHideTimeLables" type="button" class="btn btn-primary btn-sm">{{ timeLabelsVisible ? $t('hideTimeLabels') : $t('showTimeLabels') }}</button></template>&nbsp;
           <template v-if="track.gpsTrack.gpx_file"><button @click="showHideSpeedLables" type="button" class="btn btn-primary btn-sm">{{ speedLabelsVisible ? $t('hideSpeedLabels') : $t('showSpeedLabels') }}</button></template>&nbsp;&nbsp;
@@ -70,6 +71,30 @@ export default class TrackDetails extends BaseComponent {
       trackBounds.extend(mapTrack.getBounds());
     }
     this.$store.state.map.fitBounds(trackBounds);
+  }
+
+  private replaceHTTP(url: string) {
+    if (! (window.location.hostname === 'localhost')) {
+      return url.replace('http://', 'https://');
+    }
+    return url;
+  }
+
+
+  private makeFullResGallery() {
+    const fullRess: Array<{src: string, thumb: string}> = [];
+    for (const photo of this.track.gpsTrack.photos) {
+      const fullRes = {src: this.replaceHTTP(photo.image), thumb: this.replaceHTTP(photo.image_thumb)};
+      fullRess.push(fullRes);
+    }
+    const time = new Date().getTime();
+    window.lightGallery(this.$refs.fullResImage, {
+      dynamic: true,
+      autoplay: true,
+      pause: 2000,
+      galleryId: time,
+      dynamicEl: fullRess,
+    });
   }
 
   public onDrawLayer(info: any) {

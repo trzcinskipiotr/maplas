@@ -4,6 +4,7 @@ import Segment from './Segment';
 import { TrackStatus } from './types';
 import { distanceBetweenPoints } from './utils/coords';
 import { getCenter } from 'geolib';
+import Photo from './Photo';
 
 export default class Track {
 

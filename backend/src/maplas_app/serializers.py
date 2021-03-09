@@ -2,44 +2,6 @@ from rest_framework import serializers
 
 from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area
 
-
-class RegionSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Region
-        fields = ['id', 'name']
-
-class TrackSerializerRegionNested(serializers.ModelSerializer):
-    region = RegionSerializer()
-
-    class Meta:
-        model = Track
-        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region']
-
-class TrackSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = Track
-        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'gpx_file', 'upload_user']
-
-class TrackSerializerNoGpx(serializers.ModelSerializer):
-
-    class Meta:
-        model = Track
-        fields = ['id', 'name', 'description', 'color', 'points_json', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'upload_user']
-
-class TrackSerializerFull(serializers.ModelSerializer):
-
-    class Meta:
-        model = Track
-        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'points_json', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'gpx_file', 'upload_user']
-
-class PlaceTypeSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        model = PlaceType
-        fields = ['id', 'name']
-
 class PhotoSerializerUrlNested(serializers.ModelSerializer):
     image_fullhd = serializers.SerializerMethodField()
     image_thumb = serializers.SerializerMethodField()
@@ -54,11 +16,50 @@ class PhotoSerializerUrlNested(serializers.ModelSerializer):
         model = Photo
         fields = ['id', 'name', 'exif_time_taken', 'org_filename', 'description', 'image', 'image_fullhd', 'image_thumb']
 
+class RegionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Region
+        fields = ['id', 'name']
+
+class TrackSerializerRegionNested(serializers.ModelSerializer):
+    photo_set = PhotoSerializerUrlNested(many=True)
+    region = RegionSerializer()
+
+    class Meta:
+        model = Track
+        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'photo_set']
+
+class TrackSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Track
+        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'gpx_file', 'upload_user']
+
+class TrackSerializerNoGpx(serializers.ModelSerializer):
+
+    class Meta:
+        model = Track
+        fields = ['id', 'name', 'description', 'color', 'points_json', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'upload_user']
+
+class TrackSerializerFull(serializers.ModelSerializer):
+    photo_set = PhotoSerializerUrlNested(many=True)
+
+    class Meta:
+        model = Track
+        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'points_json', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'gpx_file', 'upload_user', 'photo_set']
+
+class PlaceTypeSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = PlaceType
+        fields = ['id', 'name']
+
 class PhotoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Photo
-        fields = ['id', 'name', 'org_filename', 'description', 'place', 'image']
+        fields = ['id', 'name', 'org_filename', 'description', 'place', 'track', 'exif_lat', 'exif_lon', 'image']
 
 class PlaceSerializerTypeNested(serializers.ModelSerializer):
     type = PlaceTypeSerializer(many=False)

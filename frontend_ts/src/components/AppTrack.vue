@@ -109,10 +109,41 @@
                   <color-popover :track="track" type="save"></color-popover>
                 </td>  
               </tr>
+              <tr v-if="track.onServer">
+                <th scope="row">{{ $t('photos') }}</th>
+                <td>
+                  <table v-for="photo in track.gpsTrack.photos" :key="photo.id" class="" style="display: inline; margin: 10px;">
+                    <tr><td>
+                      <img :src="photo.image_thumb" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
+                    </td></tr>
+                    <tr><td>
+                      <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
+                    </td></tr>    
+                  </table>
+                  <table v-for="photo in photos" :key="photo.id" class="" style="display: inline; margin: 10px;">
+                    <tr><td>
+                      <img :src="photo.src" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
+                    </td></tr>
+                    <tr><td>
+                      <font-awesome-icon style="cursor: pointer; width: 16px; height: 16px;" icon="trash" v-on:click="removePhoto(photo)"/>
+                      <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
+                    </td></tr>    
+                  </table>
+                  <div id="photouploaddivinner2" style="width: 48px; height: 48px;" @click="openPhotoImportFileInput" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="$t('importPhotoFile')">
+                    <input id="importPhotoFileInput" type="file" style="display:none;" accept=".jpg" v-on:change="importPhotoFile" multiple />
+                    <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="camera"/>
+                  </div>
+                </td>
+              </tr>
             </tbody>    
           </table>
           <div class="modal-footer">
-            <button type="button" class="btn btn-success" @click="track.onServer ? saveTrackModal() : saveUploadTrackModal()">
+            <div style="width: 50%" v-if="trackSaving"><b-progress :max="100" show-progress animated>
+              <b-progress-bar :value="progress" show-progress animated>
+                <strong>{{ progress.toFixed(0) }}%</strong>
+              </b-progress-bar>
+            </b-progress></div>
+            <button type="button" class="btn btn-success" :disabled="trackSaving" @click="track.onServer ? saveTrackModal() : saveUploadTrackModal()">
               <strong><template v-if="trackSaving"><font-awesome-icon class="fa-spin" icon="spinner" />&nbsp;</template>{{ $t('save') }}</strong>
             </button>
             <button type="button" class="btn btn-primary" @click="closeUploadTrackModal">
@@ -139,6 +170,7 @@ import FileSaver from 'file-saver';
 import {formatDate, formatTimeSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes} from '@/ts/utils';
 import gpxParse from 'gpx-parse';
 import { speedBetweenPoints, roundCoord, distanceBetweenPoints } from '@/ts/utils/coords';
+import Photo from '@/ts/Photo';
 
 @Component
 export default class AppTrack extends BaseComponent {
@@ -154,6 +186,8 @@ export default class AppTrack extends BaseComponent {
   private uploadRegions: Array<{translate: string, label: string, value: Region}> = [];
   private rulerActive = false;
 
+  public photos = [];
+
   private trackSaving: boolean = false;
 
   @Prop({ required: true }) private track: Track;
@@ -161,6 +195,10 @@ export default class AppTrack extends BaseComponent {
 
   private uploadName = this.track.gpsTrack.name;
   private description = '';
+
+  public progress = 0;
+  private photosToUpload = 0;
+  private photosUploaded = 0;
 
   public constructor() {
     super();
@@ -176,6 +214,58 @@ export default class AppTrack extends BaseComponent {
       this.uploadTrackTypes = [{translate: 'mushroomTrack', label: '', imgsrc: 'img/mushroom.svg', value: TrackType.mushroom}];
     }
     this.uploadTrackType = this.uploadTrackTypes[0];
+  }
+
+  private onUploadProgress(progressEvent: ProgressEvent) {
+    if (this.photosToUpload == 0) {
+      this.progress = 100;
+    } else {
+      let part = this.photosUploaded / this.photosToUpload;
+      let currentPart = ((progressEvent.loaded / progressEvent.total) / this.photosToUpload)
+      this.progress = (part + currentPart) * 100
+    }
+  }
+
+  private arrayBufferToBase64(buffer) {
+    var arrayBufferView = new Uint8Array(buffer);
+    var blob = new Blob( [ arrayBufferView ], { type: "image/jpeg" } );
+    var urlCreator = window.URL || window.webkitURL;
+    var imageUrl = urlCreator.createObjectURL(blob);
+    return imageUrl;
+  }
+
+  public removePhoto(photo) {
+    this.photos.splice(this.photos.indexOf(photo), 1);
+  }
+
+  private openPhotoImportFileInput() {
+    $('#importPhotoFileInput').click();
+  }
+
+  private createPromiseFromFileReader(file: any) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();  
+      reader.onload = (onLoadEvent: Event) => {
+        resolve((onLoadEvent.target as FileReaderEventTarget).result)
+      };
+      reader.onerror = () => {
+        reject()
+      }
+      reader.readAsArrayBuffer(file);
+    });
+  }
+
+  private async importPhotoFile(event: Event) {
+    const files = (event.target! as HTMLInputElement).files;
+    if (!files || !files.length) {
+      return;
+    }
+    for (const file of files) {
+      const buffer = await this.createPromiseFromFileReader(file);
+      const now = new Date();
+      this.photos.push({'src': this.arrayBufferToBase64(buffer), 'buffer': buffer, 'id': now.getTime(), 'org_filename': file.name});
+    };
+    $('#importPhotoFileInput').val('');
   }
 
   private refreshTooltip() {
@@ -258,7 +348,25 @@ export default class AppTrack extends BaseComponent {
     }
   }
 
-  private saveTrackModal() {
+  private refreshTrackPhotos() {
+    this.track.gpsTrack.photos = [];
+    axios.get(this.$store.state.appHost + 'api/tracks/' + this.track.gpsTrack.id + '/').then(
+      (response) => {
+        for (const responsePhoto of response.data.photo_set) {
+          const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
+          this.track.gpsTrack.addPhoto(photo);
+        }
+      }
+    ).catch(
+      (response) => {
+        this.createAlert(AlertStatus.danger, this.$t('trackRefreshError').toString(), 2000);
+      },
+    );
+  }
+
+  private async saveTrackModal() {
+    this.photosToUpload = this.photos.length;
+    this.photosUploaded = 0;
     const obj = this.track.gpsTrack.convertToApiTrackSave();
     obj.name = this.uploadName;
     obj.region = this.uploadRegion ? this.uploadRegion.value.id : undefined;
@@ -279,20 +387,33 @@ export default class AppTrack extends BaseComponent {
     }
     this.trackSaving = true;
     const nogpx = this.track.gpsTrack.status === TrackStatus.done ? '' : '?nogpx=true';
-    axios.put(this.$store.state.appHost + `api/tracks/${this.track.gpsTrack.id}/` + nogpx, obj)
-      .then((response: object) => {
-        this.track.gpsTrack.region = this.uploadRegion ? this.uploadRegion.value : undefined;
-        this.track.gpsTrack.name = obj.name;
-        this.track.gpsTrack.description = obj.description;
-        this.track.gpsTrack.color = obj.color;
-        this.track.gpsTrack.type = obj.type;
-        this.createAlert(AlertStatus.success, this.$t('trackSaved').toString(), 2000);
-        this.closeUploadTrackModal();
-      }).catch((response: object) => {
-        this.createAlert(AlertStatus.danger, this.$t('trackSavedError').toString(), 2000);
-      }).finally(() => {
-        this.trackSaving = false;
-      });
+    try {
+      const response = await axios.put(this.$store.state.appHost + `api/tracks/${this.track.gpsTrack.id}/` + nogpx, obj)
+      this.track.gpsTrack.region = this.uploadRegion ? this.uploadRegion.value : undefined;
+      this.track.gpsTrack.name = obj.name;
+      this.track.gpsTrack.description = obj.description;
+      this.track.gpsTrack.color = obj.color;
+      this.track.gpsTrack.type = obj.type;
+      for(let photo of this.photos) {
+        let form_data = new FormData();
+        form_data.append('name', '');
+        form_data.append('description', '');
+        form_data.append('org_filename', photo.org_filename);
+        form_data.append('track', this.track.gpsTrack.id);
+        form_data.append('image', new Blob([new Uint8Array(photo.buffer)], {type: 'image/jpeg'}), '1.jpg');
+        let headers = {'Accept': 'application/json', 'Content-Type': 'multipart/form-data'}
+        let response_photo = await axios.post(this.$store.state.appHost + 'api/photos/', form_data, {headers: headers, onUploadProgress: this.onUploadProgress})
+        this.photosUploaded = this.photosUploaded + 1;
+      }
+      this.createAlert(AlertStatus.success, this.$t('trackSaved').toString(), 2000);
+      this.refreshTrackPhotos();
+      this.closeUploadTrackModal();
+    } catch(response) {
+      this.createAlert(AlertStatus.danger, this.$t('trackSavedError').toString(), 2000);
+    } finally {
+      this.trackSaving = false;
+      this.photos = [];
+    }
   }
 
   private showUploadModal() {

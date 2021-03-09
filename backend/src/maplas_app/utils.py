@@ -4,6 +4,8 @@ import gpxpy
 import json
 import rdp
 
+from gpxpy.geo import haversine_distance
+
 from django.conf import settings
 
 from maplas_app.models import Track
@@ -20,7 +22,19 @@ def convert_gpx_string_to_array(gpx_file_string):
             for point in segment.points:
                 points.append([point.latitude, point.longitude])
             segments.append(points)
-        tracks.append((gpx.name, distance, start_time, end_time, segments))
+        new_segments = []
+        new_segment = []
+        last_point = None
+        for index_s, segment in enumerate(segments):
+            for index_p, point in enumerate(segment):
+                if (index_p == 0) and (last_point):
+                    if haversine_distance(last_point[0], last_point[1], point[0], point[1]) >= settings.MERGE_SEGMENT_DISTANCE:
+                        new_segments.append(new_segment)
+                        new_segment = []
+                new_segment.append(point)
+                last_point = point
+        new_segments.append(new_segment)
+        tracks.append((gpx.name, distance, start_time, end_time, new_segments))
     return tracks
 
 def create_track_from_gpx_file(filename):

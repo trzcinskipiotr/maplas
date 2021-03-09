@@ -1094,6 +1094,10 @@ export default class Index extends BaseComponent {
           }
         }
         const track = new Track(newGpstrack, checked, true);
+        for (const responsePhoto of gpstrack.photo_set) {
+          const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
+          newGpstrack.addPhoto(photo);
+        }
         if (newGpstrack.isDoneTrack()) {
           tracks.push(track);
         } else {
