@@ -84,7 +84,7 @@
                   </td></tr>    
                 </table>
                 <div id="photouploaddivinner2" style="width: 48px; height: 48px;" @click="openPhotoImportFileInput" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="$t('importPhotoFile')">
-                  <input id="importPhotoFileInput" type="file" style="display:none;" accept=".jpg" v-on:change="importPhotoFile" multiple />
+                  <input ref="importPhotoFileInput" type="file" style="display:none;" accept=".jpg" v-on:change="importPhotoFile" multiple />
                   <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="camera"/>
                 </div>
               </td>
@@ -181,7 +181,7 @@ export default class SaveTrackModal extends BaseComponent {
   }
 
   private openPhotoImportFileInput() {
-    $('#importPhotoFileInput').click();
+    $(this.$refs.importPhotoFileInput).click();
   }
 
   private createPromiseFromFileReader(file: any) {
@@ -207,7 +207,7 @@ export default class SaveTrackModal extends BaseComponent {
       const now = new Date();
       this.photos.push({'src': this.arrayBufferToBase64(buffer), 'buffer': buffer, 'id': now.getTime(), 'org_filename': file.name});
     };
-    $('#importPhotoFileInput').val('');
+    $(this.$refs.importPhotoFileInput).val('');
   }
 
   private refreshTrackPhotos() {
