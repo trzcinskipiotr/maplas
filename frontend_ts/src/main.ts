@@ -86,6 +86,7 @@ import TrackDetails from '@/components/TrackDetails.vue';
 import OfflineCard from '@/components/OfflineCard.vue';
 import AppArea from '@/components/AppArea.vue';
 import Areas from '@/components/Areas.vue';
+import SaveTrackModal from '@/components/SaveTrackModal.vue';
 Vue.component('AppTrack', AppTrack);
 Vue.component('AppTrackGroup', AppTrackGroup);
 Vue.component('TrackStatusIcon', TrackStatusIcon);
@@ -102,6 +103,7 @@ Vue.component('TrackDetails', TrackDetails);
 Vue.component('OfflineCard', OfflineCard);
 Vue.component('AppArea', AppArea);
 Vue.component('Areas', Areas);
+Vue.component('SaveTrackModal', SaveTrackModal);
 
 import {formatDate, formatDateSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes, formatDateSecondsEpoch} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);

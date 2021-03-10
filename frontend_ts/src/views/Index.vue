@@ -191,7 +191,18 @@
       <b-tooltip :target="document.getElementsByClassName('leaflet-control-zoom-out')[0]">{{ $t('zoomOut') }}</b-tooltip>
     </template>
     <template v-if="$store.state.isDesktop">
-      <TrackDetails v-for="track in $store.state.tracks" :track="track" :key="track.gpsTrack.id"></TrackDetails>
+      <span>
+        <TrackDetails v-for="track in $store.state.tracks" :track="track" :key="track.gpsTrack.id"></TrackDetails>
+      </span>
+      <span>
+        <TrackDetails v-for="track in $store.state.imports" :track="track" :key="track.gpsTrack.id"></TrackDetails>
+      </span>
+      <span>  
+        <SaveTrackModal v-for="track in $store.state.tracks" :track="track" :key="track.gpsTrack.id"></SaveTrackModal>
+      </span>
+      <span>  
+        <SaveTrackModal v-for="track in $store.state.imports" :track="track" :key="track.gpsTrack.id"></SaveTrackModal>
+      </span>
     </template>  
     <NewPlace></NewPlace>
   </div>  

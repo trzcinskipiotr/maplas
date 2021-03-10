@@ -13,8 +13,12 @@ export default class GpsTrack {
 
     /* tslint:disable-next-line */
     constructor(public id: number, public name: string, public description: string, public points_json_optimized: string, public color: string, public distance: number, public status: TrackStatus, public type: TrackType, public start_time: Date, public end_time: Date, public gpx_file: string, public region: Region) {
-      this.segments = [];
       this.photos = [];
+      this.refreshSegments();
+    }
+
+    public refreshSegments() {
+      this.segments = [];
       for (const segment of JSON.parse(this.points_json_optimized)) {
         const segmentObj = new Segment(segment);
         this.segments.push(segmentObj);

@@ -135,7 +135,7 @@ export default class Track {
     }
   }
 
-  public moveMarker(map: L.Map) {
+  public removeMapObjects(map: L.Map) {
     for (const mapTrack of this.mapTracks) {
       mapTrack.removeFrom(map);
     }
@@ -154,6 +154,15 @@ export default class Track {
     if (this.finishMarker) {
       this.finishMarker.removeFrom(map);
     }
+  }
+
+  public refreshMapObjects(map: L.Map) {
+    this.removeMapObjects(map);
+    this.createMapObjects(map);
+  }
+
+  public moveMarker(map: L.Map) {
+    this.removeMapObjects(map);
     this.createMapObjects(map);
     if (this.gpsTrack.segments.length) {
       this.gpsTrack.segments[0].calculateDistance();

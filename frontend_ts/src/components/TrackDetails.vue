@@ -3,6 +3,11 @@
     <div ref="detailsWindow" class="detailsWindow card" v-show="track.maximized">
       <div ref="detailsWindowHeader" class="detailsWindowHeader card-header" style="width: 500px">
         <span v-b-tooltip.hover :title="$t('centerTrack')"><font-awesome-icon @click="centerTrack" style="cursor: pointer" icon="search-location"/></span>&nbsp;
+        <span v-if="($store.state.user) && ($store.state.isDesktop)">
+          <span v-if="track.onServer" v-b-tooltip.hover :title="$t('saveTrack')"><font-awesome-icon @click="showUploadModal" style="cursor: pointer" icon="save"/></span>
+          <span v-else v-b-tooltip.hover :title="$t('uploadTrack')"><font-awesome-icon @click="showUploadModal" style="cursor: pointer" icon="upload"/></span>
+          <span style='margin-right: 3px;'></span>
+        </span>
         <div style="display: inline" class="custom-control custom-checkbox" :id="'detailstrackcheckbox' + track.gpsTrack.id">
           <input type="checkbox" class="custom-control-input" :id="'detailscheckbox' + track.gpsTrack.id" v-model="track.checked" />
           <label style="margin-right: 2px;" class="custom-control-label" :for="'detailscheckbox' + track.gpsTrack.id">{{ track.gpsTrack.name }}</label>
@@ -17,13 +22,14 @@
       <div ref="maximizedBody" class="card-body">
         <center v-if="trackDetailsLoading"><font-awesome-icon class="fa-spin" icon="spinner" size="4x"/></center>
         <div v-else>
-          <b>{{ $t('name') }}: </b>{{ track.gpsTrack.name }}<br>
-          <b>{{ $t('startTime') }}: </b>{{ track.gpsTrack.start_time|formatDate }}<br>
-          <b>{{ $t('distance') }}: </b>{{ track.gpsTrack.distance|roundTrackDistance }}<br>
-          <b>{{ $t('type') }}: </b><TrackTypeIcon :gpsTrack="track.gpsTrack" height=12 imgheight=12 verticalAlign="-2px"></TrackTypeIcon><br>
-          <b>{{ $t('status') }}: </b><TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br>
-          <b>{{ $t('id') }}: </b>{{ track.gpsTrack.id }}<br>
-          <b>{{ $t('photos') }}: </b>{{ track.gpsTrack.photos.length }} <font-awesome-icon v-if="track.gpsTrack.photos.length" ref="fullResImage" @click="makeFullResGallery" style="height: 24px; cursor: pointer" icon="search-plus"/><br>
+          <b>{{ $t('name') }}</b>: {{ track.gpsTrack.name }}<br>
+          <span v-if="track.gpsTrack.description"><b>{{ $t('description') }}</b>: {{ track.gpsTrack.description }}<br></span>
+          <b>{{ $t('startTime') }} </b>:{{ track.gpsTrack.start_time|formatDate }}<br>
+          <b>{{ $t('distance') }}</b>: {{ track.gpsTrack.distance|roundTrackDistance }}<br>
+          <span v-if="track.onServer"><b>{{ $t('type') }}</b>: <TrackTypeIcon :gpsTrack="track.gpsTrack" height=12 imgheight=12 verticalAlign="-2px"></TrackTypeIcon><br></span>
+          <span v-if="track.onServer"><b>{{ $t('status') }}</b>: <TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br></span>
+          <b>{{ $t('id') }}</b>: {{ track.gpsTrack.id }}<br>
+          <b>{{ $t('photos') }}</b>: {{ track.gpsTrack.photos.length }} <font-awesome-icon v-if="track.gpsTrack.photos.length" ref="fullResImage" @click="makeFullResGallery" style="height: 24px; cursor: pointer" icon="search-plus"/><br>
           <template v-if="track.gpsTrack.gpx_file"><b>{{ $t('gpxFile') }}: </b>{{ track.gpsTrack.gpx_file.length|roundFileBytes }} <button @click="saveGPX" type="button" class="btn btn-primary btn-sm">Download</button><br><br></template>
           <template v-if="track.gpsTrack.gpx_file"><button @click="showHideTimeLables" type="button" class="btn btn-primary btn-sm">{{ timeLabelsVisible ? $t('hideTimeLabels') : $t('showTimeLabels') }}</button></template>&nbsp;
           <template v-if="track.gpsTrack.gpx_file"><button @click="showHideSpeedLables" type="button" class="btn btn-primary btn-sm">{{ speedLabelsVisible ? $t('hideSpeedLabels') : $t('showSpeedLabels') }}</button></template>&nbsp;&nbsp;
@@ -45,6 +51,7 @@ import FileSaver from 'file-saver';
 import { speedBetweenPoints } from '@/ts/utils/coords';
 import gpxParse from 'gpx-parse';
 import $ from 'jquery';
+import { EventBus } from '@/ts/EventBus';
 
 @Component
 export default class TrackDetails extends BaseComponent {
@@ -71,6 +78,11 @@ export default class TrackDetails extends BaseComponent {
       trackBounds.extend(mapTrack.getBounds());
     }
     this.$store.state.map.fitBounds(trackBounds);
+  }
+
+  private showUploadModal() {
+    EventBus.$emit('openSaveTrackModal' + this.track.gpsTrack.id);
+    this.track.maximized = false;
   }
 
   private replaceHTTP(url: string) {
