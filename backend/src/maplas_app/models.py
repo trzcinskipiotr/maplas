@@ -138,10 +138,12 @@ class Photo(models.Model):
         filename = "{}.{}".format(uuid.uuid4(), ext)
         return os.path.join('photos', filename)
 
+    private = models.BooleanField(db_index=True, null=False, default=False)
+
     name = models.CharField(max_length=2000, null=False, default='', blank=True)
     description = models.CharField(max_length=2000, null=False, default='', blank=True)
-    place = models.ForeignKey(Place, null=True, on_delete=models.CASCADE)
-    track = models.ForeignKey(Track, null=True, on_delete=models.CASCADE)
+    place = models.ForeignKey(Place, null=True, on_delete=models.CASCADE, blank=True)
+    track = models.ForeignKey(Track, null=True, on_delete=models.CASCADE, blank=True)
     org_filename = models.CharField(max_length=256, null=True, blank=True)
     image = models.ImageField(upload_to=get_file_path, null=False)
     image_fullhd = ImageSpecField(source='image',
@@ -157,7 +159,7 @@ class Photo(models.Model):
     exif_lon = models.FloatField(null=True, blank=True)
 
     def save(self, *args, **kwargs):
-        if (not self.exif_time_taken) or (not self.lat) or (not self.lon):
+        if (not self.exif_time_taken) or (not self.exif_lat) or (not self.exif_lon):
             tags = exifread.process_file(self.image, details=False)
             if 'EXIF DateTimeOriginal' in tags:
                 date_time_obj = datetime.datetime.strptime(str(tags['EXIF DateTimeOriginal']), '%Y:%m:%d %H:%M:%S')

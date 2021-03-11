@@ -14,7 +14,7 @@ class PhotoSerializerUrlNested(serializers.ModelSerializer):
 
     class Meta:
         model = Photo
-        fields = ['id', 'name', 'exif_time_taken', 'org_filename', 'description', 'image', 'image_fullhd', 'image_thumb']
+        fields = ['id', 'name', 'exif_time_taken', 'org_filename', 'description', 'image', 'image_fullhd', 'image_thumb', 'private']
 
 class RegionSerializer(serializers.ModelSerializer):
 
@@ -23,8 +23,15 @@ class RegionSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 class TrackSerializerRegionNested(serializers.ModelSerializer):
-    photo_set = PhotoSerializerUrlNested(many=True)
+    photo_set = serializers.SerializerMethodField()
     region = RegionSerializer()
+
+    def get_photo_set(self, track):
+        user = self.context['request'].user
+        if (user) and (user.is_authenticated):
+            return PhotoSerializerUrlNested(track.photo_set, many=True, context=self.context).data
+        else:
+            return PhotoSerializerUrlNested(track.photo_set.filter(private=False), many=True, context=self.context).data
 
     class Meta:
         model = Track
@@ -43,7 +50,14 @@ class TrackSerializerNoGpx(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'color', 'points_json', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'upload_user']
 
 class TrackSerializerFull(serializers.ModelSerializer):
-    photo_set = PhotoSerializerUrlNested(many=True)
+    photo_set = serializers.SerializerMethodField()
+
+    def get_photo_set(self, track):
+        user = self.context['request'].user
+        if (user) and (user.is_authenticated):
+            return PhotoSerializerUrlNested(track.photo_set, many=True, context=self.context).data
+        else:
+            return PhotoSerializerUrlNested(track.photo_set.filter(private=False), many=True, context=self.context).data
 
     class Meta:
         model = Track
@@ -59,7 +73,7 @@ class PhotoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Photo
-        fields = ['id', 'name', 'org_filename', 'description', 'place', 'track', 'exif_lat', 'exif_lon', 'image']
+        fields = ['id', 'name', 'org_filename', 'description', 'place', 'track', 'exif_lat', 'exif_lon', 'image', 'private']
 
 class PlaceSerializerTypeNested(serializers.ModelSerializer):
     type = PlaceTypeSerializer(many=False)

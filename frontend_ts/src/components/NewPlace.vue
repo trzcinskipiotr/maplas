@@ -259,7 +259,7 @@ export default class NewPlace extends BaseComponent {
         const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name);
         const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, responsePlace.approved, this.$store.state.map.getZoom(), !!this.$store.state.user);
         for (const responsePhoto of responsePlace.photo_set) {
-          const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
+          const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private);
           place.addPhoto(photo);
         }
         this.$store.commit('addPlace', place);

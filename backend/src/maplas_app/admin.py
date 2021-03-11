@@ -35,7 +35,7 @@ class PlaceAdmin(admin.ModelAdmin):
 
 @admin.register(Photo)
 class PhotoAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'description', 'org_filename', 'exif_time_taken', 'exif_lat', 'exif_lon', 'place', 'track', 'image', 'image_fullhd', 'image_thumb')
+    list_display = ('id', 'name', 'description', 'org_filename', 'exif_time_taken', 'exif_lat', 'exif_lon', 'place', 'track', 'image', 'image_fullhd', 'image_thumb', 'private')
     admin_thumbnail = AdminThumbnail(image_field='image')
     search_fields = ('id', 'name', 'description', 'place__name')
     readonly_fields = ('image',)

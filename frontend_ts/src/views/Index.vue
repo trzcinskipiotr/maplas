@@ -361,6 +361,7 @@ export default class Index extends BaseComponent {
         this.createAlert(AlertStatus.success, this.$t('logInSuccess').toString(), 2000);
         this.$store.commit('setToken', {token: response.data.auth_token, vue: this});
         this.refreshLoginInfo(false);
+        this.refreshPhotos();
       },
     ).catch(
       (response) => {
@@ -375,6 +376,7 @@ export default class Index extends BaseComponent {
   private logOutFromApi() {
     axios.post(this.$store.state.appHost + 'api/auth/token/logout/').then(
       (response) => {
+        
         /* empty */
       },
     ).catch(
@@ -386,6 +388,7 @@ export default class Index extends BaseComponent {
         this.createAlert(AlertStatus.success, this.$t('logOutSuccess').toString(), 2000);
         this.$store.commit('setToken', {token: '', vue: this});
         this.$store.commit('setUser', null);
+        this.refreshPhotos();
       },
     );
   }
@@ -1024,7 +1027,7 @@ export default class Index extends BaseComponent {
       const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name);
       const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, responsePlace.approved, this.$store.state.map.getZoom(), !!this.$store.state.user);
       for (const responsePhoto of responsePlace.photo_set) {
-        const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
+        const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private);
         place.addPhoto(photo);
       }
       places.push(place);
@@ -1086,6 +1089,23 @@ export default class Index extends BaseComponent {
     );
   }
 
+  private refreshPhotos() {
+    const endPoint = this.$store.state.appHost + 'api/tracks/' + (process.env.VUE_APP_TRACKS_QUERY || '');
+    axios.get(endPoint).then((response) => {
+      for (const gpstrack of response.data.results) {
+        for (const currentTrack of this.$store.state.tracks) {
+          if (gpstrack.id === currentTrack.gpsTrack.id) {
+            currentTrack.gpsTrack.photos = [];
+            for (const responsePhoto of gpstrack.photo_set) {
+              const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private);
+              currentTrack.gpsTrack.addPhoto(photo);
+            }
+          }
+        }
+      }
+    })
+  }
+
   private processTracks(results: any) {
     const tracks = [];
     const plannedTracks = [];
@@ -1106,7 +1126,7 @@ export default class Index extends BaseComponent {
         }
         const track = new Track(newGpstrack, checked, true);
         for (const responsePhoto of gpstrack.photo_set) {
-          const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
+          const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private);
           newGpstrack.addPhoto(photo);
         }
         if (newGpstrack.isDoneTrack()) {

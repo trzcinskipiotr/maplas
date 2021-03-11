@@ -71,6 +71,7 @@
                     <img :src="photo.image_thumb" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
                   </td></tr>
                   <tr><td>
+                    <font-awesome-icon v-if="photo.private" style="width: 16px; height: 16px; margin-right: 2px" icon="key" />
                     <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
                   </td></tr>    
                 </table>
@@ -79,7 +80,11 @@
                     <img :src="photo.src" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
                   </td></tr>
                   <tr><td>
-                    <font-awesome-icon style="cursor: pointer; width: 16px; height: 16px;" icon="trash" v-on:click="removePhoto(photo)"/>
+                    <font-awesome-icon style="cursor: pointer; width: 16px; height: 16px; margin-right: 2px" icon="trash" v-on:click="removePhoto(photo)"/>
+                    <div style="display: inline" class="custom-control custom-checkbox" v-b-tooltip.hover :title="$t('setAsPrivate')">
+                      <input type="checkbox" class="custom-control-input" :id="'checkbox' + photo.id" v-model="photo.private" />
+                      <label style="margin-right: 2px;" class="custom-control-label" :for="'checkbox' + photo.id"></label>
+                    </div>
                     <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
                   </td></tr>    
                 </table>
@@ -205,7 +210,7 @@ export default class SaveTrackModal extends BaseComponent {
     for (const file of files) {
       const buffer = await this.createPromiseFromFileReader(file);
       const now = new Date();
-      this.photos.push({'src': this.arrayBufferToBase64(buffer), 'buffer': buffer, 'id': now.getTime(), 'org_filename': file.name});
+      this.photos.push({'src': this.arrayBufferToBase64(buffer), 'buffer': buffer, 'id': now.getTime(), 'org_filename': file.name, 'private': false});
     };
     $(this.$refs.importPhotoFileInput).val('');
   }
@@ -215,7 +220,7 @@ export default class SaveTrackModal extends BaseComponent {
     axios.get(this.$store.state.appHost + 'api/tracks/' + this.track.gpsTrack.id + '/').then(
       (response: AxiosResponse) => {
         for (const responsePhoto of response.data.photo_set) {
-          const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb);
+          const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private);
           this.track.gpsTrack.addPhoto(photo);
         }
       }
@@ -262,6 +267,7 @@ export default class SaveTrackModal extends BaseComponent {
         form_data.append('description', '');
         form_data.append('org_filename', photo.org_filename);
         form_data.append('track', this.track.gpsTrack.id);
+        form_data.append('private', photo.private);
         form_data.append('image', new Blob([new Uint8Array(photo.buffer)], {type: 'image/jpeg'}), '1.jpg');
         let headers = {'Accept': 'application/json', 'Content-Type': 'multipart/form-data'}
         let response_photo = await axios.post(this.$store.state.appHost + 'api/photos/', form_data, {headers: headers, onUploadProgress: this.onUploadProgress})
@@ -338,6 +344,7 @@ export default class SaveTrackModal extends BaseComponent {
         form_data.append('description', '');
         form_data.append('org_filename', photo.org_filename);
         form_data.append('track', response.data.id);
+        form_data.append('private', photo.private);
         form_data.append('image', new Blob([new Uint8Array(photo.buffer)], {type: 'image/jpeg'}), '1.jpg');
         let headers = {'Accept': 'application/json', 'Content-Type': 'multipart/form-data'}
         let response_photo = await axios.post(this.$store.state.appHost + 'api/photos/', form_data, {headers: headers, onUploadProgress: this.onUploadProgress})

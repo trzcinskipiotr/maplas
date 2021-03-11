@@ -1,16 +1,9 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin, CreateModelMixin, RetrieveModelMixin
-from rest_framework.pagination import PageNumberPagination
 
 from maplas_app import serializers
 from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area
 from maplas_app.utils import fill_array_from_gpx_file
-
-
-class LargeResultsSetPagination(PageNumberPagination):
-    page_size = 1000
-    page_size_query_param = 'page_size'
-    max_page_size = 1000
 
 class TrackViewSet(ListModelMixin, UpdateModelMixin, RetrieveModelMixin, CreateModelMixin, viewsets.GenericViewSet):
     queryset = Track.objects.all().order_by('-start_time')
@@ -18,9 +11,6 @@ class TrackViewSet(ListModelMixin, UpdateModelMixin, RetrieveModelMixin, CreateM
     create_update_serializer_class = serializers.TrackSerializer
     create_update_no_gpx_serializer_class = serializers.TrackSerializerNoGpx
     retrieve_serializer_class = serializers.TrackSerializerFull
-    pagination_class = LargeResultsSetPagination
-    permission_classes = (permissions.AllowAny,)
-    authentication_classes = ()
 
     def get_queryset(self):
         bicycle = self.request.query_params.get('bicycle', None)
@@ -51,11 +41,9 @@ class TrackViewSet(ListModelMixin, UpdateModelMixin, RetrieveModelMixin, CreateM
 class RegionViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = Region.objects.all().order_by('id')
     serializer_class = serializers.RegionSerializer
-    pagination_class = LargeResultsSetPagination
 
 class PlaceViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
     queryset = Place.objects.all().order_by('id')
-    pagination_class = LargeResultsSetPagination
     list_serializer_class = serializers.PlaceSerializerTypeNested
     create_update_serializer_class = serializers.PlaceSerializer
     retrieve_serializer_class = serializers.PlaceSerializerTypeNested
@@ -70,14 +58,18 @@ class PlaceViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateM
 class PlaceTypeViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = PlaceType.objects.all().order_by('id')
     serializer_class = serializers.PlaceTypeSerializer
-    pagination_class = LargeResultsSetPagination
 
 class PhotoViewSet(ListModelMixin, CreateModelMixin, viewsets.GenericViewSet):
     queryset = Photo.objects.all().order_by('id')
-    pagination_class = LargeResultsSetPagination
     list_serializer_class = serializers.PhotoSerializerUrlNested
     create_update_serializer_class = serializers.PhotoSerializer
     retrieve_serializer_class = serializers.PhotoSerializerUrlNested
+
+    def get_queryset(self):
+        if self.request.user and self.request.user.is_authenticated:
+            return Photo.objects.all().order_by('id')
+        else:
+            return Photo.objects.filter(private=False).order_by('id')
 
     def get_serializer_class(self):
         if self.action == 'list':
@@ -88,7 +80,6 @@ class PhotoViewSet(ListModelMixin, CreateModelMixin, viewsets.GenericViewSet):
 
 class AreaViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
     queryset = Area.objects.all().order_by('id')
-    pagination_class = LargeResultsSetPagination
     basic_serializer_class = serializers.AreaSerializer
     full_serializer_class =serializers.AreaSerializerFull
 
