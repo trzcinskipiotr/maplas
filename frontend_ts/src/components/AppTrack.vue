@@ -5,7 +5,8 @@
       <input type="checkbox" class="custom-control-input" :id="'checkbox' + track.gpsTrack.id" v-model="checked" />
       <label style="margin-right: 2px;" class="custom-control-label" :for="'checkbox' + track.gpsTrack.id">{{ track.gpsTrack.name }}</label>
       <span class="badge badge-dark" style="margin-right: 2px;">{{ track.gpsTrack.start_time|formatDateDay }}</span>
-      <span class="badge badge-success">{{ track.gpsTrack.distance|roundTrackDistance }}</span>
+      <span class="badge badge-success" style="margin-right: 2px;">{{ track.gpsTrack.distance|roundTrackDistance }}</span>
+      <span v-b-tooltip.hover :title="'' + track.gpsTrack.photos.length + ' ' + $t('photos')"><font-awesome-icon v-if="track.gpsTrack.photos.length" style="cursor: pointer" icon="images" @click="clickOpenGallery"/></span>
       <div style="float: right;">
         <font-awesome-icon @click="togglePanel(); renderComponent = true;" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
       </div>
@@ -83,6 +84,28 @@ export default class AppTrack extends BaseComponent {
   public constructor() {
     super();
     this.checked = this.track.checked;
+  }
+
+  private lastClickedGallery = 1;
+  private openGalleryHandler: any;
+
+  private clickOpenGallery() {
+    const now = Date.now();
+    if (now - this.lastClickedGallery > 250) {
+      this.openGalleryHandler = setTimeout(() => this.openGallery(false), 250);
+    } else {
+      clearTimeout(this.openGalleryHandler);
+      this.openGallery(true);
+    }
+    this.lastClickedGallery = now;
+  }
+
+  private openGallery(fullRes: boolean) {
+    if (fullRes) {
+      EventBus.$emit('openSlideShowFullTrack' + this.track.gpsTrack.id);
+    } else {
+      EventBus.$emit('openSlideShowTrack' + this.track.gpsTrack.id);
+    }
   }
 
   private showUploadModal() {

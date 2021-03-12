@@ -29,7 +29,8 @@
           <span v-if="track.onServer"><b>{{ $t('type') }}</b>: <TrackTypeIcon :gpsTrack="track.gpsTrack" height=12 imgheight=12 verticalAlign="-2px"></TrackTypeIcon><br></span>
           <span v-if="track.onServer"><b>{{ $t('status') }}</b>: <TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br></span>
           <b>{{ $t('id') }}</b>: {{ track.gpsTrack.id }}<br>
-          <b>{{ $t('photos') }}</b>: {{ track.gpsTrack.photos.length }} <font-awesome-icon v-if="track.gpsTrack.photos.length" ref="fullResImage" @click="makeFullResGallery" style="height: 24px; cursor: pointer" icon="search-plus"/><br>
+          <span ref="gallerySpan"/>
+          <b>{{ $t('photos') }}</b>: {{ track.gpsTrack.photos.length }} <font-awesome-icon v-if="track.gpsTrack.photos.length" @click="clickOpenGallery" style="cursor: pointer" icon="images"/><br>
           <template v-if="track.gpsTrack.gpx_file"><b>{{ $t('gpxFile') }}: </b>{{ track.gpsTrack.gpx_file.length|roundFileBytes }} <button @click="saveGPX" type="button" class="btn btn-primary btn-sm">Download</button><br><br></template>
           <template v-if="track.gpsTrack.gpx_file"><button @click="showHideTimeLables" type="button" class="btn btn-primary btn-sm">{{ timeLabelsVisible ? $t('hideTimeLabels') : $t('showTimeLabels') }}</button></template>&nbsp;
           <template v-if="track.gpsTrack.gpx_file"><button @click="showHideSpeedLables" type="button" class="btn btn-primary btn-sm">{{ speedLabelsVisible ? $t('hideSpeedLabels') : $t('showSpeedLabels') }}</button></template>&nbsp;&nbsp;
@@ -92,15 +93,37 @@ export default class TrackDetails extends BaseComponent {
     return url;
   }
 
+  private lastClickedGallery = 1;
+  private openGalleryHandler: any;
 
-  private makeFullResGallery() {
+  private clickOpenGallery() {
+    const now = Date.now();
+    if (now - this.lastClickedGallery > 250) {
+      this.openGalleryHandler = setTimeout(() => this.makeGallery(false), 250);
+    } else {
+      clearTimeout(this.openGalleryHandler);
+      this.makeGallery(true);
+    }
+    this.lastClickedGallery = now;
+  }
+
+
+  private makeGallery(fullRes: boolean) {
     const fullRess: Array<{src: string, thumb: string}> = [];
     for (const photo of this.track.gpsTrack.photos) {
-      const fullRes = {src: this.replaceHTTP(photo.image), thumb: this.replaceHTTP(photo.image_thumb)};
-      fullRess.push(fullRes);
+      let photoToAdd = null;
+      if (fullRes) {
+        photoToAdd = {src: this.replaceHTTP(photo.image), thumb: this.replaceHTTP(photo.image_thumb)};
+      } else {
+        photoToAdd = {src: this.replaceHTTP(photo.image_fullhd), thumb: this.replaceHTTP(photo.image_thumb)};
+      }
+      fullRess.push(photoToAdd)
     }
     const time = new Date().getTime();
-    window.lightGallery(this.$refs.fullResImage, {
+    if (window.lgData[this.$refs.gallerySpan.getAttribute('lg-uid')]) {
+      window.lgData[this.$refs.gallerySpan.getAttribute('lg-uid')].destroy(true);
+    }
+    window.lightGallery(this.$refs.gallerySpan, {
       dynamic: true,
       autoplay: true,
       pause: 2000,
@@ -283,7 +306,9 @@ export default class TrackDetails extends BaseComponent {
   
   public mounted() {
     dragElement(this.$refs.detailsWindow, this.$refs.detailsWindowHeader);
-    this.$refs.detailsWindowHeader.addEventListener('click', this.newZIndexForDetails)
+    this.$refs.detailsWindowHeader.addEventListener('click', this.newZIndexForDetails);
+    EventBus.$on('openSlideShowTrack' + this.track.gpsTrack.id, () => this.makeGallery(false));
+    EventBus.$on('openSlideShowFullTrack' + this.track.gpsTrack.id, () => this.makeGallery(true));
   }
 
   private toggleMaximizedDetails() {
