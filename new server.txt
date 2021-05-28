@@ -10,7 +10,7 @@ apt-get autoremove
 
 # Instalacja pakietów
 curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
-apt-get install wget curl rsync nginx dstat vim psmisc git python3-pip python3-venv python3-certbot-nginx nodejs strace
+apt-get install wget curl rsync nginx dstat vim psmisc git python3-pip python3-venv python3-certbot-nginx nodejs strace man procps
 pip3 install wheel
 
 # Tworzenie katalogów
@@ -21,6 +21,8 @@ mkdir /staticfiles
 mkdir /ideasport_media
 mkdir /ideasport_staticfiles
 mkdir /OLDHOST/
+mkdir /var/log/gunicorn-maplas
+mkdir /var/log/gunicorn-ideasport
 
 # Kopiowanie z maszyny źródłowej (rsync szybciej dużo niż SCP)
 rsync -avz --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/lost+found} --numeric-ids / root@NEWIP:/OLDHOST/
@@ -34,6 +36,13 @@ cp -R /OLDHOST/ideasport_media/* /ideasport_media/
 cp -R /OLDHOST/etc/certbot/ /etc/
 cp /OLDHOST/db/db.sqlite3 /db/db.sqlite3
 cp /OLDHOST/db/ideasport.sqlite3 /db/ideasport.sqlite3
+cp /OLDHOST/etc/systemd/system/gunicorn-ideasport.service /etc/systemd/system/gunicorn-ideasport.service
+cp /OLDHOST/etc/systemd/system/gunicorn-maplas.service /etc/systemd/system/gunicorn-maplas.service
+
+# Reload systemd
+systemctl daemon-reload
+systemctl enable gunicorn-maplas
+systemctl enable gunicorn-ideasport
 
 # Odnowienie certów
 certbot --no-redirect
@@ -42,3 +51,6 @@ certbot --no-redirect
 ./deploy.sh
 
 # Pierwsze odpytywanie API places i tracks może być dłuższe, z niewiadomego powodu regenerują się miniatury ponownie
+
+# Reboot usługi powinny działać po reboocie
+reboot
