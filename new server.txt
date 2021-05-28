@@ -1,0 +1,44 @@
+# Ubuntu 20.04 LTS
+
+# Przygotowanie systemu
+passwd
+apt-get update
+apt-get upgrade
+apt-get upgrade (pakiety które zostały)
+reboot
+apt-get autoremove
+
+# Instalacja pakietów
+curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+apt-get install wget curl rsync nginx dstat vim psmisc git python3-pip python3-venv python3-certbot-nginx nodejs strace
+pip3 install wheel
+
+# Tworzenie katalogów
+mkdir /src
+mkdir /db
+mkdir /media
+mkdir /staticfiles
+mkdir /ideasport_media
+mkdir /ideasport_staticfiles
+mkdir /OLDHOST/
+
+# Kopiowanie z maszyny źródłowej (rsync szybciej dużo niż SCP)
+rsync -avz --exclude={/dev/*,/proc/*,/sys/*,/tmp/*,/run/*,/lost+found} --numeric-ids / root@NEWIP:/OLDHOST/
+
+# Kopiowanie starych zasobów w /OLDHOST
+cp /OLDHOST/etc/nginx/nginx.conf /etc/nginx/nginx.conf
+cp /OLDHOST/etc/nginx/sites-available/default /etc/nginx/sites-available/default
+cp /OLDHOST/root/*.sh /OLDHOST/root/env.* /root/
+cp -R /OLDHOST/media/* /media/
+cp -R /OLDHOST/ideasport_media/* /ideasport_media/
+cp -R /OLDHOST/etc/certbot/ /etc/
+cp /OLDHOST/db/db.sqlite3 /db/db.sqlite3
+cp /OLDHOST/db/ideasport.sqlite3 /db/ideasport.sqlite3
+
+# Odnowienie certów
+certbot --no-redirect
+
+# Deploy
+./deploy.sh
+
+# Pierwsze odpytywanie API places i tracks może być dłuższe, z niewiadomego powodu regenerują się miniatury ponownie
