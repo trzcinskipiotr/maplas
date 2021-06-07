@@ -50,7 +50,13 @@ certbot --no-redirect
 # Deploy
 ./deploy.sh
 
-# Pierwsze odpytywanie API places i tracks może być dłuższe, z niewiadomego powodu regenerują się miniatury ponownie
+# Pierwsze odpytywanie API places i tracks może być dłuższe, z niewiadomego powodu regenerują się miniatury ponownie. Jeśli cache się wygeneruje na nowo, to trzeba przepisać EXIF w wygenerowanych zdjęciach:
+./shell_maplas.sh
+from maplas_app.models import *
+ps = Photo.objects.all()
+for p in ps:
+    p.save()
+exit()
 
 # Reboot usługi powinny działać po reboocie
 reboot

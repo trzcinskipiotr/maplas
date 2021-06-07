@@ -203,6 +203,9 @@
       <span>  
         <SaveTrackModal v-for="track in $store.state.imports" :track="track" :key="track.gpsTrack.id"></SaveTrackModal>
       </span>
+      <span>  
+        <SaveTrackModal v-for="track in $store.state.plannedTracks" :track="track" :key="track.gpsTrack.id"></SaveTrackModal>
+      </span>
     </template>  
     <NewPlace></NewPlace>
   </div>  
