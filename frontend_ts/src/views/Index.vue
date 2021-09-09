@@ -206,8 +206,11 @@
       <span>  
         <SaveTrackModal v-for="track in $store.state.plannedTracks" :track="track" :key="track.gpsTrack.id"></SaveTrackModal>
       </span>
+      <span>  
+        <SavePlaceModal v-for="place in $store.state.places" :place="place" :key="place.id"></SavePlaceModal>
+      </span>
     </template>  
-    <NewPlace></NewPlace>
+    <SavePlaceModal></SavePlaceModal>
   </div>  
 </template>
 
@@ -712,13 +715,13 @@ export default class Index extends BaseComponent {
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
-    layers['mapaTurystycznaPL'] = L.tileLayer('https://m0.mapa-turystyczna.pl/map-xhdpi/{z}/{x}/{y}.v2224.png', {
+    layers['mapaTurystycznaPL'] = L.tileLayer('https://m0.mapa-turystyczna.pl/map-xhdpi/{z}/{x}/{y}.v3311.png', {
       maxZoom: 18,
       attribution: attributionString || '<a target="_blank" href="https://mapa-turystyczna.pl" title="Serwis mapa-turystyczna.pl"><img alt="Serwis mapa-turystyczna.pl" src="https://mapa-turystyczna.pl/images/mapa-turystyczna-baner.png" width="100" height="36" /></a>',
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
-    layers['mapaTurystycznaPLOffline'] = L.tileLayer.offline('https://m0.mapa-turystyczna.pl/map-xhdpi/{z}/{x}/{y}.v2224.png', {
+    layers['mapaTurystycznaPLOffline'] = L.tileLayer.offline('https://m0.mapa-turystyczna.pl/map-xhdpi/{z}/{x}/{y}.v3311.png', {
       maxZoom: 18,
       attribution: attributionString || '<a target="_blank" href="https://mapa-turystyczna.pl" title="Serwis mapa-turystyczna.pl"><img alt="Serwis mapa-turystyczna.pl" src="https://mapa-turystyczna.pl/images/mapa-turystyczna-baner.png" width="100" height="36" /></a>',
       errorTileUrl: 'img/tiledownloadfailed.jpg',

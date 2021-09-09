@@ -197,6 +197,8 @@ en: {
   clearSelection: 'Clear',
   activateAreas: 'Activate areas',
   setAsPrivate: 'Set as private',
+  editPlace: 'Edit place',
+  corsWarning: 'CORS! Close all Chrome instances, and run with --disable-web-security flag',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -392,6 +394,8 @@ pl: {
   clearSelection: 'Resetuj',
   activateAreas: 'Aktywuj obszary',
   setAsPrivate: 'Ustaw jako prywatne',
+  editPlace: 'Edytuj miejsce',
+  corsWarning: 'CORS! Zamknij wszystkie okna Chrome i uruchom z flagą --disable-web-security.',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

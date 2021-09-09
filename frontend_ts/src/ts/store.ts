@@ -158,7 +158,25 @@ const store: StoreOptions<RootState> = {
       state.editedTrack = null;
     },
     addPlace(state, place) {
-      state.places.push(place);
+      let exists = false;
+      let index = 0;
+      for (const loopPlace of state.places) {
+        if (loopPlace.id == place.id) {
+          loopPlace.name = place.name;
+          loopPlace.description = place.description;
+          loopPlace.approved = place.approved;
+          loopPlace.photos = place.photos;
+          loopPlace.lat = place.lat;
+          loopPlace.lon = place.lon;
+          loopPlace.type = place.type;
+          exists = true;
+          break;
+        }
+        index = index + 1;
+      }
+      if (! exists) {
+        state.places.push(place);
+      }
     },
     removeImportedTrack(state, track) {
       const index = state.imports.indexOf(track);

@@ -15,7 +15,8 @@
       <span v-if="(place.marker.getLatLng().lat != place.lat) && (place.marker.getLatLng().lng != place.lon)">
         <font-awesome-icon style="cursor: pointer" icon="undo" @click="undoLocation" />&nbsp;
         <font-awesome-icon style="cursor: pointer" icon="save" @click="saveLocation" />
-      </span>  
+      </span>
+      <span v-b-tooltip.hover :title="$t('editPlace')"><font-awesome-icon @click="showEditPlaceModal" style="cursor: pointer" icon="upload"/></span>
     </div>
   </div>  
 </template>
@@ -27,6 +28,7 @@ import Place from '@/ts/Place';
 import axios from 'axios';
 import { AlertStatus } from '@/ts/types';
 import {roundCoord} from '@/ts/utils/coords';
+import { EventBus } from '@/ts/EventBus';
 
 @Component
 export default class MapPlace extends BaseComponent {
@@ -59,6 +61,10 @@ export default class MapPlace extends BaseComponent {
     } catch {
       this.createAlert(AlertStatus.danger, this.$t('placeCoordsSaveError').toString(), 2000);
     }
+  }
+
+  private showEditPlaceModal() {
+    EventBus.$emit('openSavePlaceModal' + this.place.id);
   }
 
   private makeGallery() {

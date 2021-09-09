@@ -70,9 +70,10 @@
         </select>&nbsp;
         <b-form-checkbox style="display: inline;" v-model="useCache">
         </b-form-checkbox>{{ $t('useCache') }}
-        <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="downloadOffline">
+        <button v-b-tooltip.hover :title="$t('corsWarning')" :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="downloadOffline">
           <font-awesome-icon v-if="saving" class="fa-spin" icon="spinner" />&nbsp;
           {{ $t('downloadOffline') }}
+
         </button>&nbsp;
         </div>
         <div class="buttongroup">
