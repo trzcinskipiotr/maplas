@@ -123,12 +123,13 @@ def get_exif_location(exif_data):
     gps_longitude = _get_if_exist(exif_data, 'GPS GPSLongitude')
     gps_longitude_ref = _get_if_exist(exif_data, 'GPS GPSLongitudeRef')
     if gps_latitude and gps_latitude_ref and gps_longitude and gps_longitude_ref:
-        lat = _convert_to_degress(gps_latitude)
-        if gps_latitude_ref.values[0] != 'N':
-            lat = 0 - lat
-        lon = _convert_to_degress(gps_longitude)
-        if gps_longitude_ref.values[0] != 'E':
-            lon = 0 - lon
+        if (gps_latitude.values[0].den != 0) and (gps_latitude.values[1].den != 0) and (gps_latitude.values[2].den != 0) and (gps_longitude.values[0].den != 0) and (gps_longitude.values[1].den != 0) and (gps_longitude.values[2].den != 0):
+            lat = _convert_to_degress(gps_latitude)
+            if gps_latitude_ref.values[0] != 'N':
+                lat = 0 - lat
+            lon = _convert_to_degress(gps_longitude)
+            if gps_longitude_ref.values[0] != 'E':
+                lon = 0 - lon
     return lat, lon
 
 class Photo(models.Model):
