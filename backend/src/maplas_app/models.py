@@ -180,6 +180,9 @@ class Photo(models.Model):
             del exif_fullhd['1st']
         if 'thumbnail' in exif_fullhd:
             del exif_fullhd['thumbnail']
+        # Fix S10 Mini photos
+        if ('Exif' in exif_fullhd) and (41729 in exif_fullhd['Exif']):
+            del exif_fullhd['Exif'][41729]
         exif_thumb = piexif.load(self.image.path)
         if '0th' in exif_thumb:
             width, height = get_image_dimensions(self.image_thumb.file)
@@ -189,6 +192,9 @@ class Photo(models.Model):
             del exif_thumb['1st']
         if 'thumbnail' in exif_thumb:
             del exif_thumb['thumbnail']
+        # Fix S10 Mini photos
+        if ('Exif' in exif_thumb) and (41729 in exif_thumb['Exif']):
+            del exif_thumb['Exif'][41729]
         piexif.insert(piexif.dump(exif_fullhd), self.image_fullhd.path)
         piexif.insert(piexif.dump(exif_thumb), self.image_thumb.path)
 

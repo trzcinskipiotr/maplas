@@ -244,8 +244,8 @@ export default class SavePlaceModal extends BaseComponent {
     if (this.photos.length > 0) {
       const exifData = EXIF.readFromBinaryFile(this.photos[0].buffer);
       if (exifData.GPSLongitude && exifData.GPSLatitude) {
-        let lon = this.ConvertDMSToDD(exifData.GPSLongitude[0].numerator, exifData.GPSLongitude[1].numerator, exifData.GPSLongitude[2].numerator, exifData.GPSLongitudeRef);
-        let lat = this.ConvertDMSToDD(exifData.GPSLatitude[0].numerator, exifData.GPSLatitude[1].numerator, exifData.GPSLatitude[2].numerator, exifData.GPSLatitudeRef);
+        let lon = this.ConvertDMSToDD(exifData.GPSLongitude[0].numerator, exifData.GPSLongitude[1].numerator, exifData.GPSLongitude[2].numerator / exifData.GPSLongitude[2].denominator, exifData.GPSLongitudeRef);
+        let lat = this.ConvertDMSToDD(exifData.GPSLatitude[0].numerator, exifData.GPSLatitude[1].numerator, exifData.GPSLatitude[2].numerator / exifData.GPSLatitude[2].denominator, exifData.GPSLatitudeRef);
         this.firstPhotoLon = Math.round(lon * 100000) / 100000;
         this.firstPhotoLat = Math.round(lat * 100000) / 100000;
       } else {
