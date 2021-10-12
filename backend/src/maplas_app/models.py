@@ -16,6 +16,8 @@ import os
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill, Thumbnail, SmartResize, Resize, ResizeToFit
 
+from maplas_app.gps_utils import calculate_distance_from_segments
+
 
 class Region(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
@@ -84,6 +86,12 @@ class Track(models.Model):
             return 'No file'
 
     get_gpx_file_counts.short_description = 'gpx file'
+
+    def calculate_distance_from_segments(self):
+        return calculate_distance_from_segments(json.loads(self.points_json))
+
+    def calculate_distance_from_segments_optimized(self):
+        return calculate_distance_from_segments(json.loads(self.points_json_optimized))
 
 class PlaceType(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)

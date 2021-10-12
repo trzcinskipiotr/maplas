@@ -8,14 +8,15 @@ from gpxpy.geo import haversine_distance
 
 from django.conf import settings
 
+from maplas_app.gps_utils import calculate_distance_from_segments
 from maplas_app.models import Track
+
 
 def convert_gpx_string_to_array(gpx_file_string):
     gpx = gpxpy.parse(gpx_file_string)
     tracks = []
     for track in gpx.tracks:
         segments = []
-        distance = round(track.length_2d())
         start_time, end_time = track.get_time_bounds()
         for segment in track.segments:
             points = []
@@ -34,6 +35,7 @@ def convert_gpx_string_to_array(gpx_file_string):
                 new_segment.append(point)
                 last_point = point
         new_segments.append(new_segment)
+        distance = calculate_distance_from_segments(new_segments)
         tracks.append((gpx.name, distance, start_time, end_time, new_segments))
     return tracks
 
@@ -49,6 +51,7 @@ def create_track_from_gpx_file(filename):
 def fill_array_from_gpx_file(track):
     (gpx_name, distance, start_time, end_time, segments) = convert_gpx_string_to_array(track.gpx_file)[0]
     track.points_json = json.dumps(segments)
+    track.distance = distance
     optimize_track(track)
 
 def optimize_points(points_json):
