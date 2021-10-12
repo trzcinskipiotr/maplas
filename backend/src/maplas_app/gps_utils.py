@@ -15,4 +15,4 @@ def calculate_distance_from_segments(segments):
                 distance = distance + haversine_distance(last_point[0], last_point[1], point[0], point[1])
             last_point = point
             first_segment_point = False
-    return distance
+    return round(distance)

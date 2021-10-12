@@ -51,8 +51,9 @@ def create_track_from_gpx_file(filename):
 def fill_array_from_gpx_file(track):
     (gpx_name, distance, start_time, end_time, segments) = convert_gpx_string_to_array(track.gpx_file)[0]
     track.points_json = json.dumps(segments)
-    track.distance = distance
     optimize_track(track)
+    track.distance = track.calculate_distance_from_segments_optimized()
+    track.save()
 
 def optimize_points(points_json):
     return rdp.rdp(points_json, epsilon=settings.OPTIMIZE_EPSILON, algo='iter', return_mask=False)
