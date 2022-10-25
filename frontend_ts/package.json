@@ -32,7 +32,7 @@
     "geolib": "^3.0.4",
     "gpx-builder": "^2.0.1",
     "gpx-parse": "git+https://github.com/trzcinskipiotr/gpx-parse",
-    "jquery": "^3.4.1",
+    "jquery": "^3.5.0",
     "leaflet": "^1.6.0",
     "leaflet-hotline": "^0.4.0",
     "leaflet-providers": "^1.8.0",
