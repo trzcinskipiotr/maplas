@@ -23,7 +23,7 @@
     "@types/streamsaver": "^2.0.0",
     "@types/vue-color": "^2.4.2",
     "Leaflet.MultiOptionsPolyline": "git+https://github.com/hgoebl/Leaflet.MultiOptionsPolyline",
-    "axios": "^0.19.0",
+    "axios": "^0.21.2",
     "bootstrap": "^4.3.1",
     "bootstrap-vue": "^2.0.0-rc.27",
     "core-js": "^2.6.5",
