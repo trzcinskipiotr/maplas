@@ -199,6 +199,13 @@ en: {
   setAsPrivate: 'Set as private',
   editPlace: 'Edit place',
   corsWarning: 'CORS! Close all Chrome instances, and run with --disable-web-security flag',
+  day0: 'sunday',
+  day1: 'monday',
+  day2: 'tuesday',
+  day3: 'wednesday',
+  day4: 'thursday',
+  day5: 'friday',
+  day6: 'saturday',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -396,6 +403,13 @@ pl: {
   setAsPrivate: 'Ustaw jako prywatne',
   editPlace: 'Edytuj miejsce',
   corsWarning: 'CORS! Zamknij wszystkie okna Chrome i uruchom z flagą --disable-web-security.',
+  day0: 'niedziela',
+  day1: 'poniedziałek',
+  day2: 'wtorek',
+  day3: 'sroda',
+  day4: 'czwartek',
+  day5: 'piątek',
+  day6: 'sobota',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

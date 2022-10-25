@@ -102,9 +102,9 @@ export default class AppTrack extends BaseComponent {
 
   private openGallery(fullRes: boolean) {
     if (fullRes) {
-      EventBus.$emit('openSlideShowFullTrack' + this.track.gpsTrack.id);
+      EventBus.$emit('openSlideShowFullTrack' + this.track.gpsTrack.id, 0);
     } else {
-      EventBus.$emit('openSlideShowTrack' + this.track.gpsTrack.id);
+      EventBus.$emit('openSlideShowTrack' + this.track.gpsTrack.id, 0);
     }
   }
 

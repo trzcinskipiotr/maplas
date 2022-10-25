@@ -12,9 +12,9 @@
     <div ref="tracks" class="card-body p-2">
       {{ $t('tracksSelectedDistance') }}: {{ checkedTracks|sumTracksDistance|roundTrackDistance }}
       <ul>
-        <li v-if="countTracksByType(trackGroup.tracks, TrackType.walk) > 0">{{ $t('tracksSelectedDistanceWalk') }}: {{ checkedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
-        <li v-if="countTracksByType(trackGroup.tracks, TrackType.bicycle) > 0">{{ $t('tracksSelectedDistanceBicycle') }}: {{ checkedTracks|sumTracksDistanceBicycle|roundTrackDistance }}</li>
-        <li v-if="countTracksByType(trackGroup.tracks, TrackType.mushroom) > 0">{{ $t('tracksSelectedDistanceMushroom') }}: {{ checkedTracks|sumTracksDistanceMushroom|roundTrackDistance }}</li>
+        <li v-if="countTracksByType(trackGroup.tracks, TrackType.walk) > 0">{{ $t('tracksSelectedDistanceWalk') }} {{ countWalkTracks(checkedTracks) }}: {{ checkedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
+        <li v-if="countTracksByType(trackGroup.tracks, TrackType.bicycle) > 0">{{ $t('tracksSelectedDistanceBicycle') }} {{ countBicycleTracks(checkedTracks) }}: {{ checkedTracks|sumTracksDistanceBicycle|roundTrackDistance }}</li>
+        <li v-if="countTracksByType(trackGroup.tracks, TrackType.mushroom) > 0">{{ $t('tracksSelectedDistanceMushroom') }} {{ countMushroomTracks(checkedTracks) }}: {{ checkedTracks|sumTracksDistanceMushroom|roundTrackDistance }}</li>
       </ul>
       <div v-for="track in trackGroup.tracks" :key="track.gpsTrack.id">
         <AppTrack v-show="showAppTrack(track)" :track="track" :highlightOnStart="highlightOnStart(track)"></AppTrack>
@@ -31,6 +31,7 @@ import $ from 'jquery';
 import Track from '@/ts/Track';
 import {TrackType} from '@/ts/types';
 import {EventBus} from '@/ts/EventBus';
+import { formatDateDay } from '@/ts/utils';
 
 @Component
 export default class AppTrackGroup extends BaseComponent {
@@ -151,6 +152,57 @@ export default class AppTrackGroup extends BaseComponent {
       }
     }
     return oneChecked && oneUnChecked;
+  }
+
+  private countWalkTracks(tracks: Track[]) {
+    let count = 0;
+    let countDays = 0;
+    let dates: string[] = [];
+    for (const track of tracks) {
+      if (track.gpsTrack.isWalkTrack()) {
+        const dateDay = formatDateDay(track.gpsTrack.start_time);
+        if (! (dates.includes(dateDay))) {
+          countDays = countDays + 1;
+          dates.push(dateDay);
+        }
+        count = count + 1;
+      }
+    }
+    return '(' + count + '/' + countDays + ')';
+  }
+
+  private countBicycleTracks(tracks: Track[]) {
+    let count = 0;
+    let countDays = 0;
+    let dates: string[] = [];
+    for (const track of tracks) {
+      if (track.gpsTrack.isBicycleTrack()) {
+        const dateDay = formatDateDay(track.gpsTrack.start_time);
+        if (! (dates.includes(dateDay))) {
+          countDays = countDays + 1;
+          dates.push(dateDay);
+        }
+        count = count + 1;
+      }
+    }
+    return '(' + count + '/' + countDays + ')';
+  }
+
+  private countMushroomTracks(tracks: Track[]) {
+    let count = 0;
+    let countDays = 0;
+    let dates: string[] = [];
+    for (const track of tracks) {
+      if (track.gpsTrack.isMushroomTrack()) {
+        const dateDay = formatDateDay(track.gpsTrack.start_time);
+        if (! (dates.includes(dateDay))) {
+          countDays = countDays + 1;
+          dates.push(dateDay);
+        }
+        count = count + 1;
+      }
+    }
+    return '(' + count + '/' + countDays + ')';
   }
 
   private togglePanel() {

@@ -24,7 +24,7 @@
         <div v-else>
           <b>{{ $t('name') }}</b>: {{ track.gpsTrack.name }}<br>
           <span v-if="track.gpsTrack.description"><b>{{ $t('description') }}</b>: {{ track.gpsTrack.description }}<br></span>
-          <b>{{ $t('startTime') }} </b>:{{ track.gpsTrack.start_time|formatDate }}<br>
+          <b>{{ $t('startTime') }}</b>: {{ track.gpsTrack.start_time|formatDate }}, {{ $t(dayIndex(track.gpsTrack.start_time)) }}<br>
           <b>{{ $t('distance') }}</b>: {{ track.gpsTrack.distance|roundTrackDistance }}<br>
           <span v-if="track.onServer"><b>{{ $t('type') }}</b>: <TrackTypeIcon :gpsTrack="track.gpsTrack" height=12 imgheight=12 verticalAlign="-2px"></TrackTypeIcon><br></span>
           <span v-if="track.onServer"><b>{{ $t('status') }}</b>: <TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br></span>
@@ -86,6 +86,14 @@ export default class TrackDetails extends BaseComponent {
     this.track.maximized = false;
   }
 
+  private dayIndex(date: Date) {
+    if (date) {
+      return 'day' + date.getDay()
+    } else {
+      return '';
+    }
+  }
+
   private replaceHTTP(url: string) {
     if (! (window.location.hostname === 'localhost')) {
       return url.replace('http://', 'https://');
@@ -99,16 +107,16 @@ export default class TrackDetails extends BaseComponent {
   private clickOpenGallery() {
     const now = Date.now();
     if (now - this.lastClickedGallery > 250) {
-      this.openGalleryHandler = setTimeout(() => this.makeGallery(false), 250);
+      this.openGalleryHandler = setTimeout(() => this.makeGallery(false, 0), 250);
     } else {
       clearTimeout(this.openGalleryHandler);
-      this.makeGallery(true);
+      this.makeGallery(true, 0);
     }
     this.lastClickedGallery = now;
   }
 
 
-  private makeGallery(fullRes: boolean) {
+  private makeGallery(fullRes: boolean, index: number) {
     const fullRess: Array<{src: string, thumb: string}> = [];
     for (const photo of this.track.gpsTrack.photos) {
       let photoToAdd = null;
@@ -124,6 +132,7 @@ export default class TrackDetails extends BaseComponent {
       window.lgData[this.$refs.gallerySpan.getAttribute('lg-uid')].destroy(true);
     }
     window.lightGallery(this.$refs.gallerySpan, {
+      index: index,
       dynamic: true,
       autoplay: true,
       pause: 2000,
@@ -307,8 +316,8 @@ export default class TrackDetails extends BaseComponent {
   public mounted() {
     dragElement(this.$refs.detailsWindow, this.$refs.detailsWindowHeader);
     this.$refs.detailsWindowHeader.addEventListener('click', this.newZIndexForDetails);
-    EventBus.$on('openSlideShowTrack' + this.track.gpsTrack.id, () => this.makeGallery(false));
-    EventBus.$on('openSlideShowFullTrack' + this.track.gpsTrack.id, () => this.makeGallery(true));
+    EventBus.$on('openSlideShowTrack' + this.track.gpsTrack.id, (index: number) => this.makeGallery(false, index));
+    EventBus.$on('openSlideShowFullTrack' + this.track.gpsTrack.id, (index: number) => this.makeGallery(true, index));
   }
 
   private toggleMaximizedDetails() {

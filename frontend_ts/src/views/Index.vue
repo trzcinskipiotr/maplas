@@ -122,8 +122,28 @@
             </div>
           </div>
         </div>
-      </div>
+      </div>  
       <div class="content">
+        <div id="main_gallery_div">
+          <div v-for="(trackGroupGroup, key) in trackGroupsDict" :key="key">
+            <div v-show="groupBy.id === key">
+              <div v-for="trackGroup in trackGroupGroup" :key="trackGroup.label" class="mb-2">
+                <b><center><h2>{{ trackGroup.label }}</h2></center></b>
+                <div v-for="track in trackGroup.tracks" :key="track.id">
+                  <b>{{ track.gpsTrack.name }}</b>&nbsp;
+                  <span class="badge badge-dark" style="margin-right: 2px;">{{ track.gpsTrack.start_time|formatDateDay }}</span>
+                  <span class="badge badge-success" style="margin-right: 2px;">{{ track.gpsTrack.distance|roundTrackDistance }}</span><br>
+                  <template v-if="track.gpsTrack.description">{{ track.gpsTrack.description }}<br></template>
+                  <br>
+                  <span v-for="(photo, index) in track.gpsTrack.photos" :key="photo.id">
+                    <img style="margin: 5px; cursor: pointer" :src="photo.image_thumb" @click="clickOpenGallery(track.gpsTrack.id, index)" />
+                  </span>
+                  <br><br><br>
+                </div>  
+              </div>
+            </div>
+          </div>    
+        </div>
         <div id="map">
           <span class="centerloading">
             <font-awesome-icon v-if="tileLoading" class="fa-spin" icon="spinner" size="4x"/>
@@ -135,6 +155,12 @@
       <div id="cogsdivinner" style="width: 48px; height: 48px;" @click="togglePanel" class="leaflet-touch leaflet-bar cogsbutton">
         <b-tooltip v-if="(document.getElementById('cogsdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('cogsdivinner')">{{ menuOpened ? $t('closeMenu') : $t('openMenu') }}</b-tooltip>
         <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="bars" size="lg"/>
+      </div>
+    </div>
+    <div id="gallerydiv" style="display: none;">
+      <div id="gallerydivinner" style="width: 48px; height: 48px;" @click="toggleGalleryPanel" class="leaflet-touch leaflet-bar cogsbutton">
+        <b-tooltip v-if="(document.getElementById('gallerydivinner')) && ($store.state.isDesktop)" :target="document.getElementById('gallerydivinner')">{{ galleryOpened ? $t('closeGallery') : $t('openGallery') }}</b-tooltip>
+        <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="images" size="lg"/>
       </div>
     </div>
     <div id="importdiv" style="display: none;">
@@ -259,6 +285,7 @@ export default class Index extends BaseComponent {
   private loading: boolean = true;
   private tileLoading: boolean = true;
   private menuOpened = false;
+  private galleryOpened = false;
   private document = document;
   private fullscreenOpened = false;
   private playingSpeed = this.$store.state.playingSpeed;
@@ -299,6 +326,9 @@ export default class Index extends BaseComponent {
 
   private searchText: string = '';
 
+  private lastClickedGallery = 1;
+  private openGalleryHandler: any;
+
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
     i18n.locale = this.language!.language;
@@ -324,6 +354,25 @@ export default class Index extends BaseComponent {
     this.importGroup.tracks = [];
     for (const track of this.$store.state.imports) {
       this.importGroup.tracks.push(track);
+    }
+  }
+
+  private clickOpenGallery(id: number, index: number) {
+    const now = Date.now();
+    if (now - this.lastClickedGallery > 250) {
+      this.openGalleryHandler = setTimeout(() => this.openGallery(false, id, index), 250);
+    } else {
+      clearTimeout(this.openGalleryHandler);
+      this.openGallery(true, id, index);
+    }
+    this.lastClickedGallery = now;
+  }
+
+  private openGallery(fullRes: boolean, id: number, index: number) {
+    if (fullRes) {
+      EventBus.$emit('openSlideShowFullTrack' + id, index);
+    } else {
+      EventBus.$emit('openSlideShowTrack' + id, index);
     }
   }
 
@@ -439,6 +488,7 @@ export default class Index extends BaseComponent {
     this.addScaleControl();
     this.addFullScreenControl();
     this.addCogsButton();
+    this.addGalleryButton();
     this.addImportButton();
     this.addLocationButton();
     //this.addCurrentLocationControl();
@@ -812,6 +862,18 @@ export default class Index extends BaseComponent {
     this.$store.state.map!.addControl(new CogsControl());
   }
 
+  private addGalleryButton() {
+    const GalleryControl = L.Control.extend({
+      options: {
+        position: 'topright',
+      },
+      onAdd: (map: L.Map) => {
+        return document.getElementById('gallerydivinner');
+      },
+    });
+    this.$store.state.map!.addControl(new GalleryControl());
+  }
+
   private createSpeedLegendControl() {
     const LegendControl = L.Control.extend({
       options: {
@@ -889,6 +951,17 @@ export default class Index extends BaseComponent {
   private togglePanel(e) {
     $('#sidebar').toggleClass('active');
     this.menuOpened = !this.menuOpened;
+    setTimeout(() => {
+      // @ts-ignore
+      this.$store.state.map.invalidateSize({pan: false, animate: false});
+    }, 1000);
+    e.stopPropagation();
+  }
+
+  private toggleGalleryPanel(e) {
+    $('#main_gallery_div').toggleClass('active');
+    $('#map').toggleClass('small');
+    this.galleryOpened = !this.galleryOpened;
     setTimeout(() => {
       // @ts-ignore
       this.$store.state.map.invalidateSize({pan: false, animate: false});
@@ -1209,6 +1282,10 @@ export default class Index extends BaseComponent {
     width: 100%;
   }
 
+  #map.small {
+    width: 20% !important;
+  }
+
   .wrapper {
     display: flex;
     width: 100%;
@@ -1219,6 +1296,7 @@ export default class Index extends BaseComponent {
   .content {
     min-height: 100vh;
     width: 100%;
+    display: flex;
   }
 
   @media (min-width: 400px) {
@@ -1249,6 +1327,19 @@ export default class Index extends BaseComponent {
 
   #sidebar.active {
     margin-left: 0;
+  }
+
+  #main_gallery_div {
+    display: none;
+  }
+
+  #main_gallery_div.active {
+    display: block !important;
+    padding: 20px;
+    height: 100%;
+    width: 100%;
+    background-image: url(../assets/gallery_background.jpg);
+    background-size: 100% auto;
   }
 
   .saveMessage {

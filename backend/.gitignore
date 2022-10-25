@@ -5,3 +5,4 @@ set_env.bat
 .idea
 src/CACHE
 src/photos
+venv
