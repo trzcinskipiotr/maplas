@@ -2,7 +2,7 @@ Django==2.2
 django-choices==1.7.0
 django-colorfield==0.1.15
 django-cors-headers==3.0.2
-djangorestframework==3.9.4
+djangorestframework==3.11.2
 django-imagekit==4.0.2
 djoser==2.0.3
 ExifRead==2.1.2
