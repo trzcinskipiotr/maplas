@@ -124,7 +124,7 @@
         </div>
       </div>  
       <div class="content">
-        <div id="main_gallery_div">
+        <div id="main_gallery_div" style="height: 100vh; overflow-y: scroll">
           <div v-for="(trackGroupGroup, key) in trackGroupsDict" :key="key">
             <div v-show="groupBy.id === key">
               <div v-for="trackGroup in trackGroupGroup" :key="trackGroup.label" class="mb-2">

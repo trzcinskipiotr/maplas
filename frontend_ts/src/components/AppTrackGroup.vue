@@ -10,7 +10,10 @@
       </div>
     </div>
     <div ref="tracks" class="card-body p-2">
+      <div>
       {{ $t('tracksSelectedDistance') }}: {{ checkedTracks|sumTracksDistance|roundTrackDistance }}
+      <font-awesome-icon @click="openCalendarModal" style="cursor: pointer; float: right;" :icon="['far', 'calendar']" size="lg" />
+      </div>
       <ul>
         <li v-if="countTracksByType(trackGroup.tracks, TrackType.walk) > 0">{{ $t('tracksSelectedDistanceWalk') }} {{ countWalkTracks(checkedTracks) }}: {{ checkedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
         <li v-if="countTracksByType(trackGroup.tracks, TrackType.bicycle) > 0">{{ $t('tracksSelectedDistanceBicycle') }} {{ countBicycleTracks(checkedTracks) }}: {{ checkedTracks|sumTracksDistanceBicycle|roundTrackDistance }}</li>
@@ -19,7 +22,39 @@
       <div v-for="track in trackGroup.tracks" :key="track.gpsTrack.id">
         <AppTrack v-show="showAppTrack(track)" :track="track" :highlightOnStart="highlightOnStart(track)"></AppTrack>
       </div>
+    </div>
+
+    <div ref="calendarModal" class="modal fade" tabindex="-1" role="dialog">
+      <info-modal :title="$t('calendar')">
+        <div style="display: inline-block;">
+        <span v-for="index in monthRange" :key="index" style="float: left; margin: 4px; margin-top: 20px; border: solid 1px; border-color: rgb(240, 240, 240);">
+          <center><b>{{ $t('month' + index) }}</b></center>
+          <table style="text-align: center" class="table-sm">
+            <tr>
+              <td><b>pon</b></td>
+              <td><b>wto</b></td>
+              <td><b>śro</b></td>
+              <td><b>czw</b></td>
+              <td><b>pią</b></td>
+              <td><b>sob</b></td>
+              <td><b>nie</b></td>
+            </tr>
+            <tr v-for="week in getCalendarLabels(index)" :key="week">
+              <td style="border: solid 1px white" v-for="day in week" :key="day" :style="{'background-color': day.track ? 'lightgreen' : 'white'}">
+                {{ day.label }}
+              </td>  
+            </tr>    
+          </table>  
+        </span>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" @click="closeCalendarModal">
+            <strong>{{ $t('close') }}</strong>
+          </button>
+        </div>
+      </info-modal>
     </div>  
+
   </div>
 </template>
 
@@ -115,6 +150,83 @@ export default class AppTrackGroup extends BaseComponent {
     if (!oneChecked && oneUnChecked) {
       return true;
     }
+  }
+
+  get reverseTracks() {
+    return [...this.trackGroup.tracks].reverse();
+  }
+
+  get firstMonth() {
+    if (this.reverseTracks.length) {
+      console.log(this.reverseTracks[0].gpsTrack.start_time)
+      return this.reverseTracks[0].gpsTrack.start_time.getMonth(); 
+    } else {
+      return 0;
+    }
+  }
+
+  get lastMonth() {
+    if (this.trackGroup.tracks.length) {
+      console.log(this.trackGroup.tracks[0].gpsTrack.start_time)
+      return this.trackGroup.tracks[0].gpsTrack.start_time.getMonth(); 
+    } else {
+      return 0;
+    }
+  }
+
+  private range(size:number, startAt:number = 0):ReadonlyArray<number> {
+    return [...Array(size).keys()].map(i => i + startAt);
+  }
+
+  get monthRange() {
+    return this.range(this.lastMonth - this.firstMonth + 1, this.firstMonth);
+  }
+
+  private openCalendarModal() {
+    this.openModal(this.$refs.calendarModal);
+  }
+
+  private closeCalendarModal() {
+    this.closeModal(this.$refs.calendarModal);
+  }
+
+  private getCalendarLabels(month: number) {
+    const firstDayOfMonth = new Date(this.trackGroup.tracks[0].gpsTrack.start_time.getFullYear(), month, 1);
+    let week = [];
+    let firstDay = firstDayOfMonth.getDay() - 1;
+    if (firstDay == -1) {
+      firstDay = 6;
+    }
+    const empty = this.range(firstDay);
+    for (let index in empty) {
+      week.push({'label': '', 'track': false});
+    }
+    const weeks = [];
+    let loopDay = new Date(this.trackGroup.tracks[0].gpsTrack.start_time.getFullYear(), month, 1);
+    while(loopDay.getMonth() == month) {
+      let wasTrack = false;
+      for(let track of this.trackGroup.tracks) {
+        const trackDateWithoutHours = new Date(track.gpsTrack.start_time);
+        trackDateWithoutHours.setHours(0, 0, 0, 0);
+        if ((loopDay.getMonth() == trackDateWithoutHours.getMonth()) && (loopDay.getDate() == trackDateWithoutHours.getDate()) && (loopDay.getFullYear() == trackDateWithoutHours.getFullYear())) {
+          wasTrack = true;
+        }
+      }
+      week.push({'label': loopDay.getDate(), 'track': wasTrack});
+      console.log('push to week');
+      if (week.length == 7) {
+        console.log('push to weeks...')
+        weeks.push(week)
+        week = [];
+      }
+      const newDate = loopDay.setDate(loopDay.getDate() + 1);
+      loopDay = new Date(newDate);
+    }
+    if (week.length > 0) {
+      weeks.push(week)
+    } 
+    console.log(weeks);
+    return weeks;
   }
 
   @Watch('allChecked')
