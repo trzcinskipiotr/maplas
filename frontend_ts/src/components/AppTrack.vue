@@ -46,6 +46,7 @@
             <font-awesome-icon @click="setEdited(track)" style="height: 24px; cursor: pointer" icon="lock"/>
           </span>
         </span>
+        <span v-if="! track.onServer" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('removeTrack')"><font-awesome-icon @click="removeImportedTrack" style="height: 24px; cursor: pointer" icon="trash"/></span>
       </div>
     </div>    
   </div>
@@ -373,6 +374,20 @@ export default class AppTrack extends BaseComponent {
   private onPointsChanged(value: string, oldValue: string) {
     this.showOrHideTrack();
     this.refreshTooltip();
+  }
+
+  private removeImportedTrack() {
+    if (this.rulerActive) {
+      this.toggleRuler();
+    }
+    this.track.removeMapObjects(this.$store.state.map);
+    this.$store.commit('removeImportedTrack', this.track);
+  }
+
+  public beforeDestroy() {
+    if (this.rulerActive) {
+      this.toggleRuler();
+    }
   }
 
 }

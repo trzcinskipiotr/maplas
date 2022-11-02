@@ -320,6 +320,18 @@ export default class TrackDetails extends BaseComponent {
     EventBus.$on('openSlideShowFullTrack' + this.track.gpsTrack.id, (index: number) => this.makeGallery(true, index));
   }
 
+  public beforeDestroy() {
+    if (this.timeLabelsVisible) {
+      this.showHideTimeLables();
+    }
+    if (this.speedLabelsVisible) {
+      this.showHideSpeedLables();
+    }
+    if (this.speedTrackVisible) {
+      this.colorTrackBySpeed();
+    }
+  }
+
   private toggleMaximizedDetails() {
     $(this.$refs.maximizedBody).slideToggle('fast');
     this.maximizedDetails = !this.maximizedDetails;

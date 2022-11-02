@@ -223,6 +223,7 @@ en: {
   search: 'Search...',
   openGallery: 'Open gallery',
   closeGallery: 'Close gallery',
+  removeTrack: 'Remove track',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -444,6 +445,7 @@ pl: {
   search: 'Szukaj...',
   openGallery: 'Otwórz galerię',
   closeGallery: 'Zamknij galerię',
+  removeTrack: 'Usuń trasę'
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});
