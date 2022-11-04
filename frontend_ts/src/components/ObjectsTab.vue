@@ -79,6 +79,10 @@ export default class ObjectsTab extends BaseComponent {
     }
   }
 
+  public mounted() {
+    EventBus.$on('RefreshPlacesGroups', this.onStorePlacesChanged);
+  }
+
   @Watch('checkedAll')
   private onCheckedAllChanged(value: boolean, oldValue: boolean) {
     for (const placeGroup in this.placeGroups) {

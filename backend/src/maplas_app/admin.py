@@ -11,8 +11,8 @@ class TrackAdmin(admin.ModelAdmin):
 
 @admin.register(Region)
 class RegionAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
-    search_fields = ('id', 'name')
+    list_display = ('id', 'name', 'pl', 'en')
+    search_fields = ('id', 'name', 'pl', 'en')
 
 class TrackDetails(Track):
     class Meta:
@@ -25,8 +25,8 @@ class TrackDetailsAdmin(admin.ModelAdmin):
 
 @admin.register(PlaceType)
 class PlaceTypeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name')
-    search_fields = ('name',)
+    list_display = ('id', 'name', 'icon', 'pl', 'en')
+    search_fields = ('id', 'name', 'icon', 'pl', 'en')
 
 @admin.register(Place)
 class PlaceAdmin(admin.ModelAdmin):

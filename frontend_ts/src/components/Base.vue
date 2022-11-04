@@ -76,6 +76,14 @@ export default class BaseComponent extends Vue {
     return count;
   }
 
+  public $t(key: string, array: []) {
+    if (key in this.$store.state.translations[this.$i18n.locale]) {
+      return this.$store.state.translations[this.$i18n.locale][key];
+    } else {
+      return this.$i18n.t(key, array);
+    }
+  }
+
 }
 </script>
 

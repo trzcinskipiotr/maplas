@@ -158,8 +158,11 @@ export default class AppTrackGroup extends BaseComponent {
 
   get firstMonth() {
     if (this.reverseTracks.length) {
-      console.log(this.reverseTracks[0].gpsTrack.start_time)
-      return this.reverseTracks[0].gpsTrack.start_time.getMonth(); 
+      if (this.reverseTracks[0].gpsTrack.start_time) {
+        return this.reverseTracks[0].gpsTrack.start_time.getMonth(); 
+      } else {
+        return 0;
+      }
     } else {
       return 0;
     }
@@ -167,8 +170,11 @@ export default class AppTrackGroup extends BaseComponent {
 
   get lastMonth() {
     if (this.trackGroup.tracks.length) {
-      console.log(this.trackGroup.tracks[0].gpsTrack.start_time)
-      return this.trackGroup.tracks[0].gpsTrack.start_time.getMonth(); 
+      if (this.trackGroup.tracks[0].gpsTrack.start_time) {
+        return this.trackGroup.tracks[0].gpsTrack.start_time.getMonth(); 
+      } else {
+        return 0;
+      }
     } else {
       return 0;
     }
@@ -191,41 +197,40 @@ export default class AppTrackGroup extends BaseComponent {
   }
 
   private getCalendarLabels(month: number) {
-    const firstDayOfMonth = new Date(this.trackGroup.tracks[0].gpsTrack.start_time.getFullYear(), month, 1);
-    let week = [];
-    let firstDay = firstDayOfMonth.getDay() - 1;
-    if (firstDay == -1) {
-      firstDay = 6;
-    }
-    const empty = this.range(firstDay);
-    for (let index in empty) {
-      week.push({'label': '', 'track': false});
-    }
     const weeks = [];
-    let loopDay = new Date(this.trackGroup.tracks[0].gpsTrack.start_time.getFullYear(), month, 1);
-    while(loopDay.getMonth() == month) {
-      let wasTrack = false;
-      for(let track of this.trackGroup.tracks) {
-        const trackDateWithoutHours = new Date(track.gpsTrack.start_time);
-        trackDateWithoutHours.setHours(0, 0, 0, 0);
-        if ((loopDay.getMonth() == trackDateWithoutHours.getMonth()) && (loopDay.getDate() == trackDateWithoutHours.getDate()) && (loopDay.getFullYear() == trackDateWithoutHours.getFullYear())) {
-          wasTrack = true;
+    if (this.trackGroup.tracks[0].gpsTrack.start_time) {
+      const firstDayOfMonth = new Date(this.trackGroup.tracks[0].gpsTrack.start_time.getFullYear(), month, 1);
+      let week = [];
+      let firstDay = firstDayOfMonth.getDay() - 1;
+      if (firstDay == -1) {
+        firstDay = 6;
+      }
+      const empty = this.range(firstDay);
+      for (let index in empty) {
+        week.push({'label': '', 'track': false});
+      }
+      let loopDay = new Date(this.trackGroup.tracks[0].gpsTrack.start_time.getFullYear(), month, 1);
+      while(loopDay.getMonth() == month) {
+        let wasTrack = false;
+        for(let track of this.trackGroup.tracks) {
+          const trackDateWithoutHours = new Date(track.gpsTrack.start_time);
+          trackDateWithoutHours.setHours(0, 0, 0, 0);
+          if ((loopDay.getMonth() == trackDateWithoutHours.getMonth()) && (loopDay.getDate() == trackDateWithoutHours.getDate()) && (loopDay.getFullYear() == trackDateWithoutHours.getFullYear())) {
+            wasTrack = true;
+          }
         }
+        week.push({'label': loopDay.getDate(), 'track': wasTrack});
+        if (week.length == 7) {
+          weeks.push(week)
+          week = [];
+        }
+        const newDate = loopDay.setDate(loopDay.getDate() + 1);
+        loopDay = new Date(newDate);
       }
-      week.push({'label': loopDay.getDate(), 'track': wasTrack});
-      console.log('push to week');
-      if (week.length == 7) {
-        console.log('push to weeks...')
+      if (week.length > 0) {
         weeks.push(week)
-        week = [];
-      }
-      const newDate = loopDay.setDate(loopDay.getDate() + 1);
-      loopDay = new Date(newDate);
+      } 
     }
-    if (week.length > 0) {
-      weeks.push(week)
-    } 
-    console.log(weeks);
     return weeks;
   }
 

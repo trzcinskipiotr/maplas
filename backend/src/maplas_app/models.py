@@ -21,6 +21,8 @@ from maplas_app.gps_utils import calculate_distance_from_segments
 
 class Region(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
+    pl = models.CharField(max_length=100, null=False, blank=False)
+    en = models.CharField(max_length=100, null=False, blank=False)
 
     def __str__(self):
         return self.name
@@ -95,6 +97,9 @@ class Track(models.Model):
 
 class PlaceType(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
+    icon = models.CharField(max_length=100, null=False, blank=False)
+    pl = models.CharField(max_length=100, null=False, blank=False)
+    en = models.CharField(max_length=100, null=False, blank=False)
 
     def __str__(self):
         return self.name

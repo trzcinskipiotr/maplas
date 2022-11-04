@@ -1088,6 +1088,8 @@ export default class Index extends BaseComponent {
         const regions = [];
         for (const responseRegion of response.data.results) {
           const region = new Region(responseRegion.id, responseRegion.name);
+          this.$store.commit('addTranslation', {lang: 'pl', key: responseRegion.name, value: responseRegion.pl})
+          this.$store.commit('addTranslation', {lang: 'en', key: responseRegion.name, value: responseRegion.en})
           regions.push(region);
         }
         this.$store.commit('setRegions', regions);
@@ -1103,7 +1105,7 @@ export default class Index extends BaseComponent {
   private processPlaces(results: any) {
     const places = [];
     for (const responsePlace of results) {
-      const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name);
+      const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name, responsePlace.type.icon);
       const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, responsePlace.approved, this.$store.state.map.getZoom(), !!this.$store.state.user);
       for (const responsePhoto of responsePlace.photo_set) {
         const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private);
@@ -1137,7 +1139,9 @@ export default class Index extends BaseComponent {
       (response) => {
         const placeTypes = [];
         for (const responsePlaceType of response.data.results) {
-          const placeType = new PlaceType(responsePlaceType.id, responsePlaceType.name);
+          const placeType = new PlaceType(responsePlaceType.id, responsePlaceType.name, responsePlaceType.icon);
+          this.$store.commit('addTranslation', {lang: 'pl', key: responsePlaceType.name, value: responsePlaceType.pl})
+          this.$store.commit('addTranslation', {lang: 'en', key: responsePlaceType.name, value: responsePlaceType.en})
           placeTypes.push(placeType);
         }
         this.$store.commit('setPlaceTypes', placeTypes);

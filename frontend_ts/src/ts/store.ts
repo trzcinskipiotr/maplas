@@ -37,6 +37,7 @@ export interface RootState {
   baseMaps: any;
   downloadThreads: number;
   areas: Area[];
+  translations: any,
 }
 
 const store: StoreOptions<RootState> = {
@@ -73,6 +74,7 @@ const store: StoreOptions<RootState> = {
     baseMaps: null,
     downloadThreads: 10,
     areas: Array<Area>(),
+    translations: {'pl': {}, 'en': {}},
   },
   getters: {
     selectedTracks: (state): Track[] => {
@@ -207,6 +209,9 @@ const store: StoreOptions<RootState> = {
         }
       }
     },
+    addTranslation(state, payload) {
+      state.translations[payload.lang][payload.key] = payload.value;
+    }
   },
   actions: {
   },

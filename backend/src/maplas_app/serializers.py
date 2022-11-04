@@ -20,7 +20,7 @@ class RegionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Region
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'pl', 'en']
 
 class TrackSerializerRegionNested(serializers.ModelSerializer):
     photo_set = serializers.SerializerMethodField()
@@ -67,7 +67,7 @@ class PlaceTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PlaceType
-        fields = ['id', 'name']
+        fields = ['id', 'name', 'icon', 'pl', 'en']
 
 class PhotoSerializer(serializers.ModelSerializer):
 
