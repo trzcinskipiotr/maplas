@@ -186,6 +186,12 @@ const store: StoreOptions<RootState> = {
         state.imports.splice(index, 1);
       }
     },
+    removePlannedTrack(state, track) {
+      const index = state.plannedTracks.indexOf(track);
+      if (index >= 0) {
+        state.plannedTracks.splice(index, 1);
+      }
+    },
     addTrack(state, track) {
       state.tracks.push(track);
     },

@@ -54,7 +54,7 @@
 </template>
 
 <script lang="ts">
-import L, { LatLng } from 'leaflet';
+import L, { LatLng, LeafletMouseEvent } from 'leaflet';
 import axios from 'axios';
 import $ from 'jquery';
 import BaseComponent from '@/components/Base.vue';
@@ -68,6 +68,7 @@ import gpxParse from 'gpx-parse';
 import { speedBetweenPoints, roundCoord, distanceBetweenPoints } from '@/ts/utils/coords';
 import Photo from '@/ts/Photo';
 import { EventBus } from '@/ts/EventBus';
+import GpsTrack from '@/ts/GpsTrack';
 
 @Component
 export default class AppTrack extends BaseComponent {
@@ -127,9 +128,21 @@ export default class AppTrack extends BaseComponent {
           this.unhighlightMapTrack();
         });
         mapTrack.off('click');
-        mapTrack.on('click', (e) => {
+        mapTrack.on('click', (e: LeafletMouseEvent) => {
           if (! this.$store.state.editedTrack) {
-            this.track.maximized = !this.track.maximized;
+            if (this.track.gpsTrack.status == TrackStatus.planned) {
+              if (e.originalEvent.ctrlKey) {
+                if (! this.track.onServer) {
+                  this.$store.commit('removePlannedTrack', this.track);
+                }
+              } else {
+                this.$store.commit('setEditedTrack', this.track);
+              }
+              L.DomEvent.stopPropagation(e);
+              return false;
+            } else {
+              this.track.maximized = !this.track.maximized;
+            }
           }
         });
       }
@@ -387,6 +400,9 @@ export default class AppTrack extends BaseComponent {
   public beforeDestroy() {
     if (this.rulerActive) {
       this.toggleRuler();
+    }
+    if (this.track.gpsTrack.status == TrackStatus.planned) {
+      this.track.removeMapObjects(this.$store.state.map);
     }
   }
 

@@ -13,6 +13,7 @@ import TrackGroup from '@/ts/TrackGroup';
 import GpsTrack from '@/ts/GpsTrack';
 import { TrackStatus, TrackType } from '@/ts/types';
 import Track from '@/ts/Track';
+import { EventBus } from '@/ts/EventBus';
 
 @Component
 export default class PlannedTracks extends BaseComponent {
@@ -31,6 +32,7 @@ export default class PlannedTracks extends BaseComponent {
     this.plannedGroup.label = 'plannedTracks';
     this.plannedGroup.translate = 'plannedTracks';
     this.plannedGroup.tracks = [];
+    EventBus.$on('newPlannedTrack', this.newPlannedTrack);
   }
 
   private newPlannedTrack() {

@@ -152,13 +152,19 @@
       </div>
     </div>
     <div id="cogsdiv" style="display: none;">
-      <div id="cogsdivinner" style="width: 48px; height: 48px;" @click="togglePanel" class="leaflet-touch leaflet-bar cogsbutton">
+      <div id="cogsdivinner" :style="{'width': '48px', 'height': '48px', 'background-color': menuOpened ? 'yellow' : 'white'}" @click="togglePanel" class="leaflet-touch leaflet-bar cogsbutton">
         <b-tooltip v-if="(document.getElementById('cogsdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('cogsdivinner')">{{ menuOpened ? $t('closeMenu') : $t('openMenu') }}</b-tooltip>
         <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="bars" size="lg"/>
       </div>
     </div>
+    <div id="rulerdiv" style="display: none;">
+      <div id="rulerdivinner" :style="{'width': '48px', 'height': '48px', 'background-color': $store.state.editedTrack ? 'yellow' : 'white'}" @click="rulerClick" class="leaflet-touch leaflet-bar cogsbutton">
+        <b-tooltip v-if="(document.getElementById('rulerdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('rulerdivinner')">{{ $store.state.editedTrack ? $t('closeRuler') : $t('openRuler') }}</b-tooltip>
+        <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="ruler-horizontal" size="lg"/>
+      </div>
+    </div>
     <div id="gallerydiv" style="display: none;">
-      <div id="gallerydivinner" style="width: 48px; height: 48px;" @click="toggleGalleryPanel" class="leaflet-touch leaflet-bar cogsbutton">
+      <div id="gallerydivinner" :style="{'width': '48px', 'height': '48px', 'background-color': galleryOpened ? 'yellow' : 'white'}" @click="toggleGalleryPanel" class="leaflet-touch leaflet-bar cogsbutton">
         <b-tooltip v-if="(document.getElementById('gallerydivinner')) && ($store.state.isDesktop)" :target="document.getElementById('gallerydivinner')">{{ galleryOpened ? $t('closeGallery') : $t('openGallery') }}</b-tooltip>
         <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="images" size="lg"/>
       </div>
@@ -489,6 +495,7 @@ export default class Index extends BaseComponent {
     this.addFullScreenControl();
     this.addCogsButton();
     this.addGalleryButton();
+    this.addRulerButton();
     this.addImportButton();
     this.addLocationButton();
     //this.addCurrentLocationControl();
@@ -499,6 +506,15 @@ export default class Index extends BaseComponent {
     this.downloadPlaceTypes();
     this.downloadAreas();
     this.noSleep = new NoSleep();
+  }
+
+  private rulerClick(e: Event) {
+    if (this.$store.state.editedTrack) {
+      this.$store.commit('setEditedTrack', null);
+    } else {
+      EventBus.$emit('newPlannedTrack');
+    }
+    e.stopPropagation();
   }
 
   private showAllTracks() {
@@ -872,6 +888,18 @@ export default class Index extends BaseComponent {
       },
     });
     this.$store.state.map!.addControl(new GalleryControl());
+  }
+  
+  private addRulerButton() {
+    const RulerControl = L.Control.extend({
+      options: {
+        position: 'topright',
+      },
+      onAdd: (map: L.Map) => {
+        return document.getElementById('rulerdivinner');
+      },
+    });
+    this.$store.state.map!.addControl(new RulerControl());
   }
 
   private createSpeedLegendControl() {
