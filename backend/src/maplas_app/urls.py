@@ -10,6 +10,7 @@ router.register(r'places', api_views.PlaceViewSet)
 router.register(r'placetypes', api_views.PlaceTypeViewSet)
 router.register(r'photos', api_views.PhotoViewSet)
 router.register(r'areas', api_views.AreaViewSet)
+router.register(r'maplayers', api_views.MapLayerViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),

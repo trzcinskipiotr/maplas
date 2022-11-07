@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin, CreateModelMixin, RetrieveModelMixin
 
 from maplas_app import serializers
-from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area
+from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer
 from maplas_app.utils import fill_array_from_gpx_file
 
 class TrackViewSet(ListModelMixin, UpdateModelMixin, RetrieveModelMixin, CreateModelMixin, viewsets.GenericViewSet):
@@ -41,6 +41,10 @@ class TrackViewSet(ListModelMixin, UpdateModelMixin, RetrieveModelMixin, CreateM
 class RegionViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = Region.objects.all().order_by('id')
     serializer_class = serializers.RegionSerializer
+
+class MapLayerViewSet(ListModelMixin, viewsets.GenericViewSet):
+    queryset = MapLayer.objects.filter(is_active=True).order_by('order')
+    serializer_class = serializers.MapLayerSerializer
 
 class PlaceViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
     queryset = Place.objects.all().order_by('id')

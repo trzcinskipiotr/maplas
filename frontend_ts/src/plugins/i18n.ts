@@ -205,6 +205,9 @@ en: {
   removeTrack: 'Remove track',
   openRuler: 'Start measure',
   closeRuler: 'Finish measure',
+  layersDownloaded: '{0} layers downloaded',
+  layersCache: '{0} layers loaded from cache',
+  layersError: 'Error during layers download',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -408,6 +411,9 @@ pl: {
   removeTrack: 'Usuń trasę',
   openRuler: 'Rozpocznij pomiar',
   closeRuler: 'Zakończ pomiar',
+  layersDownloaded: '{0} map ściągniętych',
+  layersCache: '{0} map wczytanych z cache',
+  layersError: 'Błąd podczas ściągania map',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

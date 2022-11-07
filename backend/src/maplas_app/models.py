@@ -230,3 +230,10 @@ class Area(models.Model):
     points_json = models.TextField(null=False, default='', blank=True)
     color = ColorField(null=True, blank=True)
     tile_indexes = models.TextField(null=False, default='', blank=True)
+
+class MapLayer(models.Model):
+    is_active = models.BooleanField(null=False, blank=True, default=True)
+    order = models.IntegerField(null=False, blank=False)
+    dict_key = models.CharField(max_length=100, null=False, blank=False)
+    display_name = models.CharField(max_length=100, null=False, blank=False)
+    javascript_code = models.TextField(null=False, blank=False)

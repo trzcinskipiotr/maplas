@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area
+from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer
 
 class PhotoSerializerUrlNested(serializers.ModelSerializer):
     image_fullhd = serializers.SerializerMethodField()
@@ -68,6 +68,12 @@ class PlaceTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = PlaceType
         fields = ['id', 'name', 'icon', 'pl', 'en']
+
+class MapLayerSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = MapLayer
+        fields = ['id', 'is_active', 'order', 'dict_key', 'display_name', 'javascript_code']
 
 class PhotoSerializer(serializers.ModelSerializer):
 

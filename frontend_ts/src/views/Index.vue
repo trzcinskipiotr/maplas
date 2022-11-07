@@ -482,14 +482,14 @@ export default class Index extends BaseComponent {
   private node: any = null;
   private VUE_APP_BUILD_DATE: string = null;
 
-  private mounted() {
+  private async mounted() {
     this.VUE_APP_BUILD_DATE = process.env.VUE_APP_BUILD_DATE;
     this.cache = !!this.$route.query.cache
     this.setLanguage();
     this.setAppHost();
     this.setStoreToken();
     this.createMap([52.743682, 16.273668], 11);
-    this.addLayers();
+    await this.downloadAndAddLayers();
     this.createSpeedLegendControl();
     this.addScaleControl();
     this.addFullScreenControl();
@@ -639,7 +639,63 @@ export default class Index extends BaseComponent {
     });
   }
 
-  private addLayers() {
+  private processMapLayers(result: {dict_key: string, javascript_code: string, display_name: string}[]) {
+    const layers: LayersDictionary = {};
+    let firstLayer = '';
+    this.baseMaps = {}
+    if (result.length > 0) {
+      for (const layer of result) {
+        layers[layer.dict_key] = eval(layer.javascript_code);
+        this.baseMaps[layer.display_name] = layers[layer.dict_key];
+        if (! firstLayer) {
+          firstLayer = layer.dict_key;
+        }
+      }
+    } else {
+      layers['openStreetMap'] = L.tileLayer('https://{s}.tile.osm.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+        subdomains: 'c',
+      });
+      this.baseMaps['OpenStreetMap'] = layers['openStreetMap'];
+      firstLayer = 'openStreetMap';
+    }
+
+    this.$store.state.baseMaps = this.baseMaps;
+
+    for (const layer in this.baseMaps) {
+      if (this.baseMaps.hasOwnProperty(layer)) {
+        this.baseMaps[layer].on('loading', (event) => {
+          this.tileLoading = true;
+        });
+        this.baseMaps[layer].on('load', (event) => {
+          this.tileLoading = false;
+        });
+      }
+    }
+
+    let availableLayers: string = '';
+    for (const layer in layers) {
+      if (layers.hasOwnProperty(layer)) {
+        availableLayers = availableLayers + layer + ', ';
+      }
+    }
+    /* tslint:disable-next-line */
+    console.log(`Available layers: ${availableLayers}`);
+
+    const maplayer: string = (typeof this.$route.query.maplayer === 'string') ? this.$route.query.maplayer : '';
+    L.control.layers(this.baseMaps).addTo(this.$store.state.map!);
+    if (layers.hasOwnProperty(maplayer)) {
+      layers[maplayer].addTo(this.$store.state.map!);
+    } else {
+      if (maplayer.length > 0) {
+        this.createAlert(AlertStatus.danger, `Param maplayer ${maplayer} provided, but layer not found in avaliable layers`, 2000);
+      }
+      layers[firstLayer].addTo(this.$store.state.map!);
+    }
+  }
+
+  private async downloadAndAddLayers() {
     const layers: LayersDictionary = {};
 
     let attributionString: string = '';
@@ -648,7 +704,23 @@ export default class Index extends BaseComponent {
       attributionString = '.';
     }
 
-    layers['mapboxStreets'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
+    const endPoint = this.$store.state.appHost + 'api/maplayers/';
+    if (this.cache) {
+      const results = await (window.cacheDB as LocalForage).getItem(endPoint);
+      this.processMapLayers(results);
+      this.createAlert(AlertStatus.success, this.$t('layersCache', [results.length]).toString(), 2000);
+    } else {
+      try {
+        const response = await axios.get(endPoint);
+        this.processMapLayers(response.data.results);
+        (window.cacheDB as LocalForage).setItem(endPoint, response.data.results);
+        this.createAlert(AlertStatus.success, this.$t('layersDownloaded', [response.data.results.length]).toString(), 2000);
+      } catch {
+        this.createAlert(AlertStatus.danger, this.$t('layersError').toString(), 2000);
+      };
+    }
+
+    /* layers['mapboxStreets'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
       maxZoom: 18,
       attribution: attributionString || 'Map data &copy; <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, ' +
         '<a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
@@ -793,11 +865,6 @@ export default class Index extends BaseComponent {
       errorTileUrl: 'img/tiledownloadfailed.jpg',
     });
 
-    //const corner1 = new L.LatLng(50.654115, 15.421577);
-    //const corner2 = new L.LatLng(50.882941, 15.873678);
-    //layers['karkonosze2016'] = L.imageOverlay('karkonosze2016.png', new L.LatLngBounds(corner1, corner2)).addTo(this.$store.state.map);
-
-
     this.baseMaps = {
       'OpenStreetMap': layers['openStreetMap'],
       'OpenStreetMapOffline': layers['openStreetMapOffline'],
@@ -822,38 +889,11 @@ export default class Index extends BaseComponent {
       'mapa-turystyczna.pl Offline': layers['mapaTurystycznaPLOffline'],
     };
 
-    this.$store.state.baseMaps = this.baseMaps;
+    //const corner1 = new L.LatLng(50.654115, 15.421577);
+    //const corner2 = new L.LatLng(50.882941, 15.873678);
+    //layers['karkonosze2016'] = L.imageOverlay('karkonosze2016.png', new L.LatLngBounds(corner1, corner2)).addTo(this.$store.state.map);
 
-    for (const layer in this.baseMaps) {
-      if (this.baseMaps.hasOwnProperty(layer)) {
-        this.baseMaps[layer].on('loading', (event) => {
-          this.tileLoading = true;
-        });
-        this.baseMaps[layer].on('load', (event) => {
-          this.tileLoading = false;
-        });
-      }
-    }
-
-    let availableLayers: string = '';
-    for (const layer in layers) {
-      if (layers.hasOwnProperty(layer)) {
-        availableLayers = availableLayers + layer + ', ';
-      }
-    }
-    /* tslint:disable-next-line */
-    console.log(`Available layers: ${availableLayers}`);
-
-    const maplayer: string = (typeof this.$route.query.maplayer === 'string') ? this.$route.query.maplayer : '';
-    L.control.layers(this.baseMaps).addTo(this.$store.state.map!);
-    if (layers.hasOwnProperty(maplayer)) {
-      layers[maplayer].addTo(this.$store.state.map!);
-    } else {
-      if (maplayer.length > 0) {
-        this.createAlert(AlertStatus.danger, `Param maplayer ${maplayer} provided, but layer not found in avaliable layers`, 2000);
-      }
-      layers['openStreetMap'].addTo(this.$store.state.map!);
-    }
+    */
   }
 
   private addOffline() {
