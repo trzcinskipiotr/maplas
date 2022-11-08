@@ -23,7 +23,7 @@ import './ts/L.CanvasLayer';
 
 import '@fortawesome/fontawesome-free/css/all.css';
 import { library } from '@fortawesome/fontawesome-svg-core';
-import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle, faFileUpload, faBars, faUpload, faCamera, faTrash, faUndo, faSearchPlus, faLock, faLockOpen, faMapMarker, faQuestion, faCheck, faQuestionCircle, faRulerHorizontal, faRulerVertical, faKey, faImages } from '@fortawesome/free-solid-svg-icons';
+import { faShoePrints, faBiking, faCircle, faSave, faDownload, faSearchLocation, faCogs, faSpinner, faChevronDown, faChevronUp, faPlay, faStopCircle, faFileUpload, faBars, faUpload, faCamera, faTrash, faUndo, faSearchPlus, faLock, faLockOpen, faMapMarker, faQuestion, faCheck, faQuestionCircle, faRulerHorizontal, faRulerVertical, faKey, faImages, faVideo } from '@fortawesome/free-solid-svg-icons';
 import { faCalendarTimes, faCalendarCheck, faWindowClose, faTimesCircle, faWindowMaximize, faCalendar } from '@fortawesome/free-regular-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 library.add(faShoePrints);
@@ -60,6 +60,7 @@ library.add(faRulerVertical);
 library.add(faKey);
 library.add(faImages);
 library.add(faCalendar);
+library.add(faVideo);
 Vue.component('font-awesome-icon', FontAwesomeIcon);
 
 import BootstrapVue from 'bootstrap-vue';

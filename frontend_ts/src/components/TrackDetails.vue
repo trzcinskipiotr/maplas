@@ -30,13 +30,32 @@
           <span v-if="track.onServer"><b>{{ $t('status') }}</b>: <TrackStatusIcon :gpsTrack="track.gpsTrack" height=12></TrackStatusIcon><br></span>
           <b>{{ $t('id') }}</b>: {{ track.gpsTrack.id }}<br>
           <span ref="gallerySpan"/>
-          <b>{{ $t('photos') }}</b>: {{ track.gpsTrack.photos.length }} <font-awesome-icon v-if="track.gpsTrack.photos.length" @click="clickOpenGallery" style="cursor: pointer" icon="images"/><br>
+          <b>{{ $t('photosAndMovies') }}</b>: 
+            {{ track.gpsTrack.photos.length }} <font-awesome-icon v-if="track.gpsTrack.photos.length" @click="clickOpenGallery" style="cursor: pointer" icon="images"/>&nbsp;
+            {{ track.gpsTrack.videos.length }} <font-awesome-icon v-if="track.gpsTrack.videos.length" @click="clickOpenVideos" style="cursor: pointer" icon="video"/><br>
           <template v-if="track.gpsTrack.gpx_file"><b>{{ $t('gpxFile') }}: </b>{{ track.gpsTrack.gpx_file.length|roundFileBytes }} <button @click="saveGPX" type="button" class="btn btn-primary btn-sm">Download</button><br><br></template>
           <template v-if="track.gpsTrack.gpx_file"><button @click="showHideTimeLables" type="button" class="btn btn-primary btn-sm">{{ timeLabelsVisible ? $t('hideTimeLabels') : $t('showTimeLabels') }}</button></template>&nbsp;
           <template v-if="track.gpsTrack.gpx_file"><button @click="showHideSpeedLables" type="button" class="btn btn-primary btn-sm">{{ speedLabelsVisible ? $t('hideSpeedLabels') : $t('showSpeedLabels') }}</button></template>&nbsp;&nbsp;
           <template v-if="track.gpsTrack.gpx_file"><button @click="colorTrackBySpeed" type="button" class="btn btn-primary btn-sm">{{ speedTrackVisible ? $t('hideSpeedTrack') : $t('showSpeedTrack') }}</button></template>&nbsp;
         </div>  
       </div>  
+    </div>
+    <div style="z-index: 1000000000;" ref="videoModal" class="modal fade" tabindex="-1" role="dialog">
+      <info-modal :title="$t('trackVideos')">
+        <div v-if="videoModalOpened">
+          <div v-for="video in track.gpsTrack.videos" :key="video.id">
+            <b>{{ video.name }}</b><br>
+            <div v-if="video.description">{{ video.description }}<br></div>
+            <br>
+            <center><div v-html="video.html"></div><br><br></center>
+          </div>
+        </div>  
+        <div class="modal-footer">
+          <button type="button" class="btn btn-primary" @click="closeVideoModal">
+            <strong>{{ $t('close') }}</strong>
+          </button>
+        </div>
+      </info-modal>
     </div>
   </div>
 </template>
@@ -70,6 +89,8 @@ export default class TrackDetails extends BaseComponent {
   private speedLabelsVisible = false;
   private speedPoints: {lat: number, lon: number, speed: number}[] = [];
   private canvasSpeedLayer: any = null;
+
+  private videoModalOpened = false;
   
   @Prop({ required: true }) private track: Track;
 
@@ -318,6 +339,17 @@ export default class TrackDetails extends BaseComponent {
     this.$refs.detailsWindowHeader.addEventListener('click', this.newZIndexForDetails);
     EventBus.$on('openSlideShowTrack' + this.track.gpsTrack.id, (index: number) => this.makeGallery(false, index));
     EventBus.$on('openSlideShowFullTrack' + this.track.gpsTrack.id, (index: number) => this.makeGallery(true, index));
+    EventBus.$on('openTrackVideoModal' + this.track.gpsTrack.id, this.clickOpenVideos);
+  }
+
+  private clickOpenVideos() {
+    this.videoModalOpened = true;
+    this.openModal(this.$refs.videoModal);
+  }
+
+  private closeVideoModal() {
+    this.videoModalOpened = false;
+    this.closeModal(this.$refs.videoModal);
   }
 
   public beforeDestroy() {

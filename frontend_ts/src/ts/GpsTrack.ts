@@ -3,6 +3,7 @@ import L from 'leaflet';
 import Region from '@/ts/Region';
 import Segment from '@/ts/Segment';
 import Photo from './Photo';
+import VideoLink from './VideoLink';
 
 export default class GpsTrack {
 
@@ -10,10 +11,12 @@ export default class GpsTrack {
     /* tslint:disable-next-line */
     public points_json: string = undefined;
     public photos: Photo[];
+    public videos: VideoLink[];
 
     /* tslint:disable-next-line */
     constructor(public id: number, public name: string, public description: string, public points_json_optimized: string, public color: string, public distance: number, public status: TrackStatus, public type: TrackType, public start_time: Date, public end_time: Date, public gpx_file: string, public region: Region) {
       this.photos = [];
+      this.videos = [];
       this.refreshSegments();
     }
 
@@ -27,6 +30,10 @@ export default class GpsTrack {
 
     public addPhoto(photo: Photo) {
       this.photos.push(photo);
+    }
+
+    public addVideo(video: VideoLink) {
+      this.videos.push(video);
     }
 
     public convertToApiTrackSave() {

@@ -7,11 +7,13 @@ import 'lg-fullscreen.js';
 import 'lg-zoom.js';
 import 'lg-hash.js';
 import 'lg-autoplay.js';
+import VideoLink from './VideoLink';
 
 export default class Place {
 
   public marker: L.Marker;
   public photos: Photo[];
+  public videos: VideoLink[];
 
   constructor(public id: number, public name: string, public description: string, public lat: number, public lon: number, public type: PlaceType, public approved: boolean, zoomLevel: number, draggable: boolean) {
     const markerSizeClass = this.getMarkerSizeClass(zoomLevel);
@@ -23,6 +25,7 @@ export default class Place {
     });
     this.marker = new L.Marker([lat, lon], {icon: markerIcon, draggable: draggable});
     this.photos = [];
+    this.videos = [];
   }
 
   public convertToApiPlaceSave() {
@@ -41,6 +44,10 @@ export default class Place {
 
   public addPhoto(photo: Photo) {
     this.photos.push(photo);
+  }
+
+  public addVideo(video: VideoLink) {
+    this.videos.push(video);
   }
 
   public getMarkerSizeClass(zoomLevel: number) {

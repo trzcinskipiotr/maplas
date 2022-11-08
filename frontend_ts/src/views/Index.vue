@@ -275,6 +275,7 @@ import Photo from '../ts/Photo';
 import NoSleep from 'nosleep.js';
 import { EventBus } from '@/ts/EventBus';
 import Area from '@/ts/Area';
+import VideoLink from '@/ts/VideoLink';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -1179,6 +1180,10 @@ export default class Index extends BaseComponent {
         const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private);
         place.addPhoto(photo);
       }
+      for (const responseVideoLink of responsePlace.videolink_set) {
+        const video = new VideoLink(responseVideoLink.id, responseVideoLink.name, responseVideoLink.description, responseVideoLink.link, responseVideoLink.html);
+        place.addVideo(video);
+      }
       places.push(place);
     }
     this.$store.commit('setPlaces', places);
@@ -1279,6 +1284,10 @@ export default class Index extends BaseComponent {
         for (const responsePhoto of gpstrack.photo_set) {
           const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private);
           newGpstrack.addPhoto(photo);
+        }
+        for (const responseVideoLink of gpstrack.videolink_set) {
+          const video = new VideoLink(responseVideoLink.id, responseVideoLink.name, responseVideoLink.description, responseVideoLink.link, responseVideoLink.html);
+          newGpstrack.addVideo(video);
         }
         if (newGpstrack.isDoneTrack()) {
           tracks.push(track);

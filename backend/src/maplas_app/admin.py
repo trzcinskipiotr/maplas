@@ -1,7 +1,7 @@
 from django.contrib import admin
 from imagekit.admin import AdminThumbnail
 
-from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer
+from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer, VideoLink
 
 
 @admin.register(Track)
@@ -46,6 +46,11 @@ class AreaAdmin(admin.ModelAdmin):
     search_fields = ('id', 'name', 'description')
 
 @admin.register(MapLayer)
-class MapLayer(admin.ModelAdmin):
+class MapLayerAdmin(admin.ModelAdmin):
     list_display = ('id', 'is_active', 'order', 'dict_key', 'display_name', 'javascript_code')
     search_fields = ('dict_key', 'display_name', 'javascript_code')
+
+@admin.register(VideoLink)
+class VideoLinkAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'description', 'link', 'html', 'track', 'place')
+    search_fields = ('name', 'description', 'link', 'html')

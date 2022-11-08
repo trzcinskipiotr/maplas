@@ -237,3 +237,11 @@ class MapLayer(models.Model):
     dict_key = models.CharField(max_length=100, null=False, blank=False)
     display_name = models.CharField(max_length=100, null=False, blank=False)
     javascript_code = models.TextField(null=False, blank=False)
+
+class VideoLink(models.Model):
+    name = models.CharField(max_length=1000, null=False, blank=False)
+    description = models.TextField(null=False, default='', blank=True)
+    link = models.CharField(max_length=1000, null=False, default='', blank=True)
+    html = models.TextField(null=False, blank=False)
+    track = models.ForeignKey(Track, null=True, on_delete=models.CASCADE, blank=True)
+    place = models.ForeignKey(Place, null=True, on_delete=models.CASCADE, blank=True)

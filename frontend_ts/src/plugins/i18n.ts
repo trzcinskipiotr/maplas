@@ -208,6 +208,9 @@ en: {
   layersDownloaded: '{0} layers downloaded',
   layersCache: '{0} layers loaded from cache',
   layersError: 'Error during layers download',
+  videos: 'Videos',
+  trackVideos: 'Track videos',
+  photosAndMovies: 'Photos and videos',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -414,6 +417,9 @@ pl: {
   layersDownloaded: '{0} map ściągniętych',
   layersCache: '{0} map wczytanych z cache',
   layersError: 'Błąd podczas ściągania map',
+  videos: 'Filmy',
+  trackVideos: 'Filmy z trasy',
+  photosAndMovies: 'Filmy i zdjęcia',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

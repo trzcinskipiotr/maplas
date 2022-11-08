@@ -1,6 +1,12 @@
 from rest_framework import serializers
 
-from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer
+from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer, VideoLink
+
+class VideoLinkSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = VideoLink
+        fields = ['id', 'name', 'description', 'link', 'html']
 
 class PhotoSerializerUrlNested(serializers.ModelSerializer):
     image_fullhd = serializers.SerializerMethodField()
@@ -25,6 +31,7 @@ class RegionSerializer(serializers.ModelSerializer):
 class TrackSerializerRegionNested(serializers.ModelSerializer):
     photo_set = serializers.SerializerMethodField()
     region = RegionSerializer()
+    videolink_set = VideoLinkSerializer(many=True)
 
     def get_photo_set(self, track):
         user = self.context['request'].user
@@ -35,7 +42,7 @@ class TrackSerializerRegionNested(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'photo_set']
+        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'photo_set', 'videolink_set']
 
 class TrackSerializer(serializers.ModelSerializer):
 
@@ -51,6 +58,7 @@ class TrackSerializerNoGpx(serializers.ModelSerializer):
 
 class TrackSerializerFull(serializers.ModelSerializer):
     photo_set = serializers.SerializerMethodField()
+    videolink_set = VideoLinkSerializer(many=True)
 
     def get_photo_set(self, track):
         user = self.context['request'].user
@@ -61,7 +69,7 @@ class TrackSerializerFull(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'points_json', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'gpx_file', 'upload_user', 'photo_set']
+        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'points_json', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'gpx_file', 'upload_user', 'photo_set', 'videolink_set']
 
 class PlaceTypeSerializer(serializers.ModelSerializer):
 
@@ -84,10 +92,11 @@ class PhotoSerializer(serializers.ModelSerializer):
 class PlaceSerializerTypeNested(serializers.ModelSerializer):
     type = PlaceTypeSerializer(many=False)
     photo_set = PhotoSerializerUrlNested(many=True)
+    videolink_set = VideoLinkSerializer(many=True)
 
     class Meta:
         model = Place
-        fields = ['id', 'name', 'description', 'lat', 'lon', 'type', 'approved', 'photo_set']
+        fields = ['id', 'name', 'description', 'lat', 'lon', 'type', 'approved', 'photo_set', 'videolink_set']
 
 class PlaceSerializer(serializers.ModelSerializer):
 

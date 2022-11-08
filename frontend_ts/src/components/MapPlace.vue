@@ -11,6 +11,12 @@
         <br><img ref="smallImage" :src="replaceHTTP(place.photos[0].image_thumb)" style="cursor: pointer; maxWidth: 300px; maxHeight: 300px" @click="makeGallery"><br>
         <span style="float: right; color: gray">{{ place.photos[0].org_filename }} {{ place.photos[0].exif_time_taken | formatDateSeconds }}</span><br>
       </span>
+      <span v-if="place.videos.length">
+        <div v-for="video in place.videos" :key="video.id">
+          <b>{{ video.name }}</b> {{ video.description }}<br>
+          <center><div v-html="video.html"></div></center>
+        </div>
+      </span> 
       {{ place.description }}<br>
       <span v-if="(place.marker.getLatLng().lat != place.lat) && (place.marker.getLatLng().lng != place.lon)">
         <font-awesome-icon style="cursor: pointer" icon="undo" @click="undoLocation" />&nbsp;
