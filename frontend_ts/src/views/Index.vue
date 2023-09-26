@@ -974,8 +974,22 @@ export default class Index extends BaseComponent {
   private locationWatchID: number;
   private followLocation = false;
 
+  private currentLocationTrack = [];
+  private currentLocationTrackOnMap: L.Polyline;
+
   private updateGPSPosition(position: Position) {
      this.currentLocation = [position.coords.latitude, position.coords.longitude];
+     this.currentLocationTrack.push(this.currentLocation);
+     if (this.currentLocationTrackOnMap) {
+       this.currentLocationTrackOnMap.removeFrom(this.$store.state.map);
+     }
+     this.currentLocationTrackOnMap = new L.Polyline(this.currentLocationTrack, {
+        color: 'red',
+        weight: 5,
+        opacity: 1,
+        smoothFactor: 1,
+      });
+     this.currentLocationTrackOnMap.addTo(this.$store.state.map);
      this.locationMarker.setLatLng(this.currentLocation);
      if (this.followLocation) {
        this.$store.state.map.panTo(this.currentLocation);
@@ -985,9 +999,11 @@ export default class Index extends BaseComponent {
   private toggleLocation(e) {
     if (this.locationActive) {
       this.locationMarker.removeFrom(this.$store.state.map);
+      this.currentLocationTrackOnMap.removeFrom(this.$store.state.map);
       this.currentLocation = null;
       this.locationActive = false;
       this.followLocation = false;
+      this.currentLocationTrack = [];
       navigator.geolocation.clearWatch(this.locationWatchID);
     } else {
       if (navigator.geolocation) {
@@ -998,6 +1014,7 @@ export default class Index extends BaseComponent {
         this.locationMarker.addTo(this.$store.state.map);
         this.followLocation = true;
         this.currentLocation = null;
+        this.currentLocationTrack = [];
         this.locationWatchID = navigator.geolocation.watchPosition(this.updateGPSPosition);
         this.locationActive = true;
       }
