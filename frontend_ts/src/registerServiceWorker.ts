@@ -2,8 +2,21 @@
 
 import { register } from 'register-service-worker';
 
-if (process.env.NODE_ENV === 'production') {
-  register(`${process.env.BASE_URL}service-worker.js`, {
+if ((process.env.NODE_ENV === 'production') && (process.env.VUE_APP_PWA)) {
+
+  let isControlled = Boolean(navigator.serviceWorker.controller);
+
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (isControlled) {
+      // ...and if the page was previosly controlled, reload the page.
+      window.location.reload();
+    } else {
+      // ...otherwise, set the flag for future updates, but don't reload.
+      isControlled = true;
+    }
+  });
+
+  register(`${process.env.BASE_URL}service-worker-reload.js`, {
     ready() {
       console.log(
         'App is being served from cache by a service worker.\n' +

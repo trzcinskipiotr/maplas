@@ -31,6 +31,7 @@ export interface RootState {
   editedTrack: Track;
   editedArea: Area;
   isDesktop: boolean;
+  pwa: boolean;
   minimalZoom: number;
   maximalZoom: number;
   offlineControl: any;
@@ -68,6 +69,7 @@ const store: StoreOptions<RootState> = {
     editedTrack: null,
     editedArea: null,
     isDesktop: document.documentElement.clientWidth >= 700,
+    pwa: process.env.VUE_APP_PWA,
     minimalZoom: 5,
     maximalZoom: 18,
     offlineControl: null,
