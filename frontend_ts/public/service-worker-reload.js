@@ -15,7 +15,14 @@ workbox.core.setCacheNameDetails({prefix: "frontend_ts"});
 self.addEventListener('install', event => {
     console.log(`Event fired: ${event.type}`);
     console.log(event);
-	self.skipWaiting();
+    event.waitUntil(
+      caches.open('maplas-grzyby-pwa-djangoapp-api').then(cache => {
+        console.log('SW: Cache opened');
+      }).catch(error => {
+        console.error(error);
+      })
+    );
+	  self.skipWaiting();
 });
 
 self.addEventListener('activate', event => {
@@ -23,6 +30,33 @@ self.addEventListener('activate', event => {
     console.log(event);
 });
 
+self.addEventListener('fetch', event => {
+  if (event.request.url.includes('/djangoapp/api/')) {
+    event.respondWith(
+      fetch(event.request).then(response => {
+        if (response && response.status == 200) {
+          let responseClone = response.clone();
+          caches.open('maplas-grzyby-pwa-djangoapp-api').then(cache => {
+            cache.put(event.request, responseClone);
+          })
+          return response;
+        } else {
+          return response;
+        }
+      }).catch(() => {
+        return caches.match(event.request).then(response => {
+          if (response) {
+            return response;
+          }
+        })
+      })
+    );
+    console.log(event.request.url);
+  }
+});
+
 self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.suppressWarnings();
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
+
+const SERVICE_WORKER_VERSION = 2;
