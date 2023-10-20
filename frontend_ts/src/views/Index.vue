@@ -971,7 +971,7 @@ export default class Index extends BaseComponent {
   }
 
   private currentLocation: [number, number] = null;
-  private locationWatchID: number;
+  //private locationWatchID: number;
   private followLocation = false;
 
   private currentLocationTrack = [];
@@ -996,6 +996,9 @@ export default class Index extends BaseComponent {
      }
   }
 
+  private locationInterval = 0;
+  private lastTime = 0;
+
   private toggleLocation(e) {
     if (this.locationActive) {
       this.locationMarker.removeFrom(this.$store.state.map);
@@ -1004,20 +1007,47 @@ export default class Index extends BaseComponent {
       this.locationActive = false;
       this.followLocation = false;
       this.currentLocationTrack = [];
-      navigator.geolocation.clearWatch(this.locationWatchID);
+      this.lastTime = 0;
+      clearInterval(this.locationInterval);
+      //navigator.geolocation.clearWatch(this.locationWatchID);
     } else {
-      if (navigator.geolocation) {
-        if (! this.locationMarker) {
-          this.locationMarker = new L.CircleMarker([0, 0], {radius: 11, fill: true, fillOpacity: 0.5});
-        }
-        this.locationMarker.setLatLng([0, 0]);
-        this.locationMarker.addTo(this.$store.state.map);
-        this.followLocation = true;
-        this.currentLocation = null;
-        this.currentLocationTrack = [];
-        this.locationWatchID = navigator.geolocation.watchPosition(this.updateGPSPosition);
-        this.locationActive = true;
+      if (! this.locationMarker) {
+        this.locationMarker = new L.CircleMarker([0, 0], {radius: 11, fill: true, fillOpacity: 0.5});
       }
+      this.locationMarker.setLatLng([0, 0]);
+      this.locationMarker.addTo(this.$store.state.map);
+      this.followLocation = true;
+      this.currentLocation = null;
+      this.currentLocationTrack = [];
+      this.lastTime = 0;
+      this.locationInterval = setInterval(() => {
+        axios.get('http://localhost:10000/?since=' + this.lastTime).then((response) => {
+          const data = response.data;
+          for(const point of data.trackPoints) {
+            this.currentLocation = [point.lat, point.lon];  
+            this.currentLocationTrack.push(this.currentLocation);
+            this.lastTime = point.time;
+          }
+          if (this.currentLocationTrackOnMap) {
+            this.currentLocationTrackOnMap.removeFrom(this.$store.state.map);
+          }
+          if (this.currentLocation) {
+            this.currentLocationTrackOnMap = new L.Polyline(this.currentLocationTrack, {
+              color: 'red',
+              weight: 5,
+              opacity: 1,
+              smoothFactor: 1,
+            });
+            this.currentLocationTrackOnMap.addTo(this.$store.state.map);
+            this.locationMarker.setLatLng(this.currentLocation);
+            if (this.followLocation) {
+              this.$store.state.map.panTo(this.currentLocation);
+            }
+          }
+        })
+      }, 1000)
+      //this.locationWatchID = navigator.geolocation.watchPosition(this.updateGPSPosition);
+      this.locationActive = true;
     }
     e.stopPropagation();
   }
