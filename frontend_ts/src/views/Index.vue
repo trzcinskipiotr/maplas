@@ -276,6 +276,7 @@ import NoSleep from 'nosleep.js';
 import { EventBus } from '@/ts/EventBus';
 import Area from '@/ts/Area';
 import VideoLink from '@/ts/VideoLink';
+import moment from 'moment';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -971,45 +972,31 @@ export default class Index extends BaseComponent {
   }
 
   private currentLocation: [number, number] = null;
-  //private locationWatchID: number;
   private followLocation = false;
 
-  private currentLocationTrack = [];
+  private currentLocationTrack: any = [];
   private currentLocationTrackOnMap: L.Polyline;
-
-  private updateGPSPosition(position: Position) {
-     this.currentLocation = [position.coords.latitude, position.coords.longitude];
-     this.currentLocationTrack.push(this.currentLocation);
-     if (this.currentLocationTrackOnMap) {
-       this.currentLocationTrackOnMap.removeFrom(this.$store.state.map);
-     }
-     this.currentLocationTrackOnMap = new L.Polyline(this.currentLocationTrack, {
-        color: 'red',
-        weight: 5,
-        opacity: 1,
-        smoothFactor: 1,
-      });
-     this.currentLocationTrackOnMap.addTo(this.$store.state.map);
-     this.locationMarker.setLatLng(this.currentLocation);
-     if (this.followLocation) {
-       this.$store.state.map.panTo(this.currentLocation);
-     }
-  }
-
   private locationInterval = 0;
   private lastTime = 0;
 
-  private toggleLocation(e) {
+  private formatDateMs(date: any) {
+    return moment(date).format('DD.MM.YYYY H:mm:ss.SSS');
+  }
+
+  private toggleLocationWithDebug(e) {
     if (this.locationActive) {
-      this.locationMarker.removeFrom(this.$store.state.map);
-      this.currentLocationTrackOnMap.removeFrom(this.$store.state.map);
+      if (this.locationMarker) {
+        this.locationMarker.removeFrom(this.$store.state.map);
+      }
+      if (this.currentLocationTrackOnMap) {
+        this.currentLocationTrackOnMap.removeFrom(this.$store.state.map);
+      }
       this.currentLocation = null;
       this.locationActive = false;
       this.followLocation = false;
       this.currentLocationTrack = [];
       this.lastTime = 0;
       clearInterval(this.locationInterval);
-      //navigator.geolocation.clearWatch(this.locationWatchID);
     } else {
       if (! this.locationMarker) {
         this.locationMarker = new L.CircleMarker([0, 0], {radius: 11, fill: true, fillOpacity: 0.5});
@@ -1021,8 +1008,12 @@ export default class Index extends BaseComponent {
       this.currentLocationTrack = [];
       this.lastTime = 0;
       this.locationInterval = setInterval(() => {
+        const date = Date.now();
+        console.log('Running setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date + ' (' + this.formatDateMs(date) + ')');
         axios.get('http://localhost:10000/?since=' + this.lastTime).then((response) => {
           const data = response.data;
+          const date2 = Date.now();
+          console.log('Running axios.get then function with since = ' + data.since + ' (' + this.formatDateMs(data.since) + '), responseTimestamp = ' + data.responseTimestamp + ', responseDate = ' + data.responseDate + ' at ' + date2 + ' (' + this.formatDateMs(date2) + '), points: ' + data.trackPoints.length);
           for(const point of data.trackPoints) {
             this.currentLocation = [point.lat, point.lon];  
             this.currentLocationTrack.push(this.currentLocation);
@@ -1044,9 +1035,86 @@ export default class Index extends BaseComponent {
               this.$store.state.map.panTo(this.currentLocation);
             }
           }
+        }).catch(() => {
+          console.log('Running axios.get catch function at ' + Date.now());
         })
+        const date3 = Date.now();
+        console.log('Ending setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date3 + ' (' + this.formatDateMs(date3) + ')');
       }, 1000)
-      //this.locationWatchID = navigator.geolocation.watchPosition(this.updateGPSPosition);
+      this.locationActive = true;
+    }
+    e.stopPropagation();
+  }
+
+  private processingLocationInterval = false;
+
+  private toggleLocation(e) {
+    if (this.locationActive) {
+      if (this.locationMarker) {
+        this.locationMarker.removeFrom(this.$store.state.map);
+      }
+      if (this.currentLocationTrackOnMap) {
+        this.currentLocationTrackOnMap.removeFrom(this.$store.state.map);
+      }
+      this.currentLocation = null;
+      this.locationActive = false;
+      this.followLocation = false;
+      this.currentLocationTrack = [];
+      this.lastTime = 0;
+      clearInterval(this.locationInterval);
+    } else {
+      if (! this.locationMarker) {
+        this.locationMarker = new L.CircleMarker([0, 0], {radius: 11, fill: true, fillOpacity: 0.5});
+      }
+      this.locationMarker.setLatLng([0, 0]);
+      this.locationMarker.addTo(this.$store.state.map);
+      this.followLocation = true;
+      this.currentLocation = null;
+      this.currentLocationTrack = [];
+      this.lastTime = 0;
+      this.locationInterval = setInterval(() => {
+        if (this.processingLocationInterval == false) {
+          this.processingLocationInterval = true;
+          const date = Date.now();
+          console.log('Running setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date + ' (' + this.formatDateMs(date) + ')');
+          axios.get('http://localhost:10000/?since=' + this.lastTime).then((response) => {
+            const data = response.data;
+            const date2 = Date.now();
+            console.log('Running axios.get then function with since = ' + data.since + ' (' + this.formatDateMs(data.since) + '), responseTimestamp = ' + data.responseTimestamp + ', responseDate = ' + data.responseDate + ' at ' + date2 + ' (' + this.formatDateMs(date2) + '), points: ' + data.trackPoints.length);
+            for(const point of data.trackPoints) {
+              this.currentLocation = [point.lat, point.lon];  
+              this.currentLocationTrack.push(this.currentLocation);
+              this.lastTime = point.time;
+            }
+            if (this.currentLocationTrackOnMap) {
+              this.currentLocationTrackOnMap.removeFrom(this.$store.state.map);
+            }
+            if (this.currentLocation) {
+              this.currentLocationTrackOnMap = new L.Polyline(this.currentLocationTrack, {
+                color: 'red',
+                weight: 5,
+                opacity: 1,
+                smoothFactor: 1,
+              });
+              this.currentLocationTrackOnMap.addTo(this.$store.state.map);
+              this.locationMarker.setLatLng(this.currentLocation);
+              if (this.followLocation) {
+                this.$store.state.map.panTo(this.currentLocation);
+              }
+            }
+          }).catch(() => {
+            console.log('Running axios.get catch function at ' + Date.now());
+          }).finally(() => {
+            this.processingLocationInterval = false;
+          })
+          const date3 = Date.now();
+          console.log('Ending setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date3 + ' (' + this.formatDateMs(date3) + ')');
+        } else {
+          const date3 = Date.now();
+          console.log('Skipping...');
+          console.log('Skipping setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date3 + ' (' + this.formatDateMs(date3) + ')');
+        }
+      }, 1000)
       this.locationActive = true;
     }
     e.stopPropagation();
