@@ -1077,7 +1077,7 @@ export default class Index extends BaseComponent {
           this.processingLocationInterval = true;
           const date = Date.now();
           console.log('Running setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date + ' (' + this.formatDateMs(date) + ')');
-          axios.get('http://192.168.1.15:10000/?since=' + this.lastTime).then((response) => {
+          axios.get('https://192.168.1.15:10000/?since=' + this.lastTime).then((response) => {
             const data = response.data;
             const date2 = Date.now();
             console.log('Running axios.get then function with since = ' + data.since + ' (' + this.formatDateMs(data.since) + '), responseTimestamp = ' + data.responseTimestamp + ', responseDate = ' + data.responseDate + ' at ' + date2 + ' (' + this.formatDateMs(date2) + '), points: ' + data.trackPoints.length);
