@@ -1050,7 +1050,7 @@ export default class Index extends BaseComponent {
     e.stopPropagation();
   }
 
-  private processingLocationInterval = false;
+  //private processingLocationInterval = false;
 
   private toggleLocation(e) {
     if (this.locationActive) {
@@ -1077,19 +1077,24 @@ export default class Index extends BaseComponent {
       this.currentLocationTrack = [];
       this.lastTime = 0;
       this.locationInterval = setInterval(() => {
-        if (this.processingLocationInterval == false) {
-          this.processingLocationInterval = true;
+        //if (this.processingLocationInterval == false) {
+        //  this.processingLocationInterval = true;
           const date = Date.now();
           console.log('Running setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date + ' (' + this.formatDateMs(date) + ')');
           const rand = this.getRandomInt(1000000);
-          axios.get('https://192.168.1.15:10000/?since=' + this.lastTime + '&rand=' + rand).then((response) => {
+          axios.get('http://127.0.0.1:10000/?since=' + this.lastTime + '&rand=' + rand).then((response) => {
             const data = response.data;
             const date2 = Date.now();
             console.log('Running axios.get then function with since = ' + data.since + ' (' + this.formatDateMs(data.since) + '), responseTimestamp = ' + data.responseTimestamp + ', responseDate = ' + data.responseDate + ' at ' + date2 + ' (' + this.formatDateMs(date2) + '), points: ' + data.trackPoints.length);
             for(const point of data.trackPoints) {
-              this.currentLocation = [point.lat, point.lon];  
-              this.currentLocationTrack.push(this.currentLocation);
-              this.lastTime = point.time;
+              if (point.time > this.lastTime) {
+                this.currentLocation = [point.lat, point.lon];  
+                this.currentLocationTrack.push(this.currentLocation);
+                this.lastTime = point.time;
+              } else {
+                const date3 = Date.now();
+                console.log('Skipping adding point (current lastTime = ' + this.lastTime + ') with time = ' + point.time + ' ('+ this.formatDateMs(point.time) + ') at ' + date3 + ' (' + this.formatDateMs(date3) + ')');
+              }
             }
             if (this.currentLocationTrackOnMap) {
               this.currentLocationTrackOnMap.removeFrom(this.$store.state.map);
@@ -1109,16 +1114,17 @@ export default class Index extends BaseComponent {
             }
           }).catch(() => {
             console.log('Running axios.get catch function at ' + Date.now());
-          }).finally(() => {
-            this.processingLocationInterval = false;
           })
+          //.finally(() => {
+          //  this.processingLocationInterval = false;
+          //})
           const date3 = Date.now();
           console.log('Ending setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date3 + ' (' + this.formatDateMs(date3) + ')');
-        } else {
-          const date3 = Date.now();
-          console.log('Skipping...');
-          console.log('Skipping setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date3 + ' (' + this.formatDateMs(date3) + ')');
-        }
+        //} else {
+        //  const date3 = Date.now();
+        //  console.log('Skipping...');
+        //  console.log('Skipping setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date3 + ' (' + this.formatDateMs(date3) + ')');
+        //}
       }, 1000)
       this.locationActive = true;
     }
