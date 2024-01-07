@@ -1082,7 +1082,7 @@ export default class Index extends BaseComponent {
           const date = Date.now();
           console.log('Running setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date + ' (' + this.formatDateMs(date) + ')');
           const rand = this.getRandomInt(1000000);
-          axios.get('http://127.0.0.1:10000/?since=' + this.lastTime + '&rand=' + rand).then((response) => {
+          axios.get('http://127.0.0.1:10000/?since=' + this.lastTime + '&rand=' + rand, {timeout: 5000}).then((response) => {
             const data = response.data;
             const date2 = Date.now();
             console.log('Running axios.get then function with since = ' + data.since + ' (' + this.formatDateMs(data.since) + '), responseTimestamp = ' + data.responseTimestamp + ', responseDate = ' + data.responseDate + ' at ' + date2 + ' (' + this.formatDateMs(date2) + '), points: ' + data.trackPoints.length);
