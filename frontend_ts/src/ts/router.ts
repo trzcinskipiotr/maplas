@@ -16,12 +16,12 @@ export default new Router({
       component: Index,
     },
     {
-      path: '/off',
+      path: '/off.html',
       name: 'indexoff',
       component: IndexOff,
     },
     {
-      path: '/test',
+      path: '/test.html',
       name: 'test',
       component: Test,
     },
