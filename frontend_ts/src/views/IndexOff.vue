@@ -31,7 +31,7 @@ export default class Index extends BaseComponent {
         leafletMap.setView({lat: 52.809699, lng: 16.1748232}, 18);
 
         const saveControl = savetiles(baseLayer, {
-            zoomlevels: [8, 18],
+            zoomlevels: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
             alwaysDownload: false,
             parallel: 5,
             confirm(layer, successCallback) {
