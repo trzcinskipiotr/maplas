@@ -113,8 +113,9 @@ import FileSaver from 'file-saver';
 import { TranslateResult } from 'vue-i18n';
 import { point } from 'leaflet';
 import Area from '@/ts/Area';
-import {getAllKeys, removeKeyFromDB, clearDBs, countKeysInDBs, countKeysInDBsSum} from '@/ts/utils/db';
+import {removeKeyFromDB, clearDBs, countKeysInDBs, countKeysInDBsSum} from '@/ts/utils/db';
 import axios from 'axios';
+import { getStorageLength, truncate, getAllKeys, removeTile, getAllValues, saveTile } from '../../other/leafletoffline';
 
 @Component
 export default class OfflineCard extends BaseComponent {
@@ -195,8 +196,8 @@ export default class OfflineCard extends BaseComponent {
   private downloadOffline() {
     if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline') || (this.layerName == 'mapa-turystyczna.pl Offline')) {
       this.saving = true;
-      this.$store.state.offlineControl._baseLayer.options.sims = this.$store.state.downloadThreads;
-      setTimeout(() => this.$store.state.offlineControl._saveTiles(this.useCache, this.area), 100);
+      this.$store.state.offlineControl.options.parallel = this.$store.state.downloadThreads;
+      setTimeout(() => this.$store.state.offlineControl._saveTiles(), 100);
     } else {
       this.showMessageError(this.$t('mapNotOffline'));
     }
@@ -286,7 +287,7 @@ export default class OfflineCard extends BaseComponent {
     }
     if (window.confirm(this.$t('removeTiles', [tiles.length]))) {
       for(const tile of tiles) {
-        await removeKeyFromDB(tile)
+        await removeTile(tile)
       }
       this.deleting = false;
       this.showMessageDiv(this.$t('bitmapsRemoved'));
@@ -297,9 +298,9 @@ export default class OfflineCard extends BaseComponent {
 
   private async clearOffline() {
     this.clearing = true;
-    const sum = await countKeysInDBsSum()
+    const sum = await getStorageLength();
     if(window.confirm(this.$t('removeAllTitles', [sum]))) {
-      await clearDBs();
+      const result = await truncate();
       this.showMessageDiv(this.$t('allBitmapsRemoved'));
       this.clearing = false;
     } else {
@@ -309,14 +310,7 @@ export default class OfflineCard extends BaseComponent {
 
   private async countGlobalOffline() {
     this.countingGlobal = true;
-    const values = await countKeysInDBs();
-    let result = '';
-    let sum = 0;
-    for(const value of values) {
-      result = result + value + ', ';
-      sum = sum + value;
-    }
-    result = result + sum;
+    const result = await getStorageLength();
     this.showMessageDiv(result);
     this.countingGlobal = false;
   }
@@ -390,7 +384,7 @@ export default class OfflineCard extends BaseComponent {
     const fileStream = streamSaver.createWriteStream('offline_maps_' + date + '.txt');
     const writer = fileStream.getWriter();
     let dbIndex = 1;
-    for(const db of window.dbs) {
+    //for(const db of window.dbs) {
       let results = {};
       if (keys) {
         const maxVar = 999;
@@ -400,7 +394,7 @@ export default class OfflineCard extends BaseComponent {
           results = {...results, ...loopResults};
         }
       } else {
-        results = await db.getItems(null);
+        results = await getAllValues();
       }
       let done = 0;
       let total = 0;
@@ -408,11 +402,11 @@ export default class OfflineCard extends BaseComponent {
         total = total + 1;
       }
       let lineToSave = '';
-      for (const result in results) {
-        const data = results[result];
+      for (const result of results) {
+        const data = result['blob'];
         const reader = new FileReader();
         const b64 = await this.readFile(data) as string;
-        lineToSave = lineToSave + result + '$' + b64 + '#';
+        lineToSave = lineToSave + result['key'] + '$' + result['urlTemplate'] + '$' + result['x'] + '$' + result['y'] + '$' + result['z'] + '$' + result['createdAt'] + '$' + b64 + '#';
         done = done + 1;
         if ((lineToSave.length > 1024*1024*50) || (done === total)) {
           writer.write(encode(lineToSave));
@@ -421,7 +415,7 @@ export default class OfflineCard extends BaseComponent {
         this.showMessage('' + dbIndex + '/' + window.dbCount + ': ' + done + '/' + total)
       }
       dbIndex = dbIndex + 1;
-    }
+    //}
     writer.close();
     this.exporting = false;
   }
@@ -465,31 +459,25 @@ export default class OfflineCard extends BaseComponent {
     FileSaver.saveAs(blob, name);
   }
 
-  private async setOnItem(key: string, value: any) {
-    const response = await fetch(value);
-    const blob = await response.blob();
-    const result = await localforage.setItem(key, blob);
-  }
-
   private async importToDB(file: File, startByte: number, result: string) {
-    const obj: any = {}
-    for (let index = 0; index < window.dbCount; index++) {
-      obj[index] = {};
-    }
-    const tab = result.split('#');
     if (! result.endsWith('#')) {
       this.showMessageError(this.$t('importToDBError'));
       return;
     }
-    const total = tab.length - 1;
+    const tab = result.split('#');
+    const valuesToAdd = [];
     for (const el of tab) {
       const tab2 = el.split('$');
-      if (tab2.length === 2) {
+      if (tab2.length === 7) {
         const key = tab2[0];
-        const value = tab2[1];
-        const blobRegex = value.match('data:(.*);base64,(.*)');
-        const dbIndex = window.getDBIndex(key);
-        obj[dbIndex][key] = '__lfsc__:blob~~local_forage_type~' + blobRegex[1] + '~' + blobRegex[2];
+        const template = tab2[1];
+        const x = Number(tab2[2]);
+        const y = Number(tab2[3]);
+        const z = Number(tab2[4]);
+        const createdAt = Number(tab2[5]);
+        const value = tab2[6];
+        const blob = await (await fetch(value)).blob(); 
+        valuesToAdd.push({'blob': blob, 'tile': {key: key, url: key, createdAt: createdAt, urlTemplate: template, x: x, y: y, z: z}})
         this.totalImported = this.totalImported + 1;
         const MBs = Math.round((startByte + result.length) / (1024 * 1024))
         this.showMessage(this.$t('importProgressLine', [MBs, this.totalImported]));
@@ -500,15 +488,10 @@ export default class OfflineCard extends BaseComponent {
         }
       }
     }
-    const promises = [];
-    for (let index = 0; index < window.dbCount; index++) {
-      const db = window.dbs[index] as LocalForage;
-      const promise = db.setItems(obj[index]);
-      promises.push(promise);
+    for(const value of valuesToAdd) {
+      saveTile(value['tile'], value['blob']);
     }
-    Promise.all(promises).then(() => {
-      this.processFile(file, startByte + result.length);
-    });
+    this.processFile(file, startByte + result.length);
   }
 
   private processFile(file: File, startByte: number) {

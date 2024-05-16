@@ -39,7 +39,7 @@
      * getStorageLength().then(i => console.log(i + 'tiles in storage'))
      * ```
      */
-    async function getStorageLength() {
+    export async function getStorageLength() {
       const db = await openTilesDataBase();
       return db.count(tileStoreName);
     }
@@ -55,6 +55,22 @@
       const range = IDBKeyRange.only(urlTemplate);
       const db = await openTilesDataBase();
       return db.getAllFromIndex(tileStoreName, urlTemplateIndex, range);
+    }
+
+    export async function getAllKeys() {
+      const db = await openTilesDataBase();
+      const result = await db.getAllFromIndex(tileStoreName, urlTemplateIndex);
+      const arr = [];
+      for(const row of result) {
+        arr.push(row.key);
+      }
+      return new Set(arr);
+    }
+
+    export async function getAllValues() {
+      const db = await openTilesDataBase();
+      const result = await db.getAllFromIndex(tileStoreName, urlTemplateIndex);
+      return result;
     }
   
     /**
@@ -77,7 +93,7 @@
      * saveTile(tileInfo, blob).then(() => console.log(`saved tile from ${tileInfo.url}`))
      * ```
      */
-    async function saveTile(tileInfo, blob) {
+    export async function saveTile(tileInfo, blob) {
       const db = await openTilesDataBase();
       return db.put(tileStoreName, {
         blob,
@@ -144,7 +160,7 @@
     /**
      * Remove tile by key
      */
-    async function removeTile(key) {
+    export async function removeTile(key) {
       const db = await openTilesDataBase();
       return db.delete(tileStoreName, key);
     }
@@ -164,7 +180,7 @@
     /**
      * Remove everything
      */
-    async function truncate() {
+    export async function truncate() {
       return (await openTilesDataBase()).clear(tileStoreName);
     }
   
@@ -302,8 +318,8 @@
         const {
           options
         } = this;
-        this._createButton(options.saveText, 'savetiles', container, this._saveTiles);
-        this._createButton(options.rmText, 'rmtiles', container, this._rmTiles);
+        //this._createButton(options.saveText, 'savetiles', container, this._saveTiles);
+        //this._createButton(options.rmText, 'rmtiles', container, this._rmTiles);
         return container;
       }
       _createButton(html, className, container, fn) {

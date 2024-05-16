@@ -277,6 +277,7 @@ import { EventBus } from '@/ts/EventBus';
 import Area from '@/ts/Area';
 import VideoLink from '@/ts/VideoLink';
 import moment from 'moment';
+import { TileLayerOffline, savetiles } from '../../other/leafletoffline';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -336,6 +337,8 @@ export default class Index extends BaseComponent {
 
   private lastClickedGallery = 1;
   private openGalleryHandler: any;
+
+  private tlo = TileLayerOffline;
 
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
@@ -408,7 +411,7 @@ export default class Index extends BaseComponent {
 
   private offlineControlZoomChange() {
     if ((this.$store.state.minimalZoom) && (this.$store.state.maximalZoom) && (this.$store.state.minimalZoom <= this.$store.state.maximalZoom)) {
-      this.offlineControl.setZoomlevels(this.getOfflineZooms());
+      this.offlineControl.options.zoomlevels = this.getOfflineZooms();
     }
   }
 
@@ -903,11 +906,13 @@ export default class Index extends BaseComponent {
   }
 
   private addOffline() {
-    this.offlineControl = L.control.savetiles(this.baseMaps['OpenStreetMapOffline'], {
-      zoomlevels: this.getOfflineZooms(),
-      saveText: '<i class="fa fa-download" aria-hidden="true" title="Save tiles"></i>',
-      rmText: '<i class="fa fa-trash" aria-hidden="true"  title="Remove tiles"></i>',
-    });
+    this.offlineControl = savetiles(this.baseMaps['OpenStreetMapOffline'], {
+            zoomlevels: this.getOfflineZooms(),
+            alwaysDownload: true,
+            parallel: 5,
+            saveText: '<i class="fa fa-download" title="Save tiles"></i>',
+            rmText: '<i class="fa fa-trash" title="Remove tiles"></i>',
+        });
     this.$store.state.offlineControl = this.offlineControl;
     this.offlineControl.addTo(this.$store.state.map);
   }
