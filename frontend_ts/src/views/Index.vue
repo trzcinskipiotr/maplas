@@ -515,6 +515,9 @@ export default class Index extends BaseComponent {
     this.downloadPlaceTypes();
     this.downloadAreas();
     this.noSleep = new NoSleep();
+    setTimeout(() => {
+      this.noSleepToggle();
+    }, 15000);
   }
 
   private rulerClick(e: Event) {
