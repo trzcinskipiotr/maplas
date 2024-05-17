@@ -337,7 +337,7 @@
         const successCallback = async () => {
           this._baseLayer.fire('savestart', this.status);
           const loader = async () => {
-            const tile = tiles.shift();
+            const tile = tiles.pop();
             if (tile === undefined) {
               return Promise.resolve();
             }
