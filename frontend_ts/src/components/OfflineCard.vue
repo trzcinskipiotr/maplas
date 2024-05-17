@@ -197,6 +197,7 @@ export default class OfflineCard extends BaseComponent {
     if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline') || (this.layerName == 'mapa-turystyczna.pl Offline')) {
       this.saving = true;
       this.$store.state.offlineControl.options.parallel = this.$store.state.downloadThreads;
+      this.$store.state.offlineControl.options.alwaysDownload = !this.useCache;
       setTimeout(() => this.$store.state.offlineControl._saveTiles(), 100);
     } else {
       this.showMessageError(this.$t('mapNotOffline'));
@@ -564,27 +565,27 @@ export default class OfflineCard extends BaseComponent {
         totalToSave = e._tilesforSave.length;
         this.showMessageDiv('' + progress + '/' + totalToSave);
       });
-      offlineControl._baseLayer.on('savetileend', () => {
+      offlineControl._baseLayer.on('savetileend', (e) => {
         progress += 1;
         if (errors) {
-          this.showMessage('' + progress + '/' + totalToSave + ' (' + this.$t('bitmapDownloadErrors') + ': ' + errors + ')');
+          this.showMessage('' + progress + '/' + totalToSave + ' (cache: ' + e.lengthLoadedFromCache + ') (' + this.$t('bitmapDownloadErrors') + ': ' + errors + ')');
         } else {
-          this.showMessage('' + progress + '/' + totalToSave);
+          this.showMessage('' + progress + '/' + totalToSave + ' (cache: ' + e.lengthLoadedFromCache + ')');
         }
         if (progress === totalToSave) {
           this.saving = false;
         }
       });
-      offlineControl._baseLayer.on('notilestosave', () => {
+      offlineControl._baseLayer.on('saveend', () => {
         this.saving = false;
       });
-      offlineControl._baseLayer.on('loadtileenderror', () => {
+      offlineControl._baseLayer.on('loadtileenderror', (e) => {
         errors += 1;
         progress += 1;
         if (errors) {
-          this.showMessage('' + progress + '/' + totalToSave + ' (' + this.$t('bitmapDownloadErrors') + ': ' + errors + ')');
+          this.showMessage('' + progress + '/' + totalToSave  + ' (cache: ' + e.lengthLoadedFromCache + ') (' + this.$t('bitmapDownloadErrors') + ': ' + errors + ')');
         } else {
-          this.showMessage('' + progress + '/' + totalToSave);
+          this.showMessage('' + progress + '/' + totalToSave+ ' (cache: ' + e.lengthLoadedFromCache + ')');
         }
         if (progress === totalToSave) {
           this.saving = false;
@@ -604,7 +605,7 @@ export default class OfflineCard extends BaseComponent {
   private onStoreOfflineControlChange() {
     this.$store.state.offlineControl.options.confirm = (layer, succescallback) => {
       const firstUrl = layer._tilesforSave[0] ? layer._tilesforSave[0].key : '';
-      if (window.confirm(this.$t('saveAllTitles', [layer._tilesforSave.length, this.$store.state.offlineControl.options.zoomlevels, firstUrl, layer.lengthInDB]))) {
+      if (window.confirm(this.$t('saveAllTitles', [this.$store.state.offlineControl.status.lengthToBeSaved, this.$store.state.offlineControl.options.zoomlevels, firstUrl, this.useCache]))) {
         succescallback();
       } else {
         this.saving = false;

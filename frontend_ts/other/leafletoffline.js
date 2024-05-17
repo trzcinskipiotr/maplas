@@ -271,7 +271,8 @@
           storagesize: 0,
           lengthToBeSaved: 0,
           lengthSaved: 0,
-          lengthLoaded: 0,
+          lengthLoadedFromNetwork: 0,
+          lengthLoadedFromCache: 0,
           _tilesforSave: []
         };
         this._baseLayer = baseLayer;
@@ -341,9 +342,7 @@
               return Promise.resolve();
             }
             const blob = await this._loadTile(tile);
-            if (blob) {
-              await this._saveTile(tile, blob);
-            }
+            await this._saveTile(tile, blob);
             return loader();
           };
           const parallel = Math.min(tiles.length, this.options.parallel);
@@ -386,9 +385,10 @@
       }
       _resetStatus(tiles) {
         this.status = {
-          lengthLoaded: 0,
+          lengthLoadedFromNetwork: 0,
           lengthToBeSaved: tiles.length,
           lengthSaved: 0,
+          lengthLoadedFromCache: 0,
           _tilesforSave: tiles,
           storagesize: this.status.storagesize
         };
@@ -397,20 +397,23 @@
         let blob;
         if (this.options.alwaysDownload === true || (await hasTile(tile.key)) === false) {
           blob = await downloadTile(tile.url);
-          this.status.lengthLoaded += 1;
+          this.status.lengthLoadedFromNetwork += 1;
+        } else {
+          this.status.lengthLoadedFromCache += 1;
         }
-        this.status.lengthLoaded += 1;
         this._baseLayer.fire('loadtileend', this.status);
-        if (this.status.lengthLoaded === this.status.lengthToBeSaved) {
+        if (this.status.lengthLoadedFromNetwork + this.status.lengthLoadedFromCache === this.status.lengthToBeSaved) {
           this._baseLayer.fire('loadend', this.status);
         }
         return blob;
       }
       async _saveTile(tile, blob) {
-        await saveTile(tile, blob);
-        this.status.lengthSaved += 1;
+        if (blob) {
+          await saveTile(tile, blob);
+          this.status.lengthSaved += 1;
+        }
         this._baseLayer.fire('savetileend', this.status);
-        if (this.status.lengthSaved === this.status.lengthToBeSaved) {
+        if (this.status.lengthSaved === this.status.lengthToBeSaved - this.status.lengthLoadedFromCache) {
           this._baseLayer.fire('saveend', this.status);
           this.setStorageSize();
         }
