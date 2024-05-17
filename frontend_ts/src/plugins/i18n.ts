@@ -211,6 +211,7 @@ en: {
   videos: 'Videos',
   trackVideos: 'Track videos',
   photosAndMovies: 'Photos and videos',
+  useHTML5location: 'Use HTML5 location service',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -420,6 +421,7 @@ pl: {
   videos: 'Filmy',
   trackVideos: 'Filmy z trasy',
   photosAndMovies: 'Filmy i zdjęcia',
+  useHTML5location: 'Używaj lokalizacji HTML5',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});
