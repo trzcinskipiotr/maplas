@@ -81,11 +81,18 @@
      * ```
      */
     async function downloadTile(tileUrl) {
-      const response = await fetch(tileUrl);
-      if (!response.ok) {
-        throw new Error(`Request failed with status ${response.statusText}`);
+      try {
+        const response = await fetch(tileUrl);
+        if (!response.ok) {
+          console.log(`Request ${tileUrl} failed with status ${response.statusText}`);
+          return null;
+        } else {
+          return response.blob();
+        }
+      } catch (error) {
+        console.log(`Request ${tileUrl} failed with error ${error}`);
+        return null;
       }
-      return response.blob();
     }
     /**
      * @example
@@ -269,6 +276,7 @@
         super(options);
         this.status = {
           storagesize: 0,
+          lengthLoadErrors: 0,
           lengthToBeSaved: 0,
           lengthSaved: 0,
           lengthLoadedFromNetwork: 0,
@@ -388,6 +396,7 @@
           lengthLoadedFromNetwork: 0,
           lengthToBeSaved: tiles.length,
           lengthSaved: 0,
+          lengthLoadErrors: 0,
           lengthLoadedFromCache: 0,
           _tilesforSave: tiles,
           storagesize: this.status.storagesize
@@ -397,13 +406,14 @@
         let blob;
         if (this.options.alwaysDownload === true || (await hasTile(tile.key)) === false) {
           blob = await downloadTile(tile.url);
-          this.status.lengthLoadedFromNetwork += 1;
+          if (blob) {
+            this.status.lengthLoadedFromNetwork += 1; 
+          } else {
+            this.status.lengthLoadErrors += 1;
+            this._baseLayer.fire('loadtileenderror', this.status);
+          }
         } else {
           this.status.lengthLoadedFromCache += 1;
-        }
-        this._baseLayer.fire('loadtileend', this.status);
-        if (this.status.lengthLoadedFromNetwork + this.status.lengthLoadedFromCache === this.status.lengthToBeSaved) {
-          this._baseLayer.fire('loadend', this.status);
         }
         return blob;
       }
@@ -413,7 +423,7 @@
           this.status.lengthSaved += 1;
         }
         this._baseLayer.fire('savetileend', this.status);
-        if (this.status.lengthSaved === this.status.lengthToBeSaved - this.status.lengthLoadedFromCache) {
+        if (this.status.lengthSaved === this.status.lengthToBeSaved - this.status.lengthLoadErrors - this.status.lengthLoadedFromCache) {
           this._baseLayer.fire('saveend', this.status);
           this.setStorageSize();
         }

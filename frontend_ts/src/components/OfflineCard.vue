@@ -70,11 +70,11 @@
         </select>&nbsp;
         <b-form-checkbox style="display: inline;" v-model="useCache">
         </b-form-checkbox>{{ $t('useCache') }}
-        <button v-b-tooltip.hover :title="$t('corsWarning')" :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="downloadOffline">
+        <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="downloadOffline">
           <font-awesome-icon v-if="saving" class="fa-spin" icon="spinner" />&nbsp;
           {{ $t('downloadOffline') }}
-
         </button>&nbsp;
+        <span v-b-tooltip.hover :title="$t('corsWarning')"><font-awesome-icon style="height: 24px; cursor: pointer" icon="info"/></span>
         </div>
         <div class="buttongroup">
         {{ $t('showZoom') }} <select v-model="showZoom">
@@ -508,11 +508,18 @@ export default class OfflineCard extends BaseComponent {
   private currentLayer: L.Layer = null;
   private showZoom = 18;
 
+  private showProgressMessage(status: any) {
+    if (status.lengthLoadErrors) {
+      const processed = status.lengthSaved + status.lengthLoadedFromCache + status.lengthLoadErrors;
+      this.showMessageError('' + processed + '/' + status.lengthToBeSaved + ' (cache: ' + status.lengthLoadedFromCache + ') (' + this.$t('bitmapDownloadErrors') + ': ' + status.lengthLoadErrors + ')');
+    } else {
+      const processed = status.lengthSaved + status.lengthLoadedFromCache;
+      this.showMessage('' + processed + '/' + status.lengthToBeSaved + ' (cache: ' + status.lengthLoadedFromCache + ')');
+    }
+  }
+
   private onBaseLayerChange(e: L.LayersControlEvent) {
     this.layerName = e.name;
-    let progress: number;
-    let errors: number;
-    let totalToSave: number;
     const offlineControl = this.$store.state.offlineControl;
     this.currentLayer = this.$store.state.baseMaps[this.layerName];
     if (this.offlineShowing) {
@@ -521,37 +528,18 @@ export default class OfflineCard extends BaseComponent {
     }
     if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline') || (this.layerName == 'mapa-turystyczna.pl Offline')) {
       offlineControl.setLayer(this.$store.state.baseMaps[this.layerName]);
-      offlineControl._baseLayer.on('savestart', (e: any) => {
-        progress = 0;
-        errors = 0;
-        totalToSave = e._tilesforSave.length;
-        this.showMessageDiv('' + progress + '/' + totalToSave);
+      offlineControl._baseLayer.on('savestart', (status: any) => {
+        this.showMessageDiv('' + status.lengthSaved + '/' + status.lengthToBeSaved);
       });
-      offlineControl._baseLayer.on('savetileend', (e) => {
-        progress += 1;
-        if (errors) {
-          this.showMessage('' + progress + '/' + totalToSave + ' (cache: ' + e.lengthLoadedFromCache + ') (' + this.$t('bitmapDownloadErrors') + ': ' + errors + ')');
-        } else {
-          this.showMessage('' + progress + '/' + totalToSave + ' (cache: ' + e.lengthLoadedFromCache + ')');
-        }
-        if (progress === totalToSave) {
-          this.saving = false;
-        }
+      offlineControl._baseLayer.on('savetileend', (status) => {
+        this.showProgressMessage(status);
       });
-      offlineControl._baseLayer.on('saveend', () => {
+      offlineControl._baseLayer.on('saveend', (status) => {
+        this.showProgressMessage(status);
         this.saving = false;
       });
-      offlineControl._baseLayer.on('loadtileenderror', (e) => {
-        errors += 1;
-        progress += 1;
-        if (errors) {
-          this.showMessage('' + progress + '/' + totalToSave  + ' (cache: ' + e.lengthLoadedFromCache + ') (' + this.$t('bitmapDownloadErrors') + ': ' + errors + ')');
-        } else {
-          this.showMessage('' + progress + '/' + totalToSave+ ' (cache: ' + e.lengthLoadedFromCache + ')');
-        }
-        if (progress === totalToSave) {
-          this.saving = false;
-        }
+      offlineControl._baseLayer.on('loadtileenderror', (status) => {
+        this.showProgressMessage(status);
       });
     }
   }
