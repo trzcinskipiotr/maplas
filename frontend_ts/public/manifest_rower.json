@@ -1,0 +1,16 @@
+{
+    "name": "MapLas Rower",
+    "short_name": "MapLas Rower",
+    "icons": [
+      {
+        "src": "./img/icons/android-chrome-192x192.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      }
+    ],
+    "start_url": "./",
+    "display": "standalone",
+    "background_color": "#000000",
+    "theme_color": "#4DBA87"
+  }
+  
