@@ -40,7 +40,6 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import PlaceType from '../ts/PlaceType';
 import $ from 'jquery';
 import FileSaver from 'file-saver';
-import localforage from 'localforage';
 import { formatDateSeconds } from '@/ts/utils';
 import { EventBus } from '@/ts/EventBus';
 

@@ -11,7 +11,7 @@
 import BaseComponent from "@/components/Base.vue";
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 
-import { TileLayerOffline, savetiles } from '../../other/leafletoffline';
+import { TileLayerOffline, savetiles } from '@/ts/leafletoffline';
 import { Control, Map } from 'leaflet';
 
 @Component

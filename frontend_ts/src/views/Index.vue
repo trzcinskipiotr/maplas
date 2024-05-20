@@ -278,7 +278,8 @@ import { EventBus } from '@/ts/EventBus';
 import Area from '@/ts/Area';
 import VideoLink from '@/ts/VideoLink';
 import moment from 'moment';
-import { TileLayerOffline, savetiles } from '../../other/leafletoffline';
+import { TileLayerOffline, savetiles } from '@/ts/leafletoffline';
+import * as kvstore from '@/ts/kvstore';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -352,8 +353,10 @@ export default class Index extends BaseComponent {
   }
 
   @Watch('useHTML5location')
-  private onUseHTML5location(value: string, oldValue: string) {
-    (window.cacheDB as LocalForage).setItem('useHTML5location', this.useHTML5location);
+  private async onUseHTML5location(value: string, oldValue: string) {
+    if ((this.useHTML5location !== null) && (typeof this.useHTML5location !== "undefined")) {
+      await kvstore.set('useHTML5location', this.useHTML5location);
+    }
   }
 
   @Watch('playingSpeed')
@@ -501,7 +504,6 @@ export default class Index extends BaseComponent {
 
   private async mounted() {
     this.VUE_APP_BUILD_DATE = process.env.VUE_APP_BUILD_DATE;
-    this.cache = !!this.$route.query.cache
     this.setLanguage();
     this.setAppHost();
     this.setStoreToken();
@@ -725,20 +727,13 @@ export default class Index extends BaseComponent {
     }
 
     const endPoint = this.$store.state.appHost + 'api/maplayers/';
-    if (this.cache) {
-      const results = await (window.cacheDB as LocalForage).getItem(endPoint);
-      this.processMapLayers(results);
-      this.createAlert(AlertStatus.success, this.$t('layersCache', [results.length]).toString(), 2000);
-    } else {
-      try {
-        const response = await axios.get(endPoint);
-        this.processMapLayers(response.data.results);
-        (window.cacheDB as LocalForage).setItem(endPoint, response.data.results);
-        this.createAlert(AlertStatus.success, this.$t('layersDownloaded', [response.data.results.length]).toString(), 2000);
-      } catch {
-        this.createAlert(AlertStatus.danger, this.$t('layersError').toString(), 2000);
-      };
-    }
+    try {
+      const response = await axios.get(endPoint);
+      this.processMapLayers(response.data.results);
+      this.createAlert(AlertStatus.success, this.$t('layersDownloaded', [response.data.results.length]).toString(), 2000);
+    } catch {
+      this.createAlert(AlertStatus.danger, this.$t('layersError').toString(), 2000);
+    };
 
     /* layers['mapboxStreets'] = L.tileLayer('https://api.tiles.mapbox.com/v4/{id}/{z}/{x}/{y}.png?access_token=' + this.mapboxApiToken, {
       maxZoom: 18,
@@ -1174,7 +1169,7 @@ export default class Index extends BaseComponent {
   }
 
   private async addLocationButton() {
-    this.useHTML5location = await (window.cacheDB as LocalForage).getItem('useHTML5location');
+    this.useHTML5location = await kvstore.get('useHTML5location');
     const locationControl = L.Control.extend({
       options: {
         position: this.$store.state.isDesktop ? 'topleft' : 'topright'
@@ -1360,20 +1355,12 @@ export default class Index extends BaseComponent {
 
   private downloadPlaces() {
     const endPoint = this.$store.state.appHost + 'api/places/';
-    if (this.cache) {
-      const results = (window.cacheDB as LocalForage).getItem(endPoint).then((result: any) => {
-        this.processPlaces(result);
-        this.createAlert(AlertStatus.success, this.$t('placesCache', [result.length]).toString(), 2000);
-      })
-    } else {
-      axios.get(endPoint).then((response) => {
-        this.processPlaces(response.data.results);
-        (window.cacheDB as LocalForage).setItem(endPoint, response.data.results);
-        this.createAlert(AlertStatus.success, this.$t('placesDownloaded', [response.data.results.length]).toString(), 2000);
-      }).catch((response) => {
-        this.createAlert(AlertStatus.danger, this.$t('placesError').toString(), 2000);
-      });
-    }
+    axios.get(endPoint).then((response) => {
+      this.processPlaces(response.data.results);
+      this.createAlert(AlertStatus.success, this.$t('placesDownloaded', [response.data.results.length]).toString(), 2000);
+    }).catch((response) => {
+      this.createAlert(AlertStatus.danger, this.$t('placesError').toString(), 2000);
+    });
   }
 
   private downloadPlaceTypes() {
@@ -1491,23 +1478,14 @@ export default class Index extends BaseComponent {
 
   private downloadTracks() {
     const endPoint = this.$store.state.appHost + 'api/tracks/' + (process.env.VUE_APP_TRACKS_QUERY || '');
-    if (this.cache) {
-      const results = (window.cacheDB as LocalForage).getItem(endPoint).then((result: any) => {
-        this.processTracks(result);
-        this.createAlert(AlertStatus.success, this.$t('tracksCache', [result.length]).toString(), 2000);
-        this.loading = false;
-      })
-    } else {
-      axios.get(endPoint).then((response) => {
-        this.processTracks(response.data.results);
-        this.createAlert(AlertStatus.success, this.$t('tracksDownloaded', [response.data.results.length]).toString(), 2000);
-        (window.cacheDB as LocalForage).setItem(endPoint, response.data.results);
-      }).catch((response) => {
-        this.createAlert(AlertStatus.danger, this.$t('tracksError').toString(), 2000);
-      }).finally(() => {
-        this.loading = false;
-      });
-    }
+    axios.get(endPoint).then((response) => {
+      this.processTracks(response.data.results);
+      this.createAlert(AlertStatus.success, this.$t('tracksDownloaded', [response.data.results.length]).toString(), 2000);
+    }).catch((response) => {
+      this.createAlert(AlertStatus.danger, this.$t('tracksError').toString(), 2000);
+    }).finally(() => {
+      this.loading = false;
+    });
   }
 
 }

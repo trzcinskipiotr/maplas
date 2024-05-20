@@ -105,7 +105,6 @@
 import BaseComponent from './Base.vue';
 import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import $ from 'jquery';
-import localforage from 'localforage';
 import { formatDateSeconds } from '@/ts/utils';
 import { AlertStatus } from '@/ts/types';
 import streamSaver from 'streamsaver';
@@ -115,7 +114,7 @@ import { point } from 'leaflet';
 import Area from '@/ts/Area';
 import {removeKeyFromDB, clearDBs, countKeysInDBs, countKeysInDBsSum} from '@/ts/utils/db';
 import axios from 'axios';
-import { getStorageLength, truncate, getAllKeys, removeTile, getAllValues, saveTile } from '../../other/leafletoffline';
+import { getStorageLength, truncate, getAllKeys, removeTile, getAllValues, saveTile } from '@/ts/leafletoffline';
 
 @Component
 export default class OfflineCard extends BaseComponent {
@@ -384,75 +383,38 @@ export default class OfflineCard extends BaseComponent {
     const date = formatDateSeconds(new Date());
     const fileStream = streamSaver.createWriteStream('offline_maps_' + date + '.txt');
     const writer = fileStream.getWriter();
-    let dbIndex = 1;
-    //for(const db of window.dbs) {
-      let results = {};
-      if (keys) {
-        const maxVar = 999;
-        const iterNum = Math.floor(keys.length / maxVar) + 1;
-        for(let iter = 0; iter <= iterNum; iter++) {
-          const loopResults = await (db as LocalForage).getItems(keys.slice(iter * maxVar, iter * maxVar + maxVar));
-          results = {...results, ...loopResults};
-        }
-      } else {
-        results = await getAllValues();
+    let results = {};
+    if (keys) {
+      const maxVar = 999;
+      const iterNum = Math.floor(keys.length / maxVar) + 1;
+      for(let iter = 0; iter <= iterNum; iter++) {
+        // IMPLEMENT
+        //const loopResults = [await (db as LocalForage).getItems(keys.slice(iter * maxVar, iter * maxVar + maxVar));]
+        results = {...results, ...loopResults};
       }
-      let done = 0;
-      let total = 0;
-      for (const result in results) {
-        total = total + 1;
-      }
-      let lineToSave = '';
-      for (const result of results) {
-        const data = result['blob'];
-        const reader = new FileReader();
-        const b64 = await this.readFile(data) as string;
-        lineToSave = lineToSave + result['key'] + '$' + result['urlTemplate'] + '$' + result['x'] + '$' + result['y'] + '$' + result['z'] + '$' + result['createdAt'] + '$' + b64 + '#';
-        done = done + 1;
-        if ((lineToSave.length > 1024*1024*50) || (done === total)) {
-          writer.write(encode(lineToSave));
-          lineToSave = '';
-        }
-        this.showMessage('' + dbIndex + '/' + window.dbCount + ': ' + done + '/' + total)
-      }
-      dbIndex = dbIndex + 1;
-    //}
-    writer.close();
-    this.exporting = false;
-  }
-
-  private async exportOfflineAtOnce() {
-    this.exporting = true;
-    this.showMessageDiv(this.$t('starting'));
-    const date = formatDateSeconds(new Date());
-    const results = await localforage.getItems(null);
-    let tmpStr = '';
+    } else {
+      results = await getAllValues();
+    }
     let done = 0;
     let total = 0;
     for (const result in results) {
       total = total + 1;
     }
-    if (total > 0) {
-      for (const result in results) {
-        const data = results[result];
-        const reader = new FileReader();
-        reader.onload = () => {
-          let b64 = reader.result as string
-          let lineToSave = result + '$' + b64 + '#';
-          tmpStr = tmpStr + lineToSave; 
-          done = done + 1;
-          if (done === total) {
-            this.saveFile(tmpStr, 'offline_maps_' + date + '.txt');
-            this.exporting = false;
-          }
-          this.showMessage('' + done + '/' + total)
-        }
-        reader.readAsDataURL(data);
+    let lineToSave = '';
+    for (const result of results) {
+      const data = result['blob'];
+      const reader = new FileReader();
+      const b64 = await this.readFile(data) as string;
+      lineToSave = lineToSave + result['key'] + '$' + result['urlTemplate'] + '$' + result['x'] + '$' + result['y'] + '$' + result['z'] + '$' + result['createdAt'] + '$' + b64 + '#';
+      done = done + 1;
+      if ((lineToSave.length > 1024*1024*50) || (done === total)) {
+        writer.write(encode(lineToSave));
+        lineToSave = '';
       }
-    } else {
-      this.exporting = false;
-      this.showMessageError(this.$t('noBitmapsToExport'));
+      this.showMessage('' + done + '/' + total);
     }
+    writer.close();
+    this.exporting = false;
   }
 
   private saveFile(data: any, name: any) {
