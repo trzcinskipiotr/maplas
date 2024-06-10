@@ -310,7 +310,11 @@ export default class AppTrack extends BaseComponent {
            if (distance >= lastDistance + 1000) {
              lastDistance = distance;
              const marker = new L.CircleMarker(point, {radius: 5});
-             marker.bindTooltip((distance / 1000).toFixed(1), {permanent: true, className: 'smallTooltip', direction: 'right'});
+             let decimalPlaces = 1;
+             if (distance < 1000) {
+               decimalPlaces = 3;
+             }
+             marker.bindTooltip((distance / 1000).toFixed(decimalPlaces), {permanent: true, className: 'smallTooltip', direction: 'right'});
              this.rulerMarkers.push(marker);
            }
            lastPoint = point;
