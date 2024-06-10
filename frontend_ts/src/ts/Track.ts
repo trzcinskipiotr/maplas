@@ -127,7 +127,11 @@ export default class Track {
             } else {
               lastPoint = point;
             }
-            marker.bindTooltip((distance / 1000).toFixed(1), {permanent: true, className: 'smallTooltip', direction: 'right'});
+            let decimalPlaces = 1;
+            if ((distance > 0) && (distance < 1000)) {
+              decimalPlaces = 3;
+            }
+            marker.bindTooltip((distance / 1000).toFixed(decimalPlaces), {permanent: true, className: 'smallTooltip', direction: 'right'});
             this.plannedMarkers.push(marker);
           }
         }
