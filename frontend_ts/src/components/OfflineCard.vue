@@ -193,7 +193,7 @@ export default class OfflineCard extends BaseComponent {
 
 
   private downloadOffline() {
-    if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline') || (this.layerName == 'mapa-turystyczna.pl Offline')) {
+    if (this.layerName.endsWith('Offline')) {
       this.saving = true;
       this.$store.state.offlineControl.options.parallel = this.$store.state.downloadThreads;
       this.$store.state.offlineControl.options.alwaysDownload = !this.useCache;
@@ -526,7 +526,7 @@ export default class OfflineCard extends BaseComponent {
       this.removeShowOffline();
       this.offlineShowing = false;
     }
-    if ((this.layerName == 'OpenStreetMapOffline') || (this.layerName == 'OpenCycleMapOffline') || (this.layerName == 'ESRI imaginary Offline') || (this.layerName == 'Google satellite Offline') || (this.layerName == 'mapa-turystyczna.pl Offline')) {
+    if (this.layerName.endsWith('Offline')) {
       offlineControl.setLayer(this.$store.state.baseMaps[this.layerName]);
       offlineControl._baseLayer.on('savestart', (status: any) => {
         this.showMessageDiv('' + status.lengthSaved + '/' + status.lengthToBeSaved);
