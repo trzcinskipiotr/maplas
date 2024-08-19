@@ -68,7 +68,7 @@ const store: StoreOptions<RootState> = {
     ],
     editedTrack: null,
     editedArea: null,
-    isDesktop: document.documentElement.clientWidth >= 700,
+    isDesktop: !process.env.VUE_APP_PWA,
     pwa: process.env.VUE_APP_PWA,
     minimalZoom: 5,
     maximalZoom: 18,

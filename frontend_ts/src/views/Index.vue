@@ -104,7 +104,9 @@
                     <font-awesome-icon icon="biking"/> {{ playingSpeed }} km/s&nbsp;&nbsp;
                     <font-awesome-icon icon="shoe-prints"/> {{ playingSpeed / 10 }} km/s 
                     <b-form-slider style="width: 100%;" v-model="playingSpeed" :min=1 :max=20></b-form-slider><br><br>
-                    <b-form-checkbox :disabled="locationActive" style="display: inline;" v-model="useHTML5location"></b-form-checkbox>{{ $t('useHTML5location') }}<br><br>
+                    <b-form-checkbox :disabled="locationActive" style="display: inline;" v-model="useHTML5location"></b-form-checkbox>{{ $t('useHTML5location') }}<br>
+                    <b-form-checkbox style="display: inline;" v-model="largeButtonsDuringLocation"></b-form-checkbox>{{ $t('largeButtonsDuringLocation') }}<br>
+                    <b-form-checkbox style="display: inline;" v-model="showAllButtonsDuringLocation"></b-form-checkbox>{{ $t('showAllButtonsDuringLocation') }}<br><br>
                     <OfflineCard></OfflineCard>
                     <br>
                     <button class="btn btn-primary" @click="noSleepToggle">{{ noSleepActive ? $t('noSleepActive') : $t('noSleepInactive')}}</button>
@@ -343,6 +345,8 @@ export default class Index extends BaseComponent {
   private tlo = TileLayerOffline;
 
   private useHTML5location = false;
+  private largeButtonsDuringLocation = false;
+  private showAllButtonsDuringLocation = false;
 
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
@@ -356,6 +360,65 @@ export default class Index extends BaseComponent {
   private async onUseHTML5location(value: string, oldValue: string) {
     if ((this.useHTML5location !== null) && (typeof this.useHTML5location !== "undefined")) {
       await kvstore.set('useHTML5location', this.useHTML5location);
+    }
+  }
+
+  @Watch('largeButtonsDuringLocation')
+  private async onLargeButtonsDuringLocation(value: string, oldValue: string) {
+    if ((this.largeButtonsDuringLocation !== null) && (typeof this.largeButtonsDuringLocation !== "undefined")) {
+      await kvstore.set('largeButtonsDuringLocation', this.largeButtonsDuringLocation);
+      this.changeButtonSizeDuringLocation();
+    }
+  }
+
+  @Watch('showAllButtonsDuringLocation')
+  private async onshowAllButtonsDuringLocation(value: string, oldValue: string) {
+    if ((this.showAllButtonsDuringLocation !== null) && (typeof this.showAllButtonsDuringLocation !== "undefined")) {
+      await kvstore.set('showAllButtonsDuringLocation', this.showAllButtonsDuringLocation);
+      this.changeButtonSizeDuringLocation();
+    }
+  }
+
+  private changeButtonSizeDuringLocation() {
+    if (this.locationActive) {
+      if (this.largeButtonsDuringLocation) {
+        $(".leaflet-control-layers-toggle").attr('style', 'width: 64px !important; height: 64px !important');
+        $(".leaflet-control-zoom-in").attr('style', 'width: 64px !important; height: 64px !important');
+        $(".leaflet-control-zoom-out").attr('style', 'width: 64px !important; height: 64px !important');
+        $(".leaflet-control-zoom-fullscreen").attr('style', 'width: 64px !important; height: 64px !important');
+        $("#cogsdivinner").attr('style', 'width: 64px !important; height: 64px !important');
+        $("#locationdivinner").attr('style', 'width: 64px !important; height: 64px !important');
+        if (this.showAllButtonsDuringLocation) {
+          $("#gallerydivinner").attr('style', 'width: 64px !important; height: 64px !important; visibility: visible');
+          $("#rulerdivinner").attr('style', 'width: 64px !important; height: 64px !important; visibility: visible');
+        } else {
+          $("#gallerydivinner").attr('style', 'width: 64px !important; height: 0px !important; visibility: hidden');
+          $("#rulerdivinner").attr('style', 'width: 64px !important; height: 0px !important; visibility: hidden');
+        }
+      } else {
+        $(".leaflet-control-layers-toggle").attr('style', 'width: 48px !important; height: 48px !important');
+        $(".leaflet-control-zoom-in").attr('style', 'width: 48px !important; height: 48px !important');
+        $(".leaflet-control-zoom-out").attr('style', 'width: 48px !important; height: 48px !important');
+        $(".leaflet-control-zoom-fullscreen").attr('style', 'width: 48px !important; height: 48px !important');
+        $("#cogsdivinner").attr('style', 'width: 48px !important; height: 48px !important');
+        $("#locationdivinner").attr('style', 'width: 48px !important; height: 48px !important');
+        if (this.showAllButtonsDuringLocation) {
+          $("#gallerydivinner").attr('style', 'width: 48px !important; height: 48px !important; visibility: visible');
+          $("#rulerdivinner").attr('style', 'width: 48px !important; height: 48px !important; visibility: visible');
+        } else {
+          $("#gallerydivinner").attr('style', 'width: 0px !important; height: 0px !important; visibility: hidden');
+          $("#rulerdivinner").attr('style', 'width: 0px !important; height: 0px !important; visibility: hidden');
+        }
+      }
+    } else {
+      $(".leaflet-control-layers-toggle").attr('style', 'width: 48px !important; height: 48px !important');
+      $(".leaflet-control-zoom-in").attr('style', 'width: 48px !important; height: 48px !important');
+      $(".leaflet-control-zoom-out").attr('style', 'width: 48px !important; height: 48px !important');
+      $(".leaflet-control-zoom-fullscreen").attr('style', 'width: 48px !important; height: 48px !important');
+      $("#cogsdivinner").attr('style', 'width: 48px !important; height: 48px !important');
+      $("#locationdivinner").attr('style', 'width: 48px !important; height: 48px !important');
+      $("#gallerydivinner").attr('style', 'width: 48px !important; height: 48px !important; visibility: visible');
+      $("#rulerdivinner").attr('style', 'width: 48px !important; height: 48px !important; visibility: visible');
     }
   }
 
@@ -502,13 +565,20 @@ export default class Index extends BaseComponent {
   private node: any = null;
   private VUE_APP_BUILD_DATE: string = null;
 
+  private async loadKVsettings() {
+    this.largeButtonsDuringLocation = await kvstore.get('largeButtonsDuringLocation');
+    this.showAllButtonsDuringLocation = await kvstore.get('showAllButtonsDuringLocation');
+  }
+
   private async mounted() {
     this.VUE_APP_BUILD_DATE = process.env.VUE_APP_BUILD_DATE;
+    this.loadKVsettings();
     this.setLanguage();
     this.setAppHost();
     this.setStoreToken();
     this.createMap([52.743682, 16.273668], 11);
     await this.downloadAndAddLayers();
+    this.addZoomControl();
     this.createSpeedLegendControl();
     this.addScaleControl();
     this.addFullScreenControl();
@@ -528,6 +598,13 @@ export default class Index extends BaseComponent {
     setTimeout(() => {
       this.noSleepToggle();
     }, 15000);
+    this.changeButtonSizeDuringLocation();
+  }
+
+  private addZoomControl() {
+    L.control.zoom({
+      position: 'topright'
+    }).addTo(this.$store.state.map);
   }
 
   private rulerClick(e: Event) {
@@ -659,6 +736,7 @@ export default class Index extends BaseComponent {
         map.setZoom(Math.round(map.getZoom() - 1));
       } 
     });
+    map.zoomControl.remove();
   }
 
   private processMapLayers(result: {dict_key: string, javascript_code: string, display_name: string}[]) {
@@ -1166,6 +1244,7 @@ export default class Index extends BaseComponent {
       this.locationActive = true;
     }
     e.stopPropagation();
+    this.changeButtonSizeDuringLocation();
   }
 
   private async addLocationButton() {
@@ -1208,16 +1287,18 @@ export default class Index extends BaseComponent {
   }
 
   private addFullScreenControl() {
-    L.control.fullscreen({
-      position: this.$store.state.isDesktop ? 'topleft' : 'topright',
-      title: '',
-      titleCancel: '',
-      // @ts-ignore
-      fullscreenElement: document.documentElement,
-    }).addTo(this.$store.state.map);
+    if (this.$store.state.isDesktop) {
+      L.control.fullscreen({
+        position: this.$store.state.isDesktop ? 'topleft' : 'topright',
+        title: '',
+        titleCancel: '',
+        // @ts-ignore
+        fullscreenElement: document.documentElement,
+      }).addTo(this.$store.state.map);
 
-    this.$store.state.map.on('enterFullscreen', () => {this.fullscreenOpened = true; this.closeFullscreenTooltip(); });
-    this.$store.state.map.on('exitFullscreen', () => {this.fullscreenOpened = false; this.closeFullscreenTooltip(); });
+      this.$store.state.map.on('enterFullscreen', () => {this.fullscreenOpened = true; this.closeFullscreenTooltip(); });
+      this.$store.state.map.on('exitFullscreen', () => {this.fullscreenOpened = false; this.closeFullscreenTooltip(); });
+    }
   }
 
   private addScaleControl() {

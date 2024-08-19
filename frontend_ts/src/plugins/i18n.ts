@@ -212,6 +212,8 @@ en: {
   trackVideos: 'Track videos',
   photosAndMovies: 'Photos and videos',
   useHTML5location: 'Use HTML5 location service',
+  largeButtonsDuringLocation: 'Large buttons during location',
+  showAllButtonsDuringLocation: 'Show all buttons during location',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -422,6 +424,8 @@ pl: {
   trackVideos: 'Filmy z trasy',
   photosAndMovies: 'Filmy i zdjęcia',
   useHTML5location: 'Używaj lokalizacji HTML5',
+  largeButtonsDuringLocation: 'Większe przyciski podczas nawigacji',
+  showAllButtonsDuringLocation: 'Pokaż wszystkie przyciski podczas nawigacji',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});
