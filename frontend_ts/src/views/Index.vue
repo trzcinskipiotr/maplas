@@ -389,11 +389,13 @@ export default class Index extends BaseComponent {
         $("#cogsdivinner").attr('style', 'width: 64px !important; height: 64px !important');
         $("#locationdivinner").attr('style', 'width: 64px !important; height: 64px !important');
         if (this.showAllButtonsDuringLocation) {
-          $("#gallerydivinner").attr('style', 'width: 64px !important; height: 64px !important; visibility: visible');
-          $("#rulerdivinner").attr('style', 'width: 64px !important; height: 64px !important; visibility: visible');
+          $("#gallerydivinner").attr('style', 'margin-top: 10px !important; width: 64px !important; height: 64px !important; visibility: visible');
+          $("#rulerdivinner").attr('style', 'margin-top: 10px !important; width: 64px !important; height: 64px !important; visibility: visible');
+          $("#importdivinner").attr('style', 'margin-top: 10px !important; width: 64px !important; height: 64px !important; visibility: visible');
         } else {
-          $("#gallerydivinner").attr('style', 'width: 64px !important; height: 0px !important; visibility: hidden');
-          $("#rulerdivinner").attr('style', 'width: 64px !important; height: 0px !important; visibility: hidden');
+          $("#gallerydivinner").attr('style', 'margin-top: 0px !important; width: 0px !important; height: 0px !important; visibility: hidden');
+          $("#rulerdivinner").attr('style', 'margin-top: 0px !important; width: 0px !important; height: 0px !important; visibility: hidden');
+          $("#importdivinner").attr('style', 'margin-top: 0px !important; width: 0px !important; height: 0px !important; visibility: hidden');
         }
       } else {
         $(".leaflet-control-layers-toggle").attr('style', 'width: 48px !important; height: 48px !important');
@@ -403,11 +405,13 @@ export default class Index extends BaseComponent {
         $("#cogsdivinner").attr('style', 'width: 48px !important; height: 48px !important');
         $("#locationdivinner").attr('style', 'width: 48px !important; height: 48px !important');
         if (this.showAllButtonsDuringLocation) {
-          $("#gallerydivinner").attr('style', 'width: 48px !important; height: 48px !important; visibility: visible');
-          $("#rulerdivinner").attr('style', 'width: 48px !important; height: 48px !important; visibility: visible');
+          $("#gallerydivinner").attr('style', 'margin-top: 10px !important; width: 48px !important; height: 48px !important; visibility: visible');
+          $("#rulerdivinner").attr('style', 'margin-top: 10px !important; width: 48px !important; height: 48px !important; visibility: visible');
+          $("#importdivinner").attr('style', 'margin-top: 10px !important; width: 48px !important; height: 48px !important; visibility: visible');
         } else {
-          $("#gallerydivinner").attr('style', 'width: 0px !important; height: 0px !important; visibility: hidden');
-          $("#rulerdivinner").attr('style', 'width: 0px !important; height: 0px !important; visibility: hidden');
+          $("#gallerydivinner").attr('style', 'margin-top: 0px !important; width: 0px !important; height: 0px !important; visibility: hidden');
+          $("#rulerdivinner").attr('style', 'margin-top: 0px !important; width: 0px !important; height: 0px !important; visibility: hidden');
+          $("#importdivinner").attr('style', 'margin-top: 0px !important; width: 0px !important; height: 0px !important; visibility: hidden');
         }
       }
     } else {
@@ -417,8 +421,9 @@ export default class Index extends BaseComponent {
       $(".leaflet-control-zoom-fullscreen").attr('style', 'width: 48px !important; height: 48px !important');
       $("#cogsdivinner").attr('style', 'width: 48px !important; height: 48px !important');
       $("#locationdivinner").attr('style', 'width: 48px !important; height: 48px !important');
-      $("#gallerydivinner").attr('style', 'width: 48px !important; height: 48px !important; visibility: visible');
-      $("#rulerdivinner").attr('style', 'width: 48px !important; height: 48px !important; visibility: visible');
+      $("#gallerydivinner").attr('style', 'margin-top: 10px !important; width: 48px !important; height: 48px !important; visibility: visible');
+      $("#rulerdivinner").attr('style', 'margin-top: 10px !important; width: 48px !important; height: 48px !important; visibility: visible');
+      $("#importdivinner").attr('style', 'margin-top: 10px !important; width: 48px !important; height: 48px !important; visibility: visible');
     }
   }
 
@@ -599,12 +604,16 @@ export default class Index extends BaseComponent {
       this.noSleepToggle();
     }, 15000);
     this.changeButtonSizeDuringLocation();
+    this.mapMoveEnd(null);
   }
 
   private addZoomControl() {
     L.control.zoom({
       position: 'topright'
     }).addTo(this.$store.state.map);
+    this.$store.state.map.on('zoomend', () => {
+      this.$store.commit('setZoomLevel', this.$store.state.map.getZoom())
+    })
   }
 
   private rulerClick(e: Event) {
@@ -684,7 +693,6 @@ export default class Index extends BaseComponent {
       }
     }
     this.node.innerHTML = '' + this.$store.state.map.getZoom();
-    //$('.leaflet-control-scale-line').html($('.leaflet-control-scale-line').html() + '<span style="float: right">(Zoom: ' + this.$store.state.map.getZoom() + ')</span>');
   }
 
   private openNewPlaceModal (e: L.LeafletMouseEvent) {
@@ -700,15 +708,13 @@ export default class Index extends BaseComponent {
       zoomAnimation: false,
       contextmenu: true,
       contextmenuWidth: 140,
+      zoomControl: false,
 	  contextmenuItems: [{
 	    text: this.$t('addPlace'),
 	    callback: this.openNewPlaceModal
 	  }],
     });
     map.setView(center, zoom);
-    map.on('zoomend', () => {
-      this.$store.commit('setZoomLevel', map.getZoom())
-    })
     this.$store.commit('setMap', map);
     this.$store.commit('setZoomLevel', zoom);
     map.on('click', this.mapClicked);
@@ -736,7 +742,6 @@ export default class Index extends BaseComponent {
         map.setZoom(Math.round(map.getZoom() - 1));
       } 
     });
-    map.zoomControl.remove();
   }
 
   private processMapLayers(result: {dict_key: string, javascript_code: string, display_name: string}[]) {
@@ -1251,7 +1256,7 @@ export default class Index extends BaseComponent {
     this.useHTML5location = await kvstore.get('useHTML5location');
     const locationControl = L.Control.extend({
       options: {
-        position: this.$store.state.isDesktop ? 'topleft' : 'topright'
+        position: 'topright'
       },
       onAdd: (map: L.Map) => {
         return document.getElementById('locationdivinner');
@@ -1289,7 +1294,7 @@ export default class Index extends BaseComponent {
   private addFullScreenControl() {
     if (this.$store.state.isDesktop) {
       L.control.fullscreen({
-        position: this.$store.state.isDesktop ? 'topleft' : 'topright',
+        position: 'topright',
         title: '',
         titleCancel: '',
         // @ts-ignore
@@ -1691,27 +1696,8 @@ export default class Index extends BaseComponent {
     background-color: rgba(255, 255, 255, 0.95) !important;
   }
 
-  .leaflet-control-layers-toggle {
-    width: 48px !important;
-    height: 48px !important;
-  }
-
-  @media (min-width: 700px) {
-    .leaflet-control-zoom-in, #locationdivinner, .leaflet-control-zoom-out, .leaflet-control-zoom-fullscreen, .leaflet-bar a, .leaflet-control-locate {
-      width: 32px !important;
-      height: 32px !important;
-    }
-  }
-
-  @media (max-width: 700px) {
-    .leaflet-control-zoom-in, #locationdivinner, .leaflet-control-zoom-out, .leaflet-control-zoom-fullscreen, .leaflet-bar a, .leaflet-control-locate {
-      width: 48px !important;
-      height: 48px !important;
-    }
-
-    .leaflet-control-zoom-in, .leaflet-control-zoom-out {
-      margin-bottom: 7px !important;
-    }
+  .leaflet-control-zoom-in {
+    margin-bottom: 7px !important;
   }
 
   .alertmessage {
