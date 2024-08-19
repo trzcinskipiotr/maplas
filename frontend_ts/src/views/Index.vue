@@ -614,6 +614,15 @@ export default class Index extends BaseComponent {
     this.$store.state.map.on('zoomend', () => {
       this.$store.commit('setZoomLevel', this.$store.state.map.getZoom())
     })
+    //Obejście na złe zachowanie zoomu na mobile, na desktopie niestety zostają tooltipy po kliknięciu, więc if tylko na mobile
+    if (! this.$store.state.isDesktop) {
+      $('.leaflet-control-zoom-in').replaceWith($('.leaflet-control-zoom-in').clone());
+      (document.getElementsByClassName('leaflet-control-zoom-in')[0]).addEventListener('click', (e) => {this.$store.state.map.setZoom(Math.round(this.$store.state.map.getZoom() + 1)); e.stopPropagation()});
+      $('.leaflet-control-zoom-out').replaceWith($('.leaflet-control-zoom-out').clone());
+      (document.getElementsByClassName('leaflet-control-zoom-out')[0]).addEventListener('click', (e) => {this.$store.state.map.setZoom(Math.round(this.$store.state.map.getZoom() - 1)); e.stopPropagation()});
+      this.$store.state.map.off('dblclick');
+      this.$store.state.map.on('dblclick', (e) => {this.$store.state.map.setZoom(Math.round(this.$store.state.map.getZoom() + 1))});
+    }
   }
 
   private rulerClick(e: Event) {
@@ -720,17 +729,6 @@ export default class Index extends BaseComponent {
     map.on('click', this.mapClicked);
     map.on('moveend', this.mapMoveEnd);
     map.on('dragstart', () => {this.followLocation = false});
-
-    //Obejście na złe zachowanie zoomu na mobile, na desktopie niestety zostają tooltipy po kliknięciu, więc if tylko na mobile
-    if (! this.$store.state.isDesktop) {
-      $('.leaflet-control-zoom-in').replaceWith($('.leaflet-control-zoom-in').clone());
-      (document.getElementsByClassName('leaflet-control-zoom-in')[0]).addEventListener('click', (e) => {map.setZoom(Math.round(map.getZoom() + 1)); e.stopPropagation()});
-      $('.leaflet-control-zoom-out').replaceWith($('.leaflet-control-zoom-out').clone());
-      (document.getElementsByClassName('leaflet-control-zoom-out')[0]).addEventListener('click', (e) => {map.setZoom(Math.round(map.getZoom() - 1)); e.stopPropagation()});
-      map.off('dblclick');
-      map.on('dblclick', (e) => {map.setZoom(Math.round(map.getZoom() + 1))});
-    }
-
     map.on('mousedown', (e: L.LeafletMouseEvent) => {
       const now = Date.now();
       this.lastMouseDownTime = now; 
