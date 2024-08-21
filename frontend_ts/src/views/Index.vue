@@ -139,7 +139,7 @@
                   <template v-if="track.gpsTrack.description">{{ track.gpsTrack.description }}<br></template>
                   <br>
                   <span v-for="(photo, index) in track.gpsTrack.photos" :key="photo.id">
-                    <img style="margin: 5px; cursor: pointer" :src="photo.image_thumb" @click="clickOpenGallery(track.gpsTrack.id, index)" />
+                    <img style="margin: 5px; cursor: pointer" :src="replaceHTTP(photo.image_thumb)" @click="clickOpenGallery(track.gpsTrack.id, index)" />
                   </span>
                   <br><br><br>
                 </div>  
@@ -155,38 +155,48 @@
       </div>
     </div>
     <div id="cogsdiv" style="display: none;">
-      <div id="cogsdivinner" :style="{'width': '48px', 'height': '48px', 'background-color': menuOpened ? 'yellow' : 'white'}" @click="togglePanel" class="leaflet-touch leaflet-bar cogsbutton">
+      <div id="cogsdivinner" class="leaflet-bar leaflet-control">
+      <a id="cogsdivinnera" :style="{'width': '48px', 'height': '48px', 'background-color': menuOpened ? 'yellow' : 'white'}" @click="togglePanel" class="leaflet-control-zoom-out centerall">
         <b-tooltip v-if="(document.getElementById('cogsdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('cogsdivinner')">{{ menuOpened ? $t('closeMenu') : $t('openMenu') }}</b-tooltip>
         <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="bars" size="lg"/>
+      </a>
       </div>
     </div>
     <div id="rulerdiv" style="display: none;">
-      <div id="rulerdivinner" :style="{'width': '48px', 'height': '48px', 'background-color': $store.state.editedTrack ? 'yellow' : 'white'}" @click="rulerClick" class="leaflet-touch leaflet-bar cogsbutton">
+      <div id="rulerdivinner" class="leaflet-bar leaflet-control">
+      <a id="rulerdivinnera" :style="{'width': '48px', 'height': '48px', 'background-color': $store.state.editedTrack ? 'yellow' : 'white'}" @click="rulerClick" class="leaflet-control-zoom-out centerall">
         <b-tooltip v-if="(document.getElementById('rulerdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('rulerdivinner')">{{ $store.state.editedTrack ? $t('closeRuler') : $t('openRuler') }}</b-tooltip>
         <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="ruler-horizontal" size="lg"/>
+      </a>
       </div>
     </div>
     <div id="gallerydiv" style="display: none;">
-      <div id="gallerydivinner" :style="{'width': '48px', 'height': '48px', 'background-color': galleryOpened ? 'yellow' : 'white'}" @click="toggleGalleryPanel" class="leaflet-touch leaflet-bar cogsbutton">
+      <div id="gallerydivinner" class="leaflet-bar leaflet-control">
+      <a id="gallerydivinnera" :style="{'width': '48px', 'height': '48px', 'background-color': galleryOpened ? 'yellow' : 'white'}" @click="toggleGalleryPanel" class="leaflet-control-zoom-out centerall">
         <b-tooltip v-if="(document.getElementById('gallerydivinner')) && ($store.state.isDesktop)" :target="document.getElementById('gallerydivinner')">{{ galleryOpened ? $t('closeGallery') : $t('openGallery') }}</b-tooltip>
         <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="images" size="lg"/>
+      </a>
       </div>
     </div>
     <div id="importdiv" style="display: none;">
-      <div id="importdivinner" style="width: 48px; height: 48px;" @click="openImportFileInput" class="leaflet-touch leaflet-bar cogsbutton">
+      <div id="importdivinner" class="leaflet-bar leaflet-control">
+      <a id="importdivinnera" style="width: 48px; height: 48px;" @click="openImportFileInput" class="leaflet-control-zoom-out centerall">
         <b-tooltip v-if="(document.getElementById('importdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('importdivinner')">{{ $t('importGpxFile') }}</b-tooltip>
         <input id="importFileInput" multiple type="file" style="display:none;" accept=".gpx" v-on:change="importGpxFile" />
         <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="file-upload"/>
+      </a>
       </div>
     </div>
     <div id="locationdiv" style="display: none;">
-      <div id="locationdivinner" @click="toggleLocation" class="leaflet-touch leaflet-bar cogsbutton">
+      <div id="locationdivinner" class="leaflet-bar leaflet-control">
+      <a id="locationdivinnera" @click="toggleLocation" class="leaflet-control-zoom-out centerall">
         <b-tooltip v-if="(document.getElementById('locationdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('locationdivinner')">{{ locationActive ? $t('hideLocation') : $t('showLocation') }}</b-tooltip>
         <template v-if="locationActive">
           <font-awesome-icon v-if="! currentLocation" class="fa-spin" icon="spinner" size="lg"/>
           <font-awesome-icon v-else style="color: green; cursor: pointer; width: 28px; height: 28px;" icon="map-marker" size="lg"/>
         </template>
         <font-awesome-icon v-else style="color: black; cursor: pointer; width: 28px; height: 28px;" icon="map-marker" size="lg"/>  
+      </a>
       </div>
     </div>
     <div id="speedlegenddiv" style="display: none;">
@@ -386,32 +396,44 @@ export default class Index extends BaseComponent {
         $(".leaflet-control-zoom-in").attr('style', 'width: 64px !important; height: 64px !important');
         $(".leaflet-control-zoom-out").attr('style', 'width: 64px !important; height: 64px !important');
         $(".leaflet-control-zoom-fullscreen").attr('style', 'width: 64px !important; height: 64px !important');
-        $("#cogsdivinner").attr('style', 'width: 64px !important; height: 64px !important');
-        $("#locationdivinner").attr('style', 'width: 64px !important; height: 64px !important');
+        $("#cogsdivinnera").attr('style', 'width: 64px !important; height: 64px !important');
+        $("#locationdivinnera").attr('style', 'width: 64px !important; height: 64px !important');
         if (this.showAllButtonsDuringLocation) {
-          $("#gallerydivinner").attr('style', 'margin-top: 10px !important; width: 64px !important; height: 64px !important; visibility: visible');
-          $("#rulerdivinner").attr('style', 'margin-top: 10px !important; width: 64px !important; height: 64px !important; visibility: visible');
-          $("#importdivinner").attr('style', 'margin-top: 10px !important; width: 64px !important; height: 64px !important; visibility: visible');
+          $("#gallerydivinnera").attr('style', 'width: 64px !important; height: 64px !important; visibility: visible');
+          $("#rulerdivinnera").attr('style', 'width: 64px !important; height: 64px !important; visibility: visible');
+          $("#importdivinnera").attr('style', 'width: 64px !important; height: 64px !important; visibility: visible');
+          $("#gallerydivinner").attr('style', 'margin-top: 10px !important');
+          $("#rulerdivinner").attr('style', 'margin-top: 10px !important');
+          $("#importdivinner").attr('style', 'margin-top: 10px !important');
         } else {
-          $("#gallerydivinner").attr('style', 'margin-top: 0px !important; width: 0px !important; height: 0px !important; visibility: hidden');
-          $("#rulerdivinner").attr('style', 'margin-top: 0px !important; width: 0px !important; height: 0px !important; visibility: hidden');
-          $("#importdivinner").attr('style', 'margin-top: 0px !important; width: 0px !important; height: 0px !important; visibility: hidden');
+          $("#gallerydivinnera").attr('style', 'width: 0px !important; height: 0px !important; visibility: hidden');
+          $("#rulerdivinnera").attr('style', 'width: 0px !important; height: 0px !important; visibility: hidden');
+          $("#importdivinnera").attr('style', 'width: 0px !important; height: 0px !important; visibility: hidden');
+          $("#gallerydivinner").attr('style', 'margin-top: 0px !important');
+          $("#rulerdivinner").attr('style', 'margin-top: 0px !important');
+          $("#importdivinner").attr('style', 'margin-top: 0px !important');
         }
       } else {
         $(".leaflet-control-layers-toggle").attr('style', 'width: 48px !important; height: 48px !important');
         $(".leaflet-control-zoom-in").attr('style', 'width: 48px !important; height: 48px !important');
         $(".leaflet-control-zoom-out").attr('style', 'width: 48px !important; height: 48px !important');
         $(".leaflet-control-zoom-fullscreen").attr('style', 'width: 48px !important; height: 48px !important');
-        $("#cogsdivinner").attr('style', 'width: 48px !important; height: 48px !important');
-        $("#locationdivinner").attr('style', 'width: 48px !important; height: 48px !important');
+        $("#cogsdivinnera").attr('style', 'width: 48px !important; height: 48px !important');
+        $("#locationdivinnera").attr('style', 'width: 48px !important; height: 48px !important');
         if (this.showAllButtonsDuringLocation) {
-          $("#gallerydivinner").attr('style', 'margin-top: 10px !important; width: 48px !important; height: 48px !important; visibility: visible');
-          $("#rulerdivinner").attr('style', 'margin-top: 10px !important; width: 48px !important; height: 48px !important; visibility: visible');
-          $("#importdivinner").attr('style', 'margin-top: 10px !important; width: 48px !important; height: 48px !important; visibility: visible');
+          $("#gallerydivinnera").attr('style', 'width: 48px !important; height: 48px !important; visibility: visible');
+          $("#rulerdivinnera").attr('style', 'width: 48px !important; height: 48px !important; visibility: visible');
+          $("#importdivinnera").attr('style', 'width: 48px !important; height: 48px !important; visibility: visible');
+          $("#gallerydivinner").attr('style', 'margin-top: 10px !important');
+          $("#rulerdivinner").attr('style', 'margin-top: 10px !important');
+          $("#importdivinner").attr('style', 'margin-top: 10px !important');
         } else {
-          $("#gallerydivinner").attr('style', 'margin-top: 0px !important; width: 0px !important; height: 0px !important; visibility: hidden');
-          $("#rulerdivinner").attr('style', 'margin-top: 0px !important; width: 0px !important; height: 0px !important; visibility: hidden');
-          $("#importdivinner").attr('style', 'margin-top: 0px !important; width: 0px !important; height: 0px !important; visibility: hidden');
+          $("#gallerydivinnera").attr('style', 'width: 0px !important; height: 0px !important; visibility: hidden');
+          $("#rulerdivinnera").attr('style', 'width: 0px !important; height: 0px !important; visibility: hidden');
+          $("#importdivinnera").attr('style', 'width: 0px !important; height: 0px !important; visibility: hidden');
+          $("#gallerydivinner").attr('style', 'margin-top: 0px !important');
+          $("#rulerdivinner").attr('style', 'margin-top: 0px !important');
+          $("#importdivinner").attr('style', 'margin-top: 0px !important');
         }
       }
     } else {
@@ -419,11 +441,14 @@ export default class Index extends BaseComponent {
       $(".leaflet-control-zoom-in").attr('style', 'width: 48px !important; height: 48px !important');
       $(".leaflet-control-zoom-out").attr('style', 'width: 48px !important; height: 48px !important');
       $(".leaflet-control-zoom-fullscreen").attr('style', 'width: 48px !important; height: 48px !important');
-      $("#cogsdivinner").attr('style', 'width: 48px !important; height: 48px !important');
-      $("#locationdivinner").attr('style', 'width: 48px !important; height: 48px !important');
-      $("#gallerydivinner").attr('style', 'margin-top: 10px !important; width: 48px !important; height: 48px !important; visibility: visible');
-      $("#rulerdivinner").attr('style', 'margin-top: 10px !important; width: 48px !important; height: 48px !important; visibility: visible');
-      $("#importdivinner").attr('style', 'margin-top: 10px !important; width: 48px !important; height: 48px !important; visibility: visible');
+      $("#cogsdivinnera").attr('style', 'width: 48px !important; height: 48px !important');
+      $("#locationdivinnera").attr('style', 'width: 48px !important; height: 48px !important');
+      $("#gallerydivinnera").attr('style', 'width: 48px !important; height: 48px !important; visibility: visible');
+      $("#rulerdivinnera").attr('style', 'width: 48px !important; height: 48px !important; visibility: visible');
+      $("#importdivinnera").attr('style', 'width: 48px !important; height: 48px !important; visibility: visible');
+      $("#gallerydivinner").attr('style', 'margin-top: 10px !important');
+      $("#rulerdivinner").attr('style', 'margin-top: 10px !important');
+      $("#importdivinner").attr('style', 'margin-top: 10px !important');
     }
   }
 
@@ -573,6 +598,8 @@ export default class Index extends BaseComponent {
   private async loadKVsettings() {
     this.largeButtonsDuringLocation = await kvstore.get('largeButtonsDuringLocation');
     this.showAllButtonsDuringLocation = await kvstore.get('showAllButtonsDuringLocation');
+    this.useHTML5location = await kvstore.get('useHTML5location');
+    console.log('KV settings loaded');
   }
 
   private async mounted() {
@@ -582,6 +609,7 @@ export default class Index extends BaseComponent {
     this.setAppHost();
     this.setStoreToken();
     this.createMap([52.743682, 16.273668], 11);
+    console.log('Map created');
     await this.downloadAndAddLayers();
     this.addZoomControl();
     this.createSpeedLegendControl();
@@ -796,6 +824,13 @@ export default class Index extends BaseComponent {
       }
       layers[firstLayer].addTo(this.$store.state.map!);
     }
+  }
+
+  private replaceHTTP(url: string) {
+    if (! (window.location.hostname === 'localhost')) {
+      return url.replace('http://', 'https://');
+    }
+    return url;
   }
 
   private async downloadAndAddLayers() {
@@ -1081,71 +1116,6 @@ export default class Index extends BaseComponent {
     return moment(date).format('DD.MM.YYYY H:mm:ss.SSS');
   }
 
-  private toggleLocationWithDebug(e) {
-    if (this.locationActive) {
-      if (this.locationMarker) {
-        this.locationMarker.removeFrom(this.$store.state.map);
-      }
-      if (this.currentLocationTrackOnMap) {
-        this.currentLocationTrackOnMap.removeFrom(this.$store.state.map);
-      }
-      this.currentLocation = null;
-      this.locationActive = false;
-      this.followLocation = false;
-      this.currentLocationTrack = [];
-      this.lastTime = 0;
-      clearInterval(this.locationInterval);
-    } else {
-      if (! this.locationMarker) {
-        this.locationMarker = new L.CircleMarker([0, 0], {radius: 11, fill: true, fillOpacity: 0.5});
-      }
-      this.locationMarker.setLatLng([0, 0]);
-      this.locationMarker.addTo(this.$store.state.map);
-      this.followLocation = true;
-      this.currentLocation = null;
-      this.currentLocationTrack = [];
-      this.lastTime = 0;
-      this.locationInterval = setInterval(() => {
-        const date = Date.now();
-        console.log('Running setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date + ' (' + this.formatDateMs(date) + ')');
-        axios.get('http://localhost:10000/?since=' + this.lastTime).then((response) => {
-          const data = response.data;
-          const date2 = Date.now();
-          console.log('Running axios.get then function with since = ' + data.since + ' (' + this.formatDateMs(data.since) + '), responseTimestamp = ' + data.responseTimestamp + ', responseDate = ' + data.responseDate + ' at ' + date2 + ' (' + this.formatDateMs(date2) + '), points: ' + data.trackPoints.length);
-          for(const point of data.trackPoints) {
-            this.currentLocation = [point.lat, point.lon];  
-            this.currentLocationTrack.push(this.currentLocation);
-            this.lastTime = point.time;
-          }
-          if (this.currentLocationTrackOnMap) {
-            this.currentLocationTrackOnMap.removeFrom(this.$store.state.map);
-          }
-          if (this.currentLocation) {
-            this.currentLocationTrackOnMap = new L.Polyline(this.currentLocationTrack, {
-              color: 'red',
-              weight: 5,
-              opacity: 1,
-              smoothFactor: 1,
-            });
-            this.currentLocationTrackOnMap.addTo(this.$store.state.map);
-            this.locationMarker.setLatLng(this.currentLocation);
-            if (this.followLocation) {
-              this.$store.state.map.panTo(this.currentLocation);
-            }
-          }
-        }).catch(() => {
-          console.log('Running axios.get catch function at ' + Date.now());
-        })
-        const date3 = Date.now();
-        console.log('Ending setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date3 + ' (' + this.formatDateMs(date3) + ')');
-      }, 1000)
-      this.locationActive = true;
-    }
-    e.stopPropagation();
-  }
-
-  //private processingLocationInterval = false;
-
   private updateGPSPosition(position: Position) {
      this.currentLocation = [position.coords.latitude, position.coords.longitude];
      this.currentLocationTrack.push(this.currentLocation);
@@ -1194,54 +1164,44 @@ export default class Index extends BaseComponent {
         this.locationWatchID = navigator.geolocation.watchPosition(this.updateGPSPosition);
       } else {
         this.locationInterval = setInterval(() => {
-          //if (this.processingLocationInterval == false) {
-          //  this.processingLocationInterval = true;
-            const date = Date.now();
-            console.log('Running setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date + ' (' + this.formatDateMs(date) + ')');
-            const rand = this.getRandomInt(1000000);
-            axios.get('http://127.0.0.1:10000/?since=' + this.lastTime + '&rand=' + rand, {timeout: 5000}).then((response) => {
-              const data = response.data;
-              const date2 = Date.now();
-              console.log('Running axios.get then function with since = ' + data.since + ' (' + this.formatDateMs(data.since) + '), responseTimestamp = ' + data.responseTimestamp + ', responseDate = ' + data.responseDate + ' at ' + date2 + ' (' + this.formatDateMs(date2) + '), points: ' + data.trackPoints.length);
-              for(const point of data.trackPoints) {
-                if (point.time > this.lastTime) {
-                  this.currentLocation = [point.lat, point.lon];  
-                  this.currentLocationTrack.push(this.currentLocation);
-                  this.lastTime = point.time;
-                } else {
-                  const date3 = Date.now();
-                  console.log('Skipping adding point (current lastTime = ' + this.lastTime + ') with time = ' + point.time + ' ('+ this.formatDateMs(point.time) + ') at ' + date3 + ' (' + this.formatDateMs(date3) + ')');
-                }
+          const date = Date.now();
+          console.log('Running setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date + ' (' + this.formatDateMs(date) + ')');
+          const rand = this.getRandomInt(1000000);
+          axios.get('http://127.0.0.1:10000/?since=' + this.lastTime + '&rand=' + rand, {timeout: 5000}).then((response) => {
+            const data = response.data;
+            const date2 = Date.now();
+            console.log('Running axios.get then function with since = ' + data.since + ' (' + this.formatDateMs(data.since) + '), responseTimestamp = ' + data.responseTimestamp + ', responseDate = ' + data.responseDate + ' at ' + date2 + ' (' + this.formatDateMs(date2) + '), points: ' + data.trackPoints.length);
+            for(const point of data.trackPoints) {
+              if (point.time > this.lastTime) {
+                this.currentLocation = [point.lat, point.lon];  
+                this.currentLocationTrack.push(this.currentLocation);
+                this.lastTime = point.time;
+              } else {
+                const date3 = Date.now();
+                console.log('Skipping adding point (current lastTime = ' + this.lastTime + ') with time = ' + point.time + ' ('+ this.formatDateMs(point.time) + ') at ' + date3 + ' (' + this.formatDateMs(date3) + ')');
               }
-              if (this.currentLocationTrackOnMap) {
-                this.currentLocationTrackOnMap.removeFrom(this.$store.state.map);
+            }
+            if (this.currentLocationTrackOnMap) {
+              this.currentLocationTrackOnMap.removeFrom(this.$store.state.map);
+            }
+            if (this.currentLocation) {
+              this.currentLocationTrackOnMap = new L.Polyline(this.currentLocationTrack, {
+                color: 'red',
+                weight: 5,
+                opacity: 1,
+                smoothFactor: 1,
+              });
+              this.currentLocationTrackOnMap.addTo(this.$store.state.map);
+              this.locationMarker.setLatLng(this.currentLocation);
+              if (this.followLocation) {
+                this.$store.state.map.panTo(this.currentLocation);
               }
-              if (this.currentLocation) {
-                this.currentLocationTrackOnMap = new L.Polyline(this.currentLocationTrack, {
-                  color: 'red',
-                  weight: 5,
-                  opacity: 1,
-                  smoothFactor: 1,
-                });
-                this.currentLocationTrackOnMap.addTo(this.$store.state.map);
-                this.locationMarker.setLatLng(this.currentLocation);
-                if (this.followLocation) {
-                  this.$store.state.map.panTo(this.currentLocation);
-                }
-              }
-            }).catch(() => {
-              console.log('Running axios.get catch function at ' + Date.now());
-            })
-            //.finally(() => {
-            //  this.processingLocationInterval = false;
-            //})
-            const date3 = Date.now();
-            console.log('Ending setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date3 + ' (' + this.formatDateMs(date3) + ')');
-          //} else {
-          //  const date3 = Date.now();
-          //  console.log('Skipping...');
-          //  console.log('Skipping setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date3 + ' (' + this.formatDateMs(date3) + ')');
-          //}
+            }
+          }).catch(() => {
+            console.log('Running axios.get catch function at ' + Date.now());
+          })
+          const date3 = Date.now();
+          console.log('Ending setInterval function with since = ' + this.lastTime + ' ('+ this.formatDateMs(this.lastTime) + ') at ' + date3 + ' (' + this.formatDateMs(date3) + ')');
         }, 1000)
       }
       this.locationActive = true;
@@ -1251,7 +1211,6 @@ export default class Index extends BaseComponent {
   }
 
   private async addLocationButton() {
-    this.useHTML5location = await kvstore.get('useHTML5location');
     const locationControl = L.Control.extend({
       options: {
         position: 'topright'
@@ -1269,6 +1228,7 @@ export default class Index extends BaseComponent {
     setTimeout(() => {
       // @ts-ignore
       this.$store.state.map.invalidateSize({pan: false, animate: false});
+      this.changeButtonSizeDuringLocation();
     }, 1000);
     e.stopPropagation();
   }
@@ -1725,6 +1685,12 @@ export default class Index extends BaseComponent {
 
   .flex-form-group {
     display: flex !important;
+  }
+
+  .centerall {
+    display: flex !important;
+    justify-content: center !important;
+    align-items: center !important;
   }
 
 </style>

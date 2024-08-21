@@ -3,32 +3,32 @@ import Track from '@/ts/Track';
 
 export function formatDate(value: Date) {
   if (value) {
-    return moment(String(value)).format('DD.MM.YYYY H:mm');
+    return moment(value).format('DD.MM.YYYY H:mm');
   }
 }
 
 export function formatDateSeconds(value: Date) {
   if (value) {
-    return moment(String(value)).format('DD.MM.YYYY H:mm:ss');
+    return moment(value).format('DD.MM.YYYY H:mm:ss');
   }
 }
 
 export function formatDateSecondsEpoch(value: string) {
   if (value) {
     const date = new Date(parseInt(value, 10) * 1000);
-    return moment(String(date)).format('DD.MM.YYYY H:mm:ss');
+    return moment(date).format('DD.MM.YYYY H:mm:ss');
   }
 }
 
 export function formatTimeSeconds(value: Date) {
   if (value) {
-    return moment(String(value)).format('H:mm:ss');
+    return moment(value).format('H:mm:ss');
   }
 }
 
 export function formatDateDay(value: Date) {
   if (value) {
-    return moment(String(value)).format('DD.MM.YYYY');
+    return moment(value).format('DD.MM.YYYY');
   }
 }
 

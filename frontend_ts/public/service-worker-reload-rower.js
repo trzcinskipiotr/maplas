@@ -14,7 +14,6 @@ workbox.core.setCacheNameDetails({prefix: "frontend_ts"});
 
 self.addEventListener('install', event => {
     console.log(`Event fired: ${event.type}`);
-    console.log(event);
     event.waitUntil(
       caches.open('maplas-rower-pwa-djangoapp-api').then(cache => {
         console.log('SW: Cache opened');
@@ -27,31 +26,42 @@ self.addEventListener('install', event => {
 
 self.addEventListener('activate', event => {
     console.log(`Event fired: ${event.type}`);
-    console.log(event);
 });
+
+async function fetchOrGetEvent(event) {
+  try {
+    console.log('Fetching: ' + event.request.url);
+    const response = await fetch(event.request);
+    if (response && response.status == 200) {
+      console.log(event.request.url + ': response status is 200');
+      const responseCloneToSave = response.clone();
+      const responseCloneToJSON = response.clone();
+      const responseCloneToReturn = response.clone();
+      await responseCloneToJSON.json();
+      console.log(event.request.url + ': response is JSON parsed');
+      const cache = await caches.open('maplas-rower-pwa-djangoapp-api');
+      await cache.put(event.request, responseCloneToSave);
+      console.log(event.request.url + ': response is returned from server');
+      return responseCloneToReturn;
+    } else {
+      const response = await caches.match(event.request);
+      if (response) {
+        console.log(event.request.url + ': response is returned from cache (wrong status code)');
+        return response;
+      }
+    }
+  } catch (error) {
+    const response = await caches.match(event.request);
+    if (response) {
+      console.log(event.request.url + ': response is returned from cache (network error)');
+      return response;
+    }
+  }
+}
 
 self.addEventListener('fetch', event => {
   if (event.request.url.includes('/djangoapp/api/')) {
-    event.respondWith(
-      fetch(event.request).then(response => {
-        if (response && response.status == 200) {
-          let responseClone = response.clone();
-          caches.open('maplas-rower-pwa-djangoapp-api').then(cache => {
-            cache.put(event.request, responseClone);
-          })
-          return response;
-        } else {
-          return response;
-        }
-      }).catch(() => {
-        return caches.match(event.request).then(response => {
-          if (response) {
-            return response;
-          }
-        })
-      })
-    );
-    console.log(event.request.url);
+    event.respondWith(fetchOrGetEvent(event));
   }
 });
 
@@ -59,4 +69,4 @@ self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.suppressWarnings();
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-const SERVICE_WORKER_VERSION = 11;
+const SERVICE_WORKER_VERSION = 12;

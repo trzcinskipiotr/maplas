@@ -3,6 +3,8 @@ import App from './App.vue';
 import router from './ts/router';
 import store from './ts/store';
 
+Vue.config.silent = true
+
 import './registerServiceWorker';
 
 import 'leaflet.gridlayer.googlemutant';
