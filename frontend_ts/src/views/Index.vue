@@ -156,47 +156,47 @@
     </div>
     <div id="cogsdiv" style="display: none;">
       <div id="cogsdivinner" class="leaflet-bar leaflet-control">
-      <a id="cogsdivinnera" :style="{'width': '48px', 'height': '48px', 'background-color': menuOpened ? 'yellow' : 'white'}" @click="togglePanel" class="leaflet-control-zoom-out centerall">
-        <b-tooltip v-if="(document.getElementById('cogsdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('cogsdivinner')">{{ menuOpened ? $t('closeMenu') : $t('openMenu') }}</b-tooltip>
-        <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="bars" size="lg"/>
-      </a>
+        <a id="cogsdivinnera" :style="{'width': '48px', 'height': '48px', 'background-color': menuOpened ? 'yellow' : 'white'}" @click="togglePanel" class="leaflet-control-zoom-out centerall">
+          <b-tooltip v-if="(document.getElementById('cogsdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('cogsdivinner')">{{ menuOpened ? $t('closeMenu') : $t('openMenu') }}</b-tooltip>
+          <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="bars" size="lg"/>
+        </a>
       </div>
     </div>
     <div id="rulerdiv" style="display: none;">
       <div id="rulerdivinner" class="leaflet-bar leaflet-control">
-      <a id="rulerdivinnera" :style="{'width': '48px', 'height': '48px', 'background-color': $store.state.editedTrack ? 'yellow' : 'white'}" @click="rulerClick" class="leaflet-control-zoom-out centerall">
-        <b-tooltip v-if="(document.getElementById('rulerdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('rulerdivinner')">{{ $store.state.editedTrack ? $t('closeRuler') : $t('openRuler') }}</b-tooltip>
-        <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="ruler-horizontal" size="lg"/>
-      </a>
+        <a id="rulerdivinnera" :style="{'width': '48px', 'height': '48px', 'background-color': $store.state.editedTrack ? 'yellow' : 'white'}" @click="rulerClick" class="leaflet-control-zoom-out centerall">
+          <b-tooltip v-if="(document.getElementById('rulerdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('rulerdivinner')">{{ $store.state.editedTrack ? $t('closeRuler') : $t('openRuler') }}</b-tooltip>
+          <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="ruler-horizontal" size="lg"/>
+        </a>
       </div>
     </div>
     <div id="gallerydiv" style="display: none;">
       <div id="gallerydivinner" class="leaflet-bar leaflet-control">
-      <a id="gallerydivinnera" :style="{'width': '48px', 'height': '48px', 'background-color': galleryOpened ? 'yellow' : 'white'}" @click="toggleGalleryPanel" class="leaflet-control-zoom-out centerall">
-        <b-tooltip v-if="(document.getElementById('gallerydivinner')) && ($store.state.isDesktop)" :target="document.getElementById('gallerydivinner')">{{ galleryOpened ? $t('closeGallery') : $t('openGallery') }}</b-tooltip>
-        <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="images" size="lg"/>
-      </a>
+        <a id="gallerydivinnera" :style="{'width': '48px', 'height': '48px', 'background-color': galleryOpened ? 'yellow' : 'white'}" @click="toggleGalleryPanel" class="leaflet-control-zoom-out centerall">
+          <b-tooltip v-if="(document.getElementById('gallerydivinner')) && ($store.state.isDesktop)" :target="document.getElementById('gallerydivinner')">{{ galleryOpened ? $t('closeGallery') : $t('openGallery') }}</b-tooltip>
+          <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="images" size="lg"/>
+        </a>
       </div>
     </div>
     <div id="importdiv" style="display: none;">
       <div id="importdivinner" class="leaflet-bar leaflet-control">
-      <a id="importdivinnera" style="width: 48px; height: 48px;" @click="openImportFileInput" class="leaflet-control-zoom-out centerall">
-        <b-tooltip v-if="(document.getElementById('importdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('importdivinner')">{{ $t('importGpxFile') }}</b-tooltip>
-        <input id="importFileInput" multiple type="file" style="display:none;" accept=".gpx" v-on:change="importGpxFile" />
-        <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="file-upload"/>
-      </a>
+        <a id="importdivinnera" style="width: 48px; height: 48px;" @click="openImportFileInput" class="leaflet-control-zoom-out centerall">
+          <b-tooltip v-if="(document.getElementById('importdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('importdivinner')">{{ $t('importGpxFile') }}</b-tooltip>
+          <input id="importFileInput" multiple type="file" style="display:none;" accept=".gpx" v-on:change="importGpxFile" />
+          <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="file-upload"/>
+        </a>
       </div>
     </div>
     <div id="locationdiv" style="display: none;">
       <div id="locationdivinner" class="leaflet-bar leaflet-control">
-      <a id="locationdivinnera" @click="toggleLocation" class="leaflet-control-zoom-out centerall">
-        <b-tooltip v-if="(document.getElementById('locationdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('locationdivinner')">{{ locationActive ? $t('hideLocation') : $t('showLocation') }}</b-tooltip>
-        <template v-if="locationActive">
-          <font-awesome-icon v-if="! currentLocation" class="fa-spin" icon="spinner" size="lg"/>
-          <font-awesome-icon v-else style="color: green; cursor: pointer; width: 28px; height: 28px;" icon="map-marker" size="lg"/>
-        </template>
-        <font-awesome-icon v-else style="color: black; cursor: pointer; width: 28px; height: 28px;" icon="map-marker" size="lg"/>  
-      </a>
+        <a id="locationdivinnera" @click="toggleLocation" class="leaflet-control-zoom-out centerall">
+          <b-tooltip v-if="(document.getElementById('locationdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('locationdivinner')">{{ locationActive ? $t('hideLocation') : $t('showLocation') }}</b-tooltip>
+          <template v-if="locationActive">
+            <font-awesome-icon v-if="! currentLocation" class="fa-spin" icon="spinner" size="lg"/>
+            <font-awesome-icon v-else style="color: green; cursor: pointer; width: 28px; height: 28px;" icon="map-marker" size="lg"/>
+          </template>
+          <font-awesome-icon v-else style="color: black; cursor: pointer; width: 28px; height: 28px;" icon="map-marker" size="lg"/>  
+        </a>
       </div>
     </div>
     <div id="speedlegenddiv" style="display: none;">
@@ -643,14 +643,14 @@ export default class Index extends BaseComponent {
       this.$store.commit('setZoomLevel', this.$store.state.map.getZoom())
     })
     //Obejście na złe zachowanie zoomu na mobile, na desktopie niestety zostają tooltipy po kliknięciu, więc if tylko na mobile
-    if (! this.$store.state.isDesktop) {
-      $('.leaflet-control-zoom-in').replaceWith($('.leaflet-control-zoom-in').clone());
-      (document.getElementsByClassName('leaflet-control-zoom-in')[0]).addEventListener('click', (e) => {this.$store.state.map.setZoom(Math.round(this.$store.state.map.getZoom() + 1)); e.stopPropagation()});
-      $('.leaflet-control-zoom-out').replaceWith($('.leaflet-control-zoom-out').clone());
-      (document.getElementsByClassName('leaflet-control-zoom-out')[0]).addEventListener('click', (e) => {this.$store.state.map.setZoom(Math.round(this.$store.state.map.getZoom() - 1)); e.stopPropagation()});
-      this.$store.state.map.off('dblclick');
-      this.$store.state.map.on('dblclick', (e) => {this.$store.state.map.setZoom(Math.round(this.$store.state.map.getZoom() + 1))});
-    }
+    //if (! this.$store.state.isDesktop) {
+    //  $('.leaflet-control-zoom-in').replaceWith($('.leaflet-control-zoom-in').clone());
+    //  (document.getElementsByClassName('leaflet-control-zoom-in')[0]).addEventListener('click', (e) => {this.$store.state.map.setZoom(Math.round(this.$store.state.map.getZoom() + 1)); e.stopPropagation()});
+    //  $('.leaflet-control-zoom-out').replaceWith($('.leaflet-control-zoom-out').clone());
+    //  (document.getElementsByClassName('leaflet-control-zoom-out')[0]).addEventListener('click', (e) => {this.$store.state.map.setZoom(Math.round(this.$store.state.map.getZoom() - 1)); e.stopPropagation()});
+    //  this.$store.state.map.off('dblclick');
+    //  this.$store.state.map.on('dblclick', (e) => {this.$store.state.map.setZoom(Math.round(this.$store.state.map.getZoom() + 1))});
+    //}
   }
 
   private rulerClick(e: Event) {
