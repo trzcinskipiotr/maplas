@@ -92,10 +92,9 @@
                         </div>
                       </div>
                     </div>
-                    
                     {{ $t('language') }}: <v-select v-model="language" :options="languages" :clearable="false" :searchable="false" >
                       <template slot="option" slot-scope="option">
-                        <flag :iso="option.flag" v-bind:squared=false />
+                        <span style='height: 13px' :class="'fi fi-' + option.flag"></span>
                         {{ option.label }}
                       </template>
                     </v-select>
@@ -221,7 +220,7 @@
       </div>
     </div>
     <div v-for="language in languages" :key="language.flag" style="position: absolute; left: -10000px">
-      <flag :iso="language.flag" v-bind:squared=false />
+      <span :class="'fi fi-' + language.flag"></span>
     </div>
     <template v-if="(document.getElementsByClassName('leaflet-control-locate')[0]) && ($store.state.isDesktop)">
       <b-tooltip :target="document.getElementsByClassName('leaflet-control-locate')[0]">{{ $t('showMyLocation') }}</b-tooltip>

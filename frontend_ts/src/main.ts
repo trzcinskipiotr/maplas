@@ -72,6 +72,8 @@ loadgoogle({key: 'GOOGLE_API_KEY'});
 
 Vue.config.productionTip = false;
 
+import '@/assets/flag-icons/css/flag-icons.min.css';
+
 
 
 import AppTrack from '@/components/AppTrack.vue';
@@ -126,10 +128,6 @@ Vue.component('sketch-picker', Sketch);
 
 // @ts-ignore
 import i18n from '@/plugins/i18n';
-
-// @ts-ignore
-import FlagIcon from 'vue-flag-icon';
-Vue.use(FlagIcon);
 
 // @ts-ignore
 import bFormSlider from 'vue-bootstrap-slider';
