@@ -198,7 +198,7 @@ export default class AppTrackGroup extends BaseComponent {
 
   private getCalendarLabels(month: number) {
     const weeks = [];
-    if (this.trackGroup.tracks[0].gpsTrack.start_time) {
+    if ((this.trackGroup.tracks.length > 0) && (this.trackGroup.tracks[0].gpsTrack.start_time)) {
       const firstDayOfMonth = new Date(this.trackGroup.tracks[0].gpsTrack.start_time.getFullYear(), month, 1);
       let week = [];
       let firstDay = firstDayOfMonth.getDay() - 1;

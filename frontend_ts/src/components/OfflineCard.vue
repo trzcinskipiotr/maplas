@@ -547,8 +547,6 @@ export default class OfflineCard extends BaseComponent {
   @Watch('$store.state.map')
   private onStoreMapChanged() {
     this.$store.state.map.on('baselayerchange', this.onBaseLayerChange);
-    this.currentLayer = this.$store.state.baseMaps['OpenStreetMap'];
-    this.layerName = 'OpenStreetMap';
   }
 
   @Watch('$store.state.offlineControl')
