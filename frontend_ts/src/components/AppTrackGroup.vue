@@ -40,7 +40,7 @@
               <td><b>nie</b></td>
             </tr>
             <tr v-for="week in getCalendarLabels(index)" :key="week">
-              <td style="border: solid 1px white" v-for="day in week" :key="day" :style="{'background-color': day.track ? 'lightgreen' : 'white'}">
+              <td style="border: solid 1px white" v-for="day in week" :key="day" :style="{'background-color': day.track ? (isBicycleTrack(day.track.gpsTrack) ? '#6ee05c' : '#5ed9f7') : 'white'}">
                 {{ day.label }}
               </td>  
             </tr>    
@@ -212,12 +212,12 @@ export default class AppTrackGroup extends BaseComponent {
       }
       let loopDay = new Date(this.trackGroup.tracks[0].gpsTrack.start_time.getFullYear(), month, 1);
       while(loopDay.getMonth() == month) {
-        let wasTrack = false;
+        let wasTrack = null;
         for(let track of this.trackGroup.tracks) {
           const trackDateWithoutHours = new Date(track.gpsTrack.start_time);
           trackDateWithoutHours.setHours(0, 0, 0, 0);
           if ((loopDay.getMonth() == trackDateWithoutHours.getMonth()) && (loopDay.getDate() == trackDateWithoutHours.getDate()) && (loopDay.getFullYear() == trackDateWithoutHours.getFullYear())) {
-            wasTrack = true;
+            wasTrack = track;
           }
         }
         week.push({'label': loopDay.getDate(), 'track': wasTrack});
