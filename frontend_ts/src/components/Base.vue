@@ -84,6 +84,14 @@ export default class BaseComponent extends Vue {
     }
   }
 
+  public replaceHTTP(url: string) {
+    if (window.location.hostname == 'localhost') {
+      return url;
+    } else {
+      return url.replace('http://', 'https://');
+    }
+  }
+
 }
 </script>
 

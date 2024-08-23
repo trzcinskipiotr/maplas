@@ -41,13 +41,6 @@ export default class MapPlace extends BaseComponent {
 
   @Prop({ required: true }) private place: Place;
 
-  private replaceHTTP(url: string) {
-    if (! (window.location.hostname === 'localhost')) {
-      return url.replace('http://', 'https://');
-    }
-    return url;
-  }
-
   private mounted() {
     this.place.marker.bindPopup(this.$refs.tooltip as HTMLElement, {});
   }

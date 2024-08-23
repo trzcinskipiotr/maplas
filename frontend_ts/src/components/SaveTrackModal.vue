@@ -68,7 +68,7 @@
               <td>
                 <table v-for="photo in track.gpsTrack.photos" :key="photo.id" class="" style="display: inline; margin: 10px;">
                   <tr><td>
-                    <img :src="photo.image_thumb" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
+                    <img :src="replaceHTTP(photo.image_thumb)" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
                   </td></tr>
                   <tr><td>
                     <font-awesome-icon v-if="photo.private" style="width: 16px; height: 16px; margin-right: 2px" icon="key" />

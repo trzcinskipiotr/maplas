@@ -12,7 +12,7 @@
     <div ref="tracks" class="card-body p-2">
       <div>
       {{ $t('tracksSelectedDistance') }}: {{ checkedTracks|sumTracksDistance|roundTrackDistance }}
-      <font-awesome-icon @click="openCalendarModal" style="cursor: pointer; float: right;" :icon="['far', 'calendar']" size="lg" />
+      <font-awesome-icon v-if="calendar" @click="openCalendarModal" style="cursor: pointer; float: right;" :icon="['far', 'calendar']" size="lg" />
       </div>
       <ul>
         <li v-if="countTracksByType(trackGroup.tracks, TrackType.walk) > 0">{{ $t('tracksSelectedDistanceWalk') }} {{ countWalkTracks(checkedTracks) }}: {{ checkedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
@@ -24,7 +24,7 @@
       </div>
     </div>
 
-    <div ref="calendarModal" class="modal fade" tabindex="-1" role="dialog">
+    <div v-if="calendar" ref="calendarModal" class="modal fade" tabindex="-1" role="dialog">
       <info-modal :title="$t('calendar')">
         <div style="display: inline-block;">
         <span v-for="index in monthRange" :key="index" style="float: left; margin: 4px; margin-top: 20px; border: solid 1px; border-color: rgb(240, 240, 240);">
@@ -78,6 +78,7 @@ export default class AppTrackGroup extends BaseComponent {
 
   @Prop({ required: true }) private trackGroup: TrackGroup;
   @Prop({ required: true }) private searchText: string;
+  @Prop({ required: true }) private calendar: Boolean;
 
   public constructor() {
     super();

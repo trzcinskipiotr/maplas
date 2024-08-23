@@ -115,13 +115,6 @@ export default class TrackDetails extends BaseComponent {
     }
   }
 
-  private replaceHTTP(url: string) {
-    if (! (window.location.hostname === 'localhost')) {
-      return url.replace('http://', 'https://');
-    }
-    return url;
-  }
-
   private lastClickedGallery = 1;
   private openGalleryHandler: any;
 

@@ -54,7 +54,7 @@
                       <div v-for="(trackGroupGroup, key) in trackGroupsDict" :key="key">
                         <div v-show="groupBy.id === key">
                           <div v-for="trackGroup in trackGroupGroup" :key="trackGroup.label" class="mb-2">
-                            <AppTrackGroup :trackGroup="trackGroup" :searchText="searchText"></AppTrackGroup>
+                            <AppTrackGroup :calendar="key == 'year'" :trackGroup="trackGroup" :searchText="searchText"></AppTrackGroup>
                           </div>
                         </div>
                       </div>
@@ -823,13 +823,6 @@ export default class Index extends BaseComponent {
       }
       layers[firstLayer].addTo(this.$store.state.map!);
     }
-  }
-
-  private replaceHTTP(url: string) {
-    if (! (window.location.hostname === 'localhost')) {
-      return url.replace('http://', 'https://');
-    }
-    return url;
   }
 
   private async downloadAndAddLayers() {
