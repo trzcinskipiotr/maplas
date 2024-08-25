@@ -290,7 +290,6 @@ import Area from '@/ts/Area';
 import VideoLink from '@/ts/VideoLink';
 import moment from 'moment';
 import { TileLayerOffline, savetiles } from '@/ts/leafletoffline';
-import * as kvstore from '@/ts/kvstore';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -366,24 +365,24 @@ export default class Index extends BaseComponent {
   }
 
   @Watch('useHTML5location')
-  private async onUseHTML5location(value: string, oldValue: string) {
+  private onUseHTML5location(value: string, oldValue: string) {
     if ((this.useHTML5location !== null) && (typeof this.useHTML5location !== "undefined")) {
-      await kvstore.set('useHTML5location', this.useHTML5location);
+      localStorage.setItem('useHTML5location', this.useHTML5location.toString());
     }
   }
 
   @Watch('largeButtonsDuringLocation')
-  private async onLargeButtonsDuringLocation(value: string, oldValue: string) {
+  private onLargeButtonsDuringLocation(value: string, oldValue: string) {
     if ((this.largeButtonsDuringLocation !== null) && (typeof this.largeButtonsDuringLocation !== "undefined")) {
-      await kvstore.set('largeButtonsDuringLocation', this.largeButtonsDuringLocation);
+      localStorage.setItem('largeButtonsDuringLocation', this.largeButtonsDuringLocation.toString());
       this.changeButtonSizeDuringLocation();
     }
   }
 
   @Watch('showAllButtonsDuringLocation')
-  private async onshowAllButtonsDuringLocation(value: string, oldValue: string) {
+  private onshowAllButtonsDuringLocation(value: string, oldValue: string) {
     if ((this.showAllButtonsDuringLocation !== null) && (typeof this.showAllButtonsDuringLocation !== "undefined")) {
-      await kvstore.set('showAllButtonsDuringLocation', this.showAllButtonsDuringLocation);
+      localStorage.setItem('showAllButtonsDuringLocation', this.showAllButtonsDuringLocation.toString());
       this.changeButtonSizeDuringLocation();
     }
   }
@@ -594,10 +593,10 @@ export default class Index extends BaseComponent {
   private node: any = null;
   private VUE_APP_BUILD_DATE: string = null;
 
-  private async loadKVsettings() {
-    this.largeButtonsDuringLocation = await kvstore.get('largeButtonsDuringLocation');
-    this.showAllButtonsDuringLocation = await kvstore.get('showAllButtonsDuringLocation');
-    this.useHTML5location = await kvstore.get('useHTML5location');
+  private loadKVsettings() {
+    this.largeButtonsDuringLocation = (localStorage.getItem('largeButtonsDuringLocation') == 'true');
+    this.showAllButtonsDuringLocation = (localStorage.getItem('showAllButtonsDuringLocation') == 'true');
+    this.useHTML5location = (localStorage.getItem('useHTML5location') == 'true');
     console.log('KV settings loaded');
   }
 
