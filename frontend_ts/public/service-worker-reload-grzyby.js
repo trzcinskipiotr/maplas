@@ -66,7 +66,6 @@ self.addEventListener('fetch', event => {
 });
 
 self.__precacheManifest = [].concat(self.__precacheManifest || []);
-workbox.precaching.suppressWarnings();
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-const SERVICE_WORKER_VERSION = 100;
+const SERVICE_WORKER_VERSION = 102;
