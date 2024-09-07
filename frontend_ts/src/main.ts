@@ -73,6 +73,7 @@ loadgoogle({key: 'GOOGLE_API_KEY'});
 Vue.config.productionTip = false;
 
 import '@/assets/flag-icons/css/flag-icons.min.css';
+import '@/assets/css/icons.css';
 
 
 

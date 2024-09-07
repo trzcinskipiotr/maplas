@@ -289,7 +289,7 @@ import { EventBus } from '@/ts/EventBus';
 import Area from '@/ts/Area';
 import VideoLink from '@/ts/VideoLink';
 import moment from 'moment';
-import { TileLayerOffline, savetiles } from '@/ts/leafletoffline';
+import { TileLayerOffline, createSaveTilesControl } from '@/ts/leafletoffline';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -1019,15 +1019,12 @@ export default class Index extends BaseComponent {
   }
 
   private addOffline() {
-    this.offlineControl = savetiles(this.baseMaps['OpenStreetMapOffline'], {
-            zoomlevels: this.getOfflineZooms(),
-            alwaysDownload: true,
-            parallel: 5,
-            saveText: '<i class="fa fa-download" title="Save tiles"></i>',
-            rmText: '<i class="fa fa-trash" title="Remove tiles"></i>',
-        });
+    this.offlineControl = createSaveTilesControl(this.$store.state.map, this.baseMaps['OpenStreetMapOffline'], {
+      zoomlevels: this.getOfflineZooms(),
+      alwaysDownload: true,
+      parallel: 5,
+    });
     this.$store.state.offlineControl = this.offlineControl;
-    this.offlineControl.addTo(this.$store.state.map);
   }
 
   private addCogsButton() {

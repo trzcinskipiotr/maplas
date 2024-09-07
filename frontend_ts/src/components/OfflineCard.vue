@@ -197,7 +197,13 @@ export default class OfflineCard extends BaseComponent {
       this.saving = true;
       this.$store.state.offlineControl.options.parallel = this.$store.state.downloadThreads;
       this.$store.state.offlineControl.options.alwaysDownload = !this.useCache;
-      setTimeout(() => this.$store.state.offlineControl._saveTiles(), 100);
+      const firstUrl = this.$store.state.offlineControl._baseLayer._url;
+      const countToSave = this.$store.state.offlineControl.calculateTilesCount();
+      if (window.confirm(this.$t('saveAllTitles', [countToSave, this.$store.state.offlineControl.options.zoomlevels, firstUrl, this.useCache]))) {
+        setTimeout(() => this.$store.state.offlineControl._saveTiles(), 100);
+      } else {
+        this.saving = false;
+      }
     } else {
       this.showMessageError(this.$t('mapNotOffline'));
     }
@@ -531,15 +537,12 @@ export default class OfflineCard extends BaseComponent {
       offlineControl._baseLayer.on('savestart', (status: any) => {
         this.showMessageDiv('' + status.lengthSaved + '/' + status.lengthToBeSaved);
       });
-      offlineControl._baseLayer.on('savetileend', (status) => {
+      offlineControl._baseLayer.on('refreshstatus', (status) => {
         this.showProgressMessage(status);
       });
       offlineControl._baseLayer.on('saveend', (status) => {
         this.showProgressMessage(status);
         this.saving = false;
-      });
-      offlineControl._baseLayer.on('loadtileenderror', (status) => {
-        this.showProgressMessage(status);
       });
     }
   }
@@ -547,27 +550,6 @@ export default class OfflineCard extends BaseComponent {
   @Watch('$store.state.map')
   private onStoreMapChanged() {
     this.$store.state.map.on('baselayerchange', this.onBaseLayerChange);
-  }
-
-  @Watch('$store.state.offlineControl')
-  private onStoreOfflineControlChange() {
-    this.$store.state.offlineControl.options.confirm = (layer, succescallback) => {
-      const firstUrl = layer._tilesforSave[0] ? layer._tilesforSave[0].key : '';
-      if (window.confirm(this.$t('saveAllTitles', [this.$store.state.offlineControl.status.lengthToBeSaved, this.$store.state.offlineControl.options.zoomlevels, firstUrl, this.useCache]))) {
-        succescallback();
-      } else {
-        this.saving = false;
-      }
-    };
-    this.$store.state.offlineControl.options.confirmRemoval = (layer, successCallback) => {
-      this.$store.state.offlineControl.getStorageSize((size) => {
-        if (window.confirm(this.$t('removeAllTitles', [size]))) {
-          successCallback();
-        } else {
-          this.deleting = false;
-        }
-      });
-    };
   }
 
   private showOfflineLayer: any = null;

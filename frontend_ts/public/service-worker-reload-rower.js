@@ -30,7 +30,6 @@ self.addEventListener('activate', event => {
 
 async function fetchOrGetEvent(event) {
   try {
-    console.log('Fetching: ' + event.request.url);
     const response = await fetch(event.request);
     if (response && response.status == 200) {
       console.log(event.request.url + ': response status is 200');
@@ -60,7 +59,9 @@ async function fetchOrGetEvent(event) {
 }
 
 self.addEventListener('fetch', event => {
+  console.log('Fetching: ' + event.request.url + ' in ServiceWorker');
   if (event.request.url.includes('/djangoapp/api/')) {
+    console.log(event.request.url + ': intercepted by ServiceWorker');
     event.respondWith(fetchOrGetEvent(event));
   }
 });
@@ -68,4 +69,4 @@ self.addEventListener('fetch', event => {
 self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-const SERVICE_WORKER_VERSION = 103;
+const SERVICE_WORKER_VERSION = 105;

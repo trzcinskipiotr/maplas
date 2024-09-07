@@ -75,7 +75,7 @@ class PlaceTypeSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PlaceType
-        fields = ['id', 'name', 'icon', 'pl', 'en']
+        fields = ['id', 'name', 'icon', 'pl', 'en', 'order']
 
 class MapLayerSerializer(serializers.ModelSerializer):
 

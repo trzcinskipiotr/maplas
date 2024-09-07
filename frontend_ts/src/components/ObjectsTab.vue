@@ -16,12 +16,12 @@
         </b-form-checkbox>{{ $t('showNotApproved') }}
       </div>  
     </div>
-    <div ref="places" class="card-body p-2">
-      <div v-for="placeGroup of placeGroups" :key="placeGroup.name">
+    <div v-if="placeGroups" ref="places" class="card-body p-2">
+      <div v-for="placeType of $store.state.placeTypes" :key="placeType.name">
         <div :style="{'margin-bottom': $store.state.isDesktop ? 0 : '15px'}">
-          <b-form-checkbox style="display: inline;" v-model="placeGroup.checked" @change="onPlaceGroupsChanged($event, placeGroup.id)">
+          <b-form-checkbox style="display: inline;" v-model="placeGroups[placeType.id].checked" @change="onPlaceGroupsChanged($event, placeGroups[placeType.id].id)">
           </b-form-checkbox>
-          {{ $t(placeGroup.name) }}
+          {{ $t(placeType.name) }}
         </div>  
       </div>
     </div>
@@ -48,16 +48,19 @@ export default class ObjectsTab extends BaseComponent {
 
   private checkedAll: Boolean = false;
   private iconsVisible: boolean = true;
-  private placeGroups: any = [];
+  private placeGroups: any = null;
   private showApproved = true;
   private showNotApproved = true;
 
   @Watch('$store.state.places')
   private onStorePlacesChanged(value: string, oldValue: string) {
     let tmpplaceGroups: any = {}
+    for (const placeType of this.$store.state.placeTypes) {
+      tmpplaceGroups[placeType.id] = {id: placeType.id, checked: false, name: placeType.name, places: []};
+    }
     for (const place of this.$store.state.places) {
       if (!(place.type.id in tmpplaceGroups)) {
-        tmpplaceGroups[place.type.id] = {id: place.type.id, checked: false, name: place.type.name, places: []} 
+        tmpplaceGroups[place.type.id] = {id: place.type.id, checked: false, name: place.type.name, places: []};
       }
       tmpplaceGroups[place.type.id].places.push(place)
     }
@@ -67,7 +70,7 @@ export default class ObjectsTab extends BaseComponent {
       }
     } else {
       for (let tmpplaceGroup in tmpplaceGroups) {
-        if (tmpplaceGroups[tmpplaceGroup].id in this.placeGroups) {
+        if ((this.placeGroups) && (tmpplaceGroups[tmpplaceGroup].id in this.placeGroups)) {
           tmpplaceGroups[tmpplaceGroup].checked = this.placeGroups[tmpplaceGroup].checked;
         }
       }

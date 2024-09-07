@@ -100,6 +100,10 @@ class PlaceType(models.Model):
     icon = models.CharField(max_length=100, null=False, blank=False)
     pl = models.CharField(max_length=100, null=False, blank=False)
     en = models.CharField(max_length=100, null=False, blank=False)
+    order = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['order']
 
     def __str__(self):
         return self.name

@@ -25,7 +25,7 @@ class TrackDetailsAdmin(admin.ModelAdmin):
 
 @admin.register(PlaceType)
 class PlaceTypeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'icon', 'pl', 'en')
+    list_display = ('id', 'name', 'icon', 'pl', 'en', 'order')
     search_fields = ('id', 'name', 'icon', 'pl', 'en')
 
 @admin.register(Place)
