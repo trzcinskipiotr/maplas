@@ -13,7 +13,7 @@
           <label style="margin-right: 2px;" class="custom-control-label" :for="'detailscheckbox' + track.gpsTrack.id">{{ track.gpsTrack.name }}</label>
         </div>
         <span class="badge badge-dark" style="margin-right: 2px; margin-left: 2px;">{{ track.gpsTrack.start_time|formatDateDay }}</span>
-        <span class="badge badge-success">{{ track.gpsTrack.distance|roundTrackDistance }}</span>
+        <span :class="getDisanseBadgeClasses(track.gpsTrack)">{{ track.gpsTrack.distance|roundTrackDistance }}</span>
         <div style="float: right;">
           <font-awesome-icon @click="toggleMaximizedDetails" style="cursor: pointer;" :icon="maximizedDetails ? 'chevron-up' : 'chevron-down'"/>&nbsp;
           <font-awesome-icon @click="track.maximized = false" style="cursor: pointer;" :icon="['far', 'times-circle']"/>

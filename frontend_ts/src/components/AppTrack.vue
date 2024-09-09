@@ -5,7 +5,7 @@
         <input type="checkbox" class="custom-control-input" :id="'checkbox' + track.gpsTrack.id" v-model="checked" />
         <label style="margin-right: 2px;" class="custom-control-label" :for="'checkbox' + track.gpsTrack.id">{{ track.gpsTrack.name }}</label>
         <span class="badge badge-dark" style="margin-right: 2px;">{{ track.gpsTrack.start_time|formatDateDay }}</span>
-        <span class="badge badge-success" style="margin-right: 2px;">{{ track.gpsTrack.distance|roundTrackDistance }}</span>
+        <span :class="getDisanseBadgeClasses(track.gpsTrack)" style="margin-right: 2px;">{{ track.gpsTrack.distance|roundTrackDistance }}</span>
         <span style="margin-right: 2px;" v-b-tooltip.hover :title="'' + track.gpsTrack.photos.length + ' ' + $t('photos')"><font-awesome-icon v-if="track.gpsTrack.photos.length" style="cursor: pointer" icon="images" @click="clickOpenGallery"/></span>
         <span v-b-tooltip.hover :title="'' + track.gpsTrack.videos.length + ' ' + $t('videos')"><font-awesome-icon v-if="track.gpsTrack.videos.length" style="cursor: pointer" icon="video" @click="clickOpenVideos"/></span>
         <div style="float: right;">
@@ -30,7 +30,7 @@
           <span v-if="$store.state.isDesktop" style='margin-right: 3px;'><TrackStatusIcon :gpsTrack="track.gpsTrack" height=24></TrackStatusIcon></span>
           <span style='margin-right: 3px;'><TrackDownload :gpsTrack="track.gpsTrack" :height="$store.state.isDesktop ? '24' : '32'" :width="$store.state.isDesktop ? null : '32px'"></TrackDownload></span>
           <span v-if="$store.state.isDesktop" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('centerTrack')"><font-awesome-icon @click="centerTrack" style="height: 24px; cursor: pointer" icon="search-location"/></span>
-          <span v-if="(track.gpsTrack.status === TrackStatus.done) && ($store.state.isDesktop)" ref="tooltipSpan" style='margin-right: 3px;'><font-awesome-icon @click="playTrack" style="height: 24px; cursor: pointer" :icon="playing ? 'stop-circle' : 'play'"/></span>
+          <span v-if="$store.state.isDesktop" ref="tooltipSpan" style='margin-right: 3px;'><font-awesome-icon @click="playTrack" style="height: 24px; cursor: pointer" :icon="playing ? 'stop-circle' : 'play'"/></span>
           <span v-if="(track.gpsTrack.status === TrackStatus.done) && ($store.state.isDesktop)" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('maximizeTrack')"><font-awesome-icon @click="track.maximized = true" style="height: 24px; cursor: pointer" :icon="['far', 'window-maximize']" /></span>
           <b-tooltip v-if="(track.gpsTrack.status === TrackStatus.done) && (renderedComponent) && ($store.state.isDesktop)" :target="$refs.tooltipSpan">{{ playing ? $t('stopTrack') : $t('playTrack') }}</b-tooltip>
           <span v-if="($store.state.user) && ($store.state.isDesktop)">
@@ -80,6 +80,7 @@ export default class AppTrack extends BaseComponent {
   private renderedComponent: boolean = false;
   private playing: boolean = false;
   private rulerActive = false;
+  private highlighted = false;
 
   @Prop({ required: true }) private track: Track;
   @Prop({ required: true }) private highlightOnStart: boolean;
@@ -237,27 +238,31 @@ export default class AppTrack extends BaseComponent {
   }
 
   private highlightMapTrack() {
+    this.highlighted = true;
     document.getElementById('trackcheckbox' + this.track.gpsTrack.id)!.style.fontWeight = 'bold';
     this.changeWidth(6);
     for (const mapTrack of this.track.mapTracks) {
       mapTrack.bringToFront();
     }
-    if (this.track.startMarker) {
-      this.track.startMarker.addTo(this.$store.state.map);
-    }
-    if (this.track.finishMarker) {
-      this.track.finishMarker.addTo(this.$store.state.map);
+    if (this.track.checked) {
+      if (this.track.startMarker) {
+        this.track.startMarker.addTo(this.$store.state.map);
+      }
+      if (this.track.finishMarker) {
+        this.track.finishMarker.addTo(this.$store.state.map);
+      }
     }
   }
 
   private unhighlightMapTrack() {
+    this.highlighted = false;
     document.getElementById('trackcheckbox' + this.track.gpsTrack.id)!.style.fontWeight = 'normal';
     this.changeWidth(3);
     if (this.track.startMarker) {
-      this.track.finishMarker.removeFrom(this.$store.state.map);
+      this.track.startMarker.removeFrom(this.$store.state.map);
     }
     if (this.track.finishMarker) {
-      this.track.startMarker.removeFrom(this.$store.state.map);
+      this.track.finishMarker.removeFrom(this.$store.state.map);
     }
   }
 
@@ -338,6 +343,14 @@ export default class AppTrack extends BaseComponent {
       for (const mapTrack of this.track.mapTracks) {
         mapTrack.addTo(this.$store.state.map);
       }
+      if (this.highlighted) {
+        if (this.track.startMarker) {
+          this.track.startMarker.addTo(this.$store.state.map);
+        }
+        if (this.track.finishMarker) {
+          this.track.finishMarker.addTo(this.$store.state.map);
+        }
+      }
       if (this.rulerActive) {
         for (const marker of this.rulerMarkers) {
           marker.addTo(this.$store.state.map);
@@ -359,6 +372,12 @@ export default class AppTrack extends BaseComponent {
     } else {
       for (const mapTrack of this.track.mapTracks) {
         mapTrack.removeFrom(this.$store.state.map);
+      }
+      if (this.track.startMarker) {
+        this.track.startMarker.removeFrom(this.$store.state.map);
+      }
+      if (this.track.finishMarker) {
+        this.track.finishMarker.removeFrom(this.$store.state.map);
       }
       for (const marker of this.track.plannedMarkers) {
         marker.removeFrom(this.$store.state.map);
@@ -446,6 +465,26 @@ export default class AppTrack extends BaseComponent {
 
 .leaflet-layer2 {
   z-index: 1000000 !important;
+}
+
+.badge-green1 {
+  color: white;
+  background-color: rgb(108, 217, 98)
+}
+
+.badge-green2 {
+  color: white;
+  background-color: rgb(60, 179, 49);
+}
+
+.badge-green3 {
+  color: white;
+  background-color: rgb(44, 145, 35);
+}
+
+.badge-green4 {
+  color: white;
+  background-color: rgb(7, 79, 0);
 }
 
 </style>

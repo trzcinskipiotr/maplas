@@ -5,6 +5,7 @@ import { TrackStatus } from './types';
 import { distanceBetweenPoints } from './utils/coords';
 import { getCenter } from 'geolib';
 import Photo from './Photo';
+import * as icons from '@/ts/icons';
 
 export default class Track {
 
@@ -68,12 +69,14 @@ export default class Track {
       this.mapTracks.push(poliline);
     }
     const startIcon = L.icon({
-      iconUrl: 'img/startflag3.png',
-      iconAnchor: [30, 45],
+      iconUrl: icons.markerTrackStartIcon,
+      iconSize: [21, 21],
+      iconAnchor: [10, 10],
     });
     const finishIcon = L.icon({
-      iconUrl: 'img/finishflag3.png',
-      iconAnchor: [17, 45],
+      iconUrl: icons.markerTrackFinishIcon,
+      iconSize: [21, 21],
+      iconAnchor: [10, 10],
     });
     const animateTrackHtml = this.gpsTrack.isBicycleTrack() ? '<i class="fa fa-bicycle fa-2x" style="color: black"></i>' : '<i class="fa fa-shoe-prints fa-2x" style="color: black"></i>';
     for (const segment of this.gpsTrack.segments) {
@@ -102,12 +105,12 @@ export default class Track {
         let lastPoint: L.LatLng = null;
         let distance = 0;
         const markerIcon = L.icon({
-          iconUrl: 'img/circle.svg',
+          iconUrl: icons.redCircle,
           iconSize: [13, 13],
           iconAnchor: [6, 6],
         });
         const middleMarkerIcon = L.icon({
-          iconUrl: 'img/circle_blue.svg',
+          iconUrl: icons.blueCircle,
           iconSize: [9, 9],
           iconAnchor: [4, 4],
         });

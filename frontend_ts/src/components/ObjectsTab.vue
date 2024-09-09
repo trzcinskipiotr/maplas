@@ -21,6 +21,7 @@
         <div :style="{'margin-bottom': $store.state.isDesktop ? 0 : '15px'}">
           <b-form-checkbox style="display: inline;" v-model="placeGroups[placeType.id].checked" @change="onPlaceGroupsChanged($event, placeGroups[placeType.id].id)">
           </b-form-checkbox>
+          <i style="color: blue" :class="'fas maplas-icon icon16px ' + placeType.icon"></i>
           {{ $t(placeType.name) }}
         </div>  
       </div>
@@ -28,9 +29,9 @@
     <MapPlace v-for="place of $store.state.places" :key="place.id" :place="place"></MapPlace>
   </div>
   <br>
-  <Areas></Areas>
-  <br>
   <PlannedTracks></PlannedTracks>
+  <br>
+  <Areas></Areas>
   </div>
 </template>
 

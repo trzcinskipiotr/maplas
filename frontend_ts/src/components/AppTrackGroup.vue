@@ -329,7 +329,11 @@ export default class AppTrackGroup extends BaseComponent {
   }
 
   private highlightOnStart(track: Track) {
-    return ! track.onServer;
+    if ((! track.onServer) && (track.gpsTrack.distance > 0)) {
+      return true;
+    } else {
+      return false;
+    }
   }
 
   private mounted() {

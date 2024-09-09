@@ -125,6 +125,7 @@ import Track from '@/ts/Track';
 import Region from '@/ts/Region';
 import { roundCoord } from '@/ts/utils/coords';
 import $ from 'jquery';
+import * as icons from '@/ts/icons';
 
 @Component
 export default class SaveTrackModal extends BaseComponent {
@@ -147,13 +148,13 @@ export default class SaveTrackModal extends BaseComponent {
     super();
     this.uploadTrackTypes = [{translate: 'bicycleTrack', label: '', icon: 'biking', value: TrackType.bicycle},
                              {translate: 'walkTrack', label: '', icon: 'shoe-prints', value: TrackType.walk},
-                             {translate: 'mushroomTrack', label: '', imgsrc: 'img/mushroom.svg', value: TrackType.mushroom}];
+                             {translate: 'mushroomTrack', label: '', imgsrc: icons.mushroomIcon, value: TrackType.mushroom}];
     if (process.env.VUE_APP_BICYCLE_WALK_TRACKS_ONLY) {
       this.uploadTrackTypes = [{translate: 'bicycleTrack', label: '', icon: 'biking', value: TrackType.bicycle},
                                {translate: 'walkTrack', label: '', icon: 'shoe-prints', value: TrackType.walk}];
     }
     if (process.env.VUE_APP_MUSHROOM_TRACKS_ONLY) {
-      this.uploadTrackTypes = [{translate: 'mushroomTrack', label: '', imgsrc: 'img/mushroom.svg', value: TrackType.mushroom}];
+      this.uploadTrackTypes = [{translate: 'mushroomTrack', label: '', imgsrc: icons.mushroomIcon, value: TrackType.mushroom}];
     }
     this.uploadTrackType = this.uploadTrackTypes[0];
     for (const trackType of this.uploadTrackTypes) {

@@ -92,6 +92,34 @@ export default class BaseComponent extends Vue {
     }
   }
 
+  public getDisanseBadgeClasses(gpsTrack: GpsTrack) {
+    if(gpsTrack.isBicycleTrack()) {
+      if (gpsTrack.distance >= 50000) {
+        return ['badge', 'badge-green4'];
+      }
+      if (gpsTrack.distance >= 40000) {
+        return ['badge', 'badge-green3'];
+      }
+      if (gpsTrack.distance >= 30000) {
+        return ['badge', 'badge-green2'];
+      }
+      return ['badge', 'badge-green1'];
+    }
+    if((gpsTrack.isMushroomTrack()) || (gpsTrack.isWalkTrack())) {
+      if (gpsTrack.distance >= 15000) {
+        return ['badge', 'badge-green4'];
+      }
+      if (gpsTrack.distance >= 10000) {
+        return ['badge', 'badge-green3'];
+      }
+      if (gpsTrack.distance >= 5000) {
+        return ['badge', 'badge-green2'];
+      }
+      return ['badge', 'badge-green1'];
+    }
+    return ['badge', 'badge-success'];
+  }
+
 }
 </script>
 

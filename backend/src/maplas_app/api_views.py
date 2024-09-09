@@ -83,7 +83,7 @@ class PhotoViewSet(ListModelMixin, CreateModelMixin, viewsets.GenericViewSet):
         return self.create_update_serializer_class
 
 class AreaViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
-    queryset = Area.objects.all().order_by('id')
+    queryset = Area.objects.none()
     basic_serializer_class = serializers.AreaSerializer
     full_serializer_class =serializers.AreaSerializerFull
 

@@ -50,6 +50,8 @@ async function fetchOrGetEvent(event) {
       }
     }
   } catch (error) {
+    console.log(event.request.url + ': catch block');
+    console.log(error);
     const response = await caches.match(event.request);
     if (response) {
       console.log(event.request.url + ': response is returned from cache (network error)');
@@ -69,4 +71,4 @@ self.addEventListener('fetch', event => {
 self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-const SERVICE_WORKER_VERSION = 104;
+const SERVICE_WORKER_VERSION = 106;

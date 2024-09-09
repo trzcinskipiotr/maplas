@@ -27,6 +27,7 @@ import BaseComponent from './Base.vue';
 import { getCenter } from 'geolib';
 import axios from 'axios';
 import { AlertStatus } from '@/ts/types';
+import * as icons from '@/ts/icons';
 
 @Component
 export default class AppArea extends BaseComponent {
@@ -146,12 +147,12 @@ export default class AppArea extends BaseComponent {
     this.plannedMarkers = [];
     let lastPoint = null;
     const markerIcon = L.icon({
-      iconUrl: 'img/circle.svg',
+      iconUrl: icons.redCircle,
       iconSize: [13, 13],
       iconAnchor: [6, 6],
     });
     const middleMarkerIcon = L.icon({
-      iconUrl: 'img/circle_blue.svg',
+      iconUrl: icons.blueCircle,
       iconSize: [9, 9],
       iconAnchor: [4, 4],
     });
