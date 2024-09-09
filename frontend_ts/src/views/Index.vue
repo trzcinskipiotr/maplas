@@ -601,6 +601,7 @@ export default class Index extends BaseComponent {
   }
 
   private async mounted() {
+    axios.defaults.headers.common['Cookie'] = '';
     this.VUE_APP_BUILD_DATE = process.env.VUE_APP_BUILD_DATE;
     this.loadKVsettings();
     this.setLanguage();
