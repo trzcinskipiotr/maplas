@@ -5,6 +5,7 @@ from colorfield.fields import ColorField
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from djchoices import DjangoChoices, ChoiceItem
+from django.conf import settings
 import json
 import datetime
 import gpxpy
@@ -12,6 +13,7 @@ import exifread
 import piexif
 import uuid
 import os
+import time
 
 from imagekit.models import ImageSpecField
 from imagekit.processors import ResizeToFill, Thumbnail, SmartResize, Resize, ResizeToFit
@@ -249,3 +251,21 @@ class VideoLink(models.Model):
     html = models.TextField(null=False, blank=False)
     track = models.ForeignKey(Track, null=True, on_delete=models.CASCADE, blank=True)
     place = models.ForeignKey(Place, null=True, on_delete=models.CASCADE, blank=True)
+
+class StringField(models.Model):
+    key = models.CharField(max_length=1000, db_index=True, null=False)
+    value = models.TextField(null=False, blank=True)
+
+@receiver(models.signals.post_save, sender=Area)
+@receiver(models.signals.post_save, sender=MapLayer)
+@receiver(models.signals.post_save, sender=VideoLink)
+@receiver(models.signals.post_save, sender=Photo)
+@receiver(models.signals.post_save, sender=Place)
+@receiver(models.signals.post_save, sender=PlaceType)
+@receiver(models.signals.post_save, sender=Track)
+@receiver(models.signals.post_save, sender=Region)
+def update_revision(sender, instance, **kwargs):
+    field = StringField.objects.filter(key=settings.DATA_REVISION_KEY).first()
+    if field:
+        field.value = '{}'.format(time.time_ns())
+        field.save()

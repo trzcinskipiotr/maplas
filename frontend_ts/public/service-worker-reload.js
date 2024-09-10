@@ -4,6 +4,9 @@ importScripts(
   "/PREFECH-MANIFEST-FILE-PLACEHOLDER"
 );
 
+const API_CACHE_NAME = 'maplas-pwa-djangoapp-api';
+const IMG_CACHE_NAME = 'maplas-pwa-img';
+
 workbox.core.setCacheNameDetails({prefix: "frontend_ts"});
 
 /**
@@ -15,7 +18,7 @@ workbox.core.setCacheNameDetails({prefix: "frontend_ts"});
 self.addEventListener('install', event => {
     console.log(`Event fired: ${event.type}`);
     event.waitUntil(
-      caches.open('maplas-rower-pwa-djangoapp-api').then(cache => {
+      caches.open(API_CACHE_NAME).then(cache => {
         console.log('SW: Cache opened');
       }).catch(error => {
         console.error(error);
@@ -38,7 +41,7 @@ async function fetchOrGetEvent(event) {
       const responseCloneToReturn = response.clone();
       await responseCloneToJSON.json();
       console.log(event.request.url + ': response is JSON parsed');
-      const cache = await caches.open('maplas-rower-pwa-djangoapp-api');
+      const cache = await caches.open(API_CACHE_NAME);
       await cache.put(event.request, responseCloneToSave);
       console.log(event.request.url + ': response is returned from server');
       return responseCloneToReturn;
@@ -61,14 +64,36 @@ async function fetchOrGetEvent(event) {
 }
 
 self.addEventListener('fetch', event => {
-  console.log('Fetching: ' + event.request.url + ' in ServiceWorker');
-  if ((event.request.method == 'GET') && (event.request.url.includes('/djangoapp/api/'))) {
-    console.log(event.request.url + ': intercepted by ServiceWorker');
-    event.respondWith(fetchOrGetEvent(event));
-  }
+    console.log('Fetching: ' + event.request.url + ' in ServiceWorker');
+    if (event.request.method == 'GET') {
+        const url = event.request.url;
+        let processByServiceWorker = false;
+        if (url.includes('/djangoapp/api/tracks/')) {
+            processByServiceWorker = true;
+        }
+        if (url.includes('/djangoapp/api/places/')) {
+            processByServiceWorker = true;
+        }
+        if (url.includes('/djangoapp/api/areas/')) {
+            processByServiceWorker = true;
+        }
+        if (url.includes('/djangoapp/api/maplayers/')) {
+            processByServiceWorker = true;
+        }
+        if (url.includes('/djangoapp/api/placetypes/')) {
+            processByServiceWorker = true;
+        }
+        if (url.includes('/djangoapp/api/regions/')) {
+            processByServiceWorker = true;
+        }
+        if (processByServiceWorker) {
+            console.log(event.request.url + ': intercepted by ServiceWorker');
+            event.respondWith(fetchOrGetEvent(event));
+        }
+    }
 });
 
 self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-const SERVICE_WORKER_VERSION = 109;
+const SERVICE_WORKER_VERSION = 110;

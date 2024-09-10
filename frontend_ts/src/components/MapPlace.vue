@@ -9,7 +9,7 @@
           <span v-if="place.photos.length" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('fullRes')"><font-awesome-icon ref="fullResImage" @click="makeFullResGallery" style="height: 24px; cursor: pointer" icon="search-plus"/></span>
         </span>  
         <span v-if="place.photos.length">
-          <br><img @load="resizePopup" ref="smallImage" :src="replaceHTTP(place.photos[0].image_thumb)" style="cursor: pointer; maxWidth: 300px; maxHeight: 300px" @click="makeGallery"><br>
+          <br><img @load="resizePopup" ref="smallImage" :src="replaceHTTP(place.photos[0].image_thumb)" :class="$store.state.isDesktop ? 'popupimgbig' : 'popupimgsmall'" @click="makeGallery"><br>
           <span style="float: right; color: gray">{{ place.photos[0].org_filename }} {{ place.photos[0].exif_time_taken | formatDateSeconds }}</span><br>
         </span>
         <span v-if="place.videos.length">
@@ -111,3 +111,19 @@ export default class MapPlace extends BaseComponent {
 }
 
 </script>
+
+<style>
+
+.popupimgbig {
+  cursor: pointer; 
+  max-width: 300px; 
+  max-height: 300px
+}
+
+.popupimgsmall {
+  cursor: pointer; 
+  max-width: 200px; 
+  max-height: 200px
+}
+
+</style>

@@ -1,7 +1,7 @@
 <template>
   <span>
     <div ref="newPlaceModal" class="modal fade" tabindex="-1" role="dialog">
-      <info-modal :title="$t('newPlace')">
+      <info-modal :title="place ? $t('editPlace') : $t('newPlace')">
         <div v-if="renderModal">
           <table class="table table-sm">
             <thead></thead>

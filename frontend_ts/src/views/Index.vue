@@ -292,6 +292,7 @@ import Area from '@/ts/Area';
 import VideoLink from '@/ts/VideoLink';
 import moment from 'moment';
 import { TileLayerOffline, createSaveTilesControl } from '@/ts/leafletoffline';
+import * as icons from '@/ts/icons';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -730,16 +731,24 @@ export default class Index extends BaseComponent {
   }
 
   private createMap(center: [number, number], zoom: number) {
-    const map = L.map('map', {
-      zoomAnimation: false,
-      contextmenu: true,
-      contextmenuWidth: 140,
-      zoomControl: false,
-	  contextmenuItems: [{
-	    text: this.$t('addPlace'),
-	    callback: this.openNewPlaceModal
-	  }],
-    });
+    let map: L.Map = null;
+    if (this.$store.state.isDesktop) {
+      map = L.map('map', {
+        zoomAnimation: false,
+        contextmenu: true,
+        contextmenuWidth: 140,
+        zoomControl: false,
+        contextmenuItems: [{
+          text: this.$t('addPlace'),
+          callback: this.openNewPlaceModal
+        }],
+      });
+    } else {
+      map = L.map('map', {
+        zoomAnimation: false,
+        zoomControl: false,
+      });
+    }
     map.setView(center, zoom);
     this.$store.commit('setMap', map);
     this.$store.commit('setZoomLevel', zoom);
@@ -766,6 +775,8 @@ export default class Index extends BaseComponent {
     if (result.length > 0) {
       for (const layer of result) {
         layers[layer.dict_key] = eval(layer.javascript_code);
+        layers[layer.dict_key]['options']['errorTileUrl'] = icons.tileDownloadError;
+        layers[layer.dict_key]['options']['attribution'] = '';
         this.baseMaps[layer.display_name] = layers[layer.dict_key];
         if (! firstLayer) {
           firstLayer = layer.dict_key;
