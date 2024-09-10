@@ -2,112 +2,114 @@
   <span>
     <div ref="newPlaceModal" class="modal fade" tabindex="-1" role="dialog">
       <info-modal :title="$t('newPlace')">
-        <table class="table table-sm">
-          <thead></thead>
-          <tbody>
-            <tr>
-              <th scope="row">{{ $t('name') }}</th>
-              <td>
-                <input v-model="name" style="width: 500px" type="text" class="form-control" />
-              </td>  
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('type') }}</th>
-              <td>
-                <v-select style="width: 500px" v-model="savePlaceType" :options="savePlaceTypes" :clearable="true" :searchable="false" >
-                  <template slot="option" slot-scope="option">
-                    {{ option.label }}
-                  </template>
-                </v-select>
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('isApproved') }}</th>
-              <td>
-                <div class="custom-control custom-checkbox">
-                  <input :id="'isApprovedCheckbox' + (place ? place.id : '')" type="checkbox" class="custom-control-input" v-model="approved" />
-                  <label class="custom-control-label" :for="'isApprovedCheckbox' + (place ? place.id : '')"> </label>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('description') }}</th>
-              <td>
-                <textarea v-model="description" class="form-control" rows="2" style="width: 500px"></textarea>
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('coordinates') }}</th>
-              <td>
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" :name="'coordinatesRadio2_' + (place ? place.id : '')" value=1 :id="'coordsradio1_' + (place ? place.id : '')" v-model="coordinatesRadio">
-                  <label class="form-check-label" :for="'coordsradio1_' + (place ? place.id : '')">
-                    {{ $t('manually') }}
-                  </label>
-                </div>
-                <input :disabled="coordinatesRadio != 1" style="width: 500px" type="text" class="form-control" v-model="manualCords" />
-                <div class="form-check">
-                  <input class="form-check-input" type="radio" :name="'coordinatesRadio2_' + (place ? place.id : '')" :id="'coordsradio2_' + (place ? place.id : '')" value=2 v-model="coordinatesRadio">
-                  <label class="form-check-label" for="coordsradio2_">
-                    {{ fromContextMenu ? $t('fromContextMenuPosition') : $t('fromMapCenter') }}: {{ mapCenterLat }}, {{ mapCenterLon }}
-                  </label>
-                </div>
-                <div class="form-check disabled">
-                  <input :disabled="! firstPhotoLat" class="form-check-input" type="radio" :name="'coordinatesRadio2_' + (place ? place.id : '')" :id="'coordsradio3_' + (place ? place.id : '')" value=3 v-model="coordinatesRadio">
-                  <label class="form-check-label" :for="'coordsradio3_'+ (place ? place.id : '')">
-                    {{ $t('fromFirstPhoto') }}: <span v-if="firstPhotoLat">{{ firstPhotoLat }}, {{ firstPhotoLon }}</span>
-                  </label>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('photos') }}</th>
-              <td>
-                <template v-if="place">
-                  <table v-for="photo in place.photos" :key="photo.id" class="" style="display: inline; margin: 10px;">
+        <div v-if="renderModal">
+          <table class="table table-sm">
+            <thead></thead>
+            <tbody>
+              <tr>
+                <th scope="row">{{ $t('name') }}</th>
+                <td>
+                  <input v-model="name" style="width: 500px" type="text" class="form-control" />
+                </td>  
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('type') }}</th>
+                <td>
+                  <v-select style="width: 500px" v-model="savePlaceType" :options="savePlaceTypes" :clearable="true" :searchable="false" >
+                    <template slot="option" slot-scope="option">
+                      {{ option.label }}
+                    </template>
+                  </v-select>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('isApproved') }}</th>
+                <td>
+                  <div class="custom-control custom-checkbox">
+                    <input :id="'isApprovedCheckbox' + (place ? place.id : '')" type="checkbox" class="custom-control-input" v-model="approved" />
+                    <label class="custom-control-label" :for="'isApprovedCheckbox' + (place ? place.id : '')"> </label>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('description') }}</th>
+                <td>
+                  <textarea v-model="description" class="form-control" rows="2" style="width: 500px"></textarea>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('coordinates') }}</th>
+                <td>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" :name="'coordinatesRadio2_' + (place ? place.id : '')" value=1 :id="'coordsradio1_' + (place ? place.id : '')" v-model="coordinatesRadio">
+                    <label class="form-check-label" :for="'coordsradio1_' + (place ? place.id : '')">
+                      {{ $t('manually') }}
+                    </label>
+                  </div>
+                  <input :disabled="coordinatesRadio != 1" style="width: 500px" type="text" class="form-control" v-model="manualCords" />
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" :name="'coordinatesRadio2_' + (place ? place.id : '')" :id="'coordsradio2_' + (place ? place.id : '')" value=2 v-model="coordinatesRadio">
+                    <label class="form-check-label" for="coordsradio2_">
+                      {{ fromContextMenu ? $t('fromContextMenuPosition') : $t('fromMapCenter') }}: {{ mapCenterLat }}, {{ mapCenterLon }}
+                    </label>
+                  </div>
+                  <div class="form-check disabled">
+                    <input :disabled="! firstPhotoLat" class="form-check-input" type="radio" :name="'coordinatesRadio2_' + (place ? place.id : '')" :id="'coordsradio3_' + (place ? place.id : '')" value=3 v-model="coordinatesRadio">
+                    <label class="form-check-label" :for="'coordsradio3_'+ (place ? place.id : '')">
+                      {{ $t('fromFirstPhoto') }}: <span v-if="firstPhotoLat">{{ firstPhotoLat }}, {{ firstPhotoLon }}</span>
+                    </label>
+                  </div>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('photos') }}</th>
+                <td>
+                  <template v-if="place">
+                    <table v-for="photo in place.photos" :key="photo.id" class="" style="display: inline; margin: 10px;">
+                      <tr><td>
+                        <img :src="replaceHTTP(photo.image_thumb)" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
+                      </td></tr>
+                      <tr><td>
+                        <font-awesome-icon v-if="photo.private" style="width: 16px; height: 16px; margin-right: 2px" icon="key" />
+                        <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
+                      </td></tr>    
+                    </table>
+                  </template>  
+                  <table v-for="photo in photos" :key="photo.id" class="" style="display: inline; margin: 10px;">
                     <tr><td>
-                      <img :src="replaceHTTP(photo.image_thumb)" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
+                      <img :src="photo.src" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
                     </td></tr>
                     <tr><td>
-                      <font-awesome-icon v-if="photo.private" style="width: 16px; height: 16px; margin-right: 2px" icon="key" />
+                      <font-awesome-icon style="cursor: pointer; width: 16px; height: 16px;" icon="trash" v-on:click="removePhoto(photo)"/>
+                      <div style="display: inline" class="custom-control custom-checkbox" v-b-tooltip.hover :title="$t('setAsPrivate')">
+                        <input type="checkbox" class="custom-control-input" :id="'checkbox' + photo.id" v-model="photo.private" />
+                        <label style="margin-right: 2px;" class="custom-control-label" :for="'checkbox' + photo.id"></label>
+                      </div>
                       <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
                     </td></tr>    
                   </table>
-                </template>  
-                <table v-for="photo in photos" :key="photo.id" class="" style="display: inline; margin: 10px;">
-                  <tr><td>
-                    <img :src="photo.src" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
-                  </td></tr>
-                  <tr><td>
-                    <font-awesome-icon style="cursor: pointer; width: 16px; height: 16px;" icon="trash" v-on:click="removePhoto(photo)"/>
-                    <div style="display: inline" class="custom-control custom-checkbox" v-b-tooltip.hover :title="$t('setAsPrivate')">
-                      <input type="checkbox" class="custom-control-input" :id="'checkbox' + photo.id" v-model="photo.private" />
-                      <label style="margin-right: 2px;" class="custom-control-label" :for="'checkbox' + photo.id"></label>
-                    </div>
-                    <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
-                  </td></tr>    
-                </table>
-                <div id="photouploaddivinner2" style="width: 48px; height: 48px;" @click="openPhotoImportFileInput" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="$t('importPhotoFile')">
-                  <input ref="importPhotoFileInput" type="file" style="display:none;" accept=".jpg" v-on:change="importPhotoFile" />
-                  <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="camera"/>
-                </div>
-              </td>
-            </tr>
-          </tbody>    
-        </table>
-        <div class="modal-footer">
-          <div style="width: 50%" v-if="placeSaving"><b-progress :max="100" show-progress animated>
-            <b-progress-bar :value="progress" show-progress animated>
-              <strong>{{ progress.toFixed(0) }}%</strong>
-            </b-progress-bar>
-          </b-progress></div>
-          <button type="button" class="btn btn-success" :disabled="(((!name) || (!savePlaceType)) || (placeSaving))" @click="saveNewPlaceModal">
-            <template v-if="placeSaving"><font-awesome-icon class="fa-spin" icon="spinner" />&nbsp;</template><strong>{{ place ? $t('save') : $t('addPlaceToMap') }}</strong>
-          </button>
-          <button :disabled="placeSaving" type="button" class="btn btn-primary" @click="closeNewPlaceModal">
-            <strong>{{ $t('close') }}</strong>
-          </button>
-        </div>
+                  <div id="photouploaddivinner2" style="width: 48px; height: 48px;" @click="openPhotoImportFileInput" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="$t('importPhotoFile')">
+                    <input ref="importPhotoFileInput" type="file" style="display:none;" accept=".jpg" v-on:change="importPhotoFile" />
+                    <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="camera"/>
+                  </div>
+                </td>
+              </tr>
+            </tbody>    
+          </table>
+          <div class="modal-footer">
+            <div style="width: 50%" v-if="placeSaving"><b-progress :max="100" show-progress animated>
+              <b-progress-bar :value="progress" show-progress animated>
+                <strong>{{ progress.toFixed(0) }}%</strong>
+              </b-progress-bar>
+            </b-progress></div>
+            <button type="button" class="btn btn-success" :disabled="(((!name) || (!savePlaceType)) || (placeSaving))" @click="saveNewPlaceModal">
+              <template v-if="placeSaving"><font-awesome-icon class="fa-spin" icon="spinner" />&nbsp;</template><strong>{{ place ? $t('save') : $t('addPlaceToMap') }}</strong>
+            </button>
+            <button :disabled="placeSaving" type="button" class="btn btn-primary" @click="closeNewPlaceModal">
+              <strong>{{ $t('close') }}</strong>
+            </button>
+          </div>
+        </div>  
       </info-modal>
     </div>
   </span>    
@@ -146,6 +148,8 @@ export default class SavePlaceModal extends BaseComponent {
   public placeSaving = false;
   public manualCords = '';
 
+  public renderModal = false;
+
   public progress = 0;
   private photosToUpload = 0;
   private photosUploaded = 0;
@@ -175,6 +179,7 @@ export default class SavePlaceModal extends BaseComponent {
   }
 
   public openNewPlaceModal(local: boolean, contextMenuLatLng: L.LatLng) {
+    this.renderModal = true;
     this.name = '';
     this.description = '';
     this.photos = [];
@@ -198,6 +203,7 @@ export default class SavePlaceModal extends BaseComponent {
   }
 
   public openEditPlaceModal() {
+    this.renderModal = true;
     this.name = this.place.name;
     this.description = this.place.description;
     this.photos = [];

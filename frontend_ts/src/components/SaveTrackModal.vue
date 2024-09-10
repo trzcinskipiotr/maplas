@@ -2,115 +2,117 @@
   <span>
     <div v-if="$store.state.isDesktop" ref="uploadTrackModal" class="modal fade" tabindex="-1" role="dialog">
       <info-modal :title="$t('trackSaveTitle')">
-        <table class="table table-sm">
-          <thead></thead>
-          <tbody>
-            <tr>
-              <th scope="row">{{ $t('name') }}</th>
-              <td>
-                <input style="width: 500px" v-model="uploadName" type="text" class="form-control" />
-              </td>  
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('startTime') }}</th>
-              <td>
-                {{ track.gpsTrack.start_time|formatDate }}
-              </td>  
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('endTime') }}</th>
-              <td>
-                {{ track.gpsTrack.end_time|formatDate }}
-              </td>  
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('distance') }}</th>
-              <td>
-                {{ track.gpsTrack.distance|roundTrackDistance }}
-              </td>  
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('description') }}</th>
-              <td>
-                <textarea v-model="description" class="form-control" rows="2" style="width: 500px"></textarea>
-              </td>  
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('type')}}</th>
-              <td>
-                <v-select style="width: 500px" v-model="uploadTrackType" :options="uploadTrackTypes" :clearable="false" :searchable="false" >
-                  <template slot="option" slot-scope="option">
-                    <font-awesome-icon v-if="option.icon" :icon="option.icon"/>
-                    <img v-if="option.imgsrc" style="height: 20px;" :src="option.imgsrc"/>
-                    {{ option.label }}
-                  </template>
-                </v-select>
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('region')}}</th>
-              <td>
-                <v-select style="width: 500px" v-model="uploadRegion" :options="uploadRegions" :clearable="true" :searchable="false" >
-                  <template slot="option" slot-scope="option">
-                    {{ option.label }}
-                  </template>
-                </v-select>
-              </td>
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('color') }}</th>
-              <td>
-                <color-popover :track="track" type="save"></color-popover>
-              </td>  
-            </tr>
-            <tr>
-              <th scope="row">{{ $t('photos') }}</th>
-              <td>
-                <table v-for="photo in track.gpsTrack.photos" :key="photo.id" class="" style="display: inline; margin: 10px;">
-                  <tr><td>
-                    <img :src="replaceHTTP(photo.image_thumb)" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
-                  </td></tr>
-                  <tr><td>
-                    <font-awesome-icon v-if="photo.private" style="width: 16px; height: 16px; margin-right: 2px" icon="key" />
-                    <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
-                  </td></tr>    
-                </table>
-                <table v-for="photo in photos" :key="photo.id" class="" style="display: inline; margin: 10px;">
-                  <tr><td>
-                    <img :src="photo.src" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
-                  </td></tr>
-                  <tr><td>
-                    <font-awesome-icon style="cursor: pointer; width: 16px; height: 16px; margin-right: 2px" icon="trash" v-on:click="removePhoto(photo)"/>
-                    <div style="display: inline" class="custom-control custom-checkbox" v-b-tooltip.hover :title="$t('setAsPrivate')">
-                      <input type="checkbox" class="custom-control-input" :id="'checkbox' + photo.id" v-model="photo.private" />
-                      <label style="margin-right: 2px;" class="custom-control-label" :for="'checkbox' + photo.id"></label>
-                    </div>
-                    <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
-                  </td></tr>    
-                </table>
-                <div id="photouploaddivinner2" style="width: 48px; height: 48px;" @click="openPhotoImportFileInput" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="$t('importPhotoFile')">
-                  <input ref="importPhotoFileInput" type="file" style="display:none;" accept=".jpg" v-on:change="importPhotoFile" multiple />
-                  <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="camera"/>
-                </div>
-              </td>
-            </tr>
-          </tbody>    
-        </table>
-        <div class="modal-footer">
-          <div style="width: 50%" v-if="trackSaving"><b-progress :max="100" show-progress animated>
-            <b-progress-bar :value="progress" show-progress animated>
-              <strong>{{ progress.toFixed(0) }}%</strong>
-            </b-progress-bar>
-          </b-progress></div>
-          <button type="button" class="btn btn-success" :disabled="trackSaving" @click="track.onServer ? saveTrackModal() : saveUploadTrackModal()">
-            <strong><template v-if="trackSaving"><font-awesome-icon class="fa-spin" icon="spinner" />&nbsp;</template>{{ $t('save') }}</strong>
-          </button>
-          <button type="button" class="btn btn-primary" @click="closeUploadTrackModal">
-            <strong>{{ $t('close') }}</strong>
-          </button>
+        <div v-if="renderModal">
+          <table class="table table-sm">
+            <thead></thead>
+            <tbody>
+              <tr>
+                <th scope="row">{{ $t('name') }}</th>
+                <td>
+                  <input style="width: 500px" v-model="uploadName" type="text" class="form-control" />
+                </td>  
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('startTime') }}</th>
+                <td>
+                  {{ track.gpsTrack.start_time|formatDate }}
+                </td>  
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('endTime') }}</th>
+                <td>
+                  {{ track.gpsTrack.end_time|formatDate }}
+                </td>  
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('distance') }}</th>
+                <td>
+                  {{ track.gpsTrack.distance|roundTrackDistance }}
+                </td>  
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('description') }}</th>
+                <td>
+                  <textarea v-model="description" class="form-control" rows="2" style="width: 500px"></textarea>
+                </td>  
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('type')}}</th>
+                <td>
+                  <v-select style="width: 500px" v-model="uploadTrackType" :options="uploadTrackTypes" :clearable="false" :searchable="false" >
+                    <template slot="option" slot-scope="option">
+                      <font-awesome-icon v-if="option.icon" :icon="option.icon"/>
+                      <img v-if="option.imgsrc" style="height: 20px;" :src="option.imgsrc"/>
+                      {{ option.label }}
+                    </template>
+                  </v-select>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('region')}}</th>
+                <td>
+                  <v-select style="width: 500px" v-model="uploadRegion" :options="uploadRegions" :clearable="true" :searchable="false" >
+                    <template slot="option" slot-scope="option">
+                      {{ option.label }}
+                    </template>
+                  </v-select>
+                </td>
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('color') }}</th>
+                <td>
+                  <color-popover :track="track" type="save"></color-popover>
+                </td>  
+              </tr>
+              <tr>
+                <th scope="row">{{ $t('photos') }}</th>
+                <td v-if="false">
+                  <table v-for="photo in track.gpsTrack.photos" :key="photo.id" class="" style="display: inline; margin: 10px;">
+                    <tr><td>
+                      <img :src="replaceHTTP(photo.image_thumb)" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
+                    </td></tr>
+                    <tr><td>
+                      <font-awesome-icon v-if="photo.private" style="width: 16px; height: 16px; margin-right: 2px" icon="key" />
+                      <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
+                    </td></tr>    
+                  </table>
+                  <table v-for="photo in photos" :key="photo.id" class="" style="display: inline; margin: 10px;">
+                    <tr><td>
+                      <img :src="photo.src" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
+                    </td></tr>
+                    <tr><td>
+                      <font-awesome-icon style="cursor: pointer; width: 16px; height: 16px; margin-right: 2px" icon="trash" v-on:click="removePhoto(photo)"/>
+                      <div style="display: inline" class="custom-control custom-checkbox" v-b-tooltip.hover :title="$t('setAsPrivate')">
+                        <input type="checkbox" class="custom-control-input" :id="'checkbox' + photo.id" v-model="photo.private" />
+                        <label style="margin-right: 2px;" class="custom-control-label" :for="'checkbox' + photo.id"></label>
+                      </div>
+                      <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
+                    </td></tr>    
+                  </table>
+                  <div id="photouploaddivinner2" style="width: 48px; height: 48px;" @click="openPhotoImportFileInput" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="$t('importPhotoFile')">
+                    <input ref="importPhotoFileInput" type="file" style="display:none;" accept=".jpg" v-on:change="importPhotoFile" multiple />
+                    <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="camera"/>
+                  </div>
+                </td>
+              </tr>
+            </tbody>    
+          </table>
+          <div class="modal-footer">
+            <div style="width: 50%" v-if="trackSaving"><b-progress :max="100" show-progress animated>
+              <b-progress-bar :value="progress" show-progress animated>
+                <strong>{{ progress.toFixed(0) }}%</strong>
+              </b-progress-bar>
+            </b-progress></div>
+            <button type="button" class="btn btn-success" :disabled="trackSaving" @click="track.onServer ? saveTrackModal() : saveUploadTrackModal()">
+              <strong><template v-if="trackSaving"><font-awesome-icon class="fa-spin" icon="spinner" />&nbsp;</template>{{ $t('save') }}</strong>
+            </button>
+            <button type="button" class="btn btn-primary" @click="closeUploadTrackModal">
+              <strong>{{ $t('close') }}</strong>
+            </button>
+          </div>
         </div>
       </info-modal>
-    </div>
+    </div>  
   </span>  
 </template>
 
@@ -133,6 +135,7 @@ export default class SaveTrackModal extends BaseComponent {
   @Prop({ required: true }) private track: Track;
 
   public progress = 0;
+  public renderModal = false;
   private photosToUpload = 0;
   private photosUploaded = 0;
   public photos: Photo[] = [];
@@ -286,6 +289,7 @@ export default class SaveTrackModal extends BaseComponent {
   }
 
   private showUploadModal() {
+    this.renderModal = true;
     this.description = this.track.gpsTrack.description;
     this.uploadName = this.track.gpsTrack.name;
     if (this.track.onServer) {

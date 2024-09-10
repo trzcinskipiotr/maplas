@@ -127,23 +127,25 @@
       </div>  
       <div class="content">
         <div id="main_gallery_div" style="height: 100vh; overflow-y: scroll">
-          <div v-for="(trackGroupGroup, key) in trackGroupsDict" :key="key">
-            <div v-show="groupBy.id === key">
-              <div v-for="trackGroup in trackGroupGroup" :key="trackGroup.label" class="mb-2">
-                <b><center><h2>{{ trackGroup.label }}</h2></center></b>
-                <div v-for="track in trackGroup.tracks" :key="track.id">
-                  <b>{{ track.gpsTrack.name }}</b>&nbsp;
-                  <span class="badge badge-dark" style="margin-right: 2px;">{{ track.gpsTrack.start_time|formatDateDay }}</span>
-                  <span class="badge badge-success" style="margin-right: 2px;">{{ track.gpsTrack.distance|roundTrackDistance }}</span><br>
-                  <template v-if="track.gpsTrack.description">{{ track.gpsTrack.description }}<br></template>
-                  <br>
-                  <span v-for="(photo, index) in track.gpsTrack.photos" :key="photo.id">
-                    <img style="margin: 5px; cursor: pointer" :src="replaceHTTP(photo.image_thumb)" @click="clickOpenGallery(track.gpsTrack.id, index)" />
-                  </span>
-                  <br><br><br>
-                </div>  
+          <div v-if="mainGalleryOpened">
+            <div v-for="(trackGroupGroup, key) in trackGroupsDict" :key="key">
+              <div v-show="groupBy.id === key">
+                <div v-for="trackGroup in trackGroupGroup" :key="trackGroup.label" class="mb-2">
+                  <b><center><h2>{{ trackGroup.label }}</h2></center></b>
+                  <div v-for="track in trackGroup.tracks" :key="track.id">
+                    <b>{{ track.gpsTrack.name }}</b>&nbsp;
+                    <span class="badge badge-dark" style="margin-right: 2px;">{{ track.gpsTrack.start_time|formatDateDay }}</span>
+                    <span class="badge badge-success" style="margin-right: 2px;">{{ track.gpsTrack.distance|roundTrackDistance }}</span><br>
+                    <template v-if="track.gpsTrack.description">{{ track.gpsTrack.description }}<br></template>
+                    <br>
+                    <span v-for="(photo, index) in track.gpsTrack.photos" :key="photo.id">
+                      <img style="margin: 5px; cursor: pointer" :src="replaceHTTP(photo.image_thumb)" @click="clickOpenGallery(track.gpsTrack.id, index)" />
+                    </span>
+                    <br><br><br>
+                  </div>  
+                </div>
               </div>
-            </div>
+            </div>  
           </div>    
         </div>
         <div id="map">
@@ -310,6 +312,8 @@ export default class Index extends BaseComponent {
   private document = document;
   private fullscreenOpened = false;
   private playingSpeed = this.$store.state.playingSpeed;
+
+  private mainGalleryOpened = false;
 
   private groups = [{id: 'year', translate: 'year', label: '', grouper: new YearTrackGrouper()}, {id: 'type', translate: 'type', label: '', grouper: new TypeTrackGrouper()}, {id: 'region', translate: 'region', label: '', grouper: new RegionTrackGrouper()}];
   private groupBy = this.groups[0];
@@ -546,23 +550,10 @@ export default class Index extends BaseComponent {
   }
 
   private logOutFromApi() {
-    axios.post(this.$store.state.appHost + 'api/auth/token/logout/').then(
-      (response) => {
-        
-        /* empty */
-      },
-    ).catch(
-      (response) => {
-        /* empty */
-      },
-    ).finally(
-      () => {
-        this.createAlert(AlertStatus.success, this.$t('logOutSuccess').toString(), 2000);
-        this.$store.commit('setToken', {token: '', vue: this});
-        this.$store.commit('setUser', null);
-        this.refreshPhotos();
-      },
-    );
+    this.createAlert(AlertStatus.success, this.$t('logOutSuccess').toString(), 2000);
+    this.$store.commit('setToken', {token: '', vue: this});
+    this.$store.commit('setUser', null);
+    this.refreshPhotos();
   }
 
   private setStoreToken() {
@@ -601,7 +592,6 @@ export default class Index extends BaseComponent {
   }
 
   private async mounted() {
-    axios.defaults.headers.common['Cookie'] = '';
     this.VUE_APP_BUILD_DATE = process.env.VUE_APP_BUILD_DATE;
     this.loadKVsettings();
     this.setLanguage();
@@ -1223,6 +1213,7 @@ export default class Index extends BaseComponent {
   }
 
   private toggleGalleryPanel(e) {
+    this.mainGalleryOpened = true;
     $('#main_gallery_div').toggleClass('active');
     $('#map').toggleClass('small');
     this.galleryOpened = !this.galleryOpened;
