@@ -293,7 +293,6 @@ import VideoLink from '@/ts/VideoLink';
 import moment from 'moment';
 import { TileLayerOffline, createSaveTilesControl } from '@/ts/leafletoffline';
 import * as icons from '@/ts/icons';
-import * as idbkeyval from 'idb-keyval';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -607,20 +606,69 @@ export default class Index extends BaseComponent {
     };
   }
 
-  private idbStore: any = null;
-
-  private createIdbStore() {
-    this.idbStore = idbkeyval.createStore('maplas_store', 'api_cache');
+  private async saveToFile(dataToSave: any, filename: string) {
+    return new Promise((resolve, reject) => {
+      navigator.storage.getDirectory().then((opfsRoot) => {
+        opfsRoot.getFileHandle(filename, { create: true }).then((fileHandle) => {
+          fileHandle.createWritable().then((writable) => {
+            const contents = JSON.stringify(dataToSave);
+            writable.write(contents).then(() => {
+              writable.close().then(() => {
+                resolve('SAVED');
+              }).catch((error) => {
+                reject(error);
+              })
+            }).catch((error) => {
+              reject(error);
+            })
+          }).catch((error) => {
+            reject(error);
+          })
+        }).catch((error) => {
+          reject(error);
+        })
+      }).catch((error) => {
+        reject(error);
+      })
+    });
   }
 
-  private sendRequestWithCache(url: string, lastcache: any, save: boolean) {
+  private async readFromFile(filename: string) {
+    return new Promise((resolve, reject) => {
+      navigator.storage.getDirectory().then((opfsRoot) => {
+        opfsRoot.getFileHandle(filename, {create: false}).then((fileHandle) => {
+          fileHandle.getFile().then((file) => {
+            file.text().then((data) => {
+              try {
+                const object = JSON.parse(data);
+                resolve(object);
+              } catch {
+                resolve(null);
+              }
+            }).catch((error) => {
+              reject(error);
+            })
+          }).catch((error) => {
+            reject(error);
+          })
+        }).catch((error) => {
+          reject(error);
+        })
+      }).catch((error) => {
+        reject(error);
+      })
+    });
+  }
+
+  private sendRequestWithCache(url: string, lastcache: any, save: boolean, filename: string) {
     return new Promise((resolve, reject) => {
       console.log(url + ': sending request to SERVER');
       axios.get(url).then((response) => {
         console.log(url + ': response from server OK');
         if (save) {
           console.log(url + ': saving to cache');
-          idbkeyval.set(url, {'revision': this.dataRevision, 'logged': !!this.maplasToken, 'count': response.data.results.length, 'size': JSON.stringify(response.data).length, 'responsedata': response.data}, this.idbStore).then(() => {
+          const dataToSave = {'revision': this.dataRevision, 'logged': !!this.maplasToken, 'count': response.data.results.length, 'size': JSON.stringify(response.data).length, 'responsedata': response.data}
+          this.saveToFile(dataToSave, filename).then(() => {
             console.log(url + ': saving to cache OK');
             console.log(url + ': returning response from SERVER');
             resolve(response.data);
@@ -647,11 +695,11 @@ export default class Index extends BaseComponent {
     })
   }
 
-  private downloadUrlWithCache(url: string) {
+  private downloadUrlWithCache(url: string, filename: string) {
     return new Promise((resolve, reject) => {
       console.log(url + ': running downloadUrlWithCache');
       console.log(url + ': looking for CACHE');
-      idbkeyval.get(url, this.idbStore).then((cachevalue) => {
+      this.readFromFile(filename).then((cachevalue) => {
         console.log(url + ': looking to cache OK, value: ' + cachevalue);
         if (this.dataRevision) {
           console.log(url + ': datarevision downloaded: ' + this.dataRevision);
@@ -663,23 +711,23 @@ export default class Index extends BaseComponent {
               resolve(cachevalue.responsedata);
             } else {
               console.log(url + ': datarevision or logged differs');
-              this.sendRequestWithCache(url, cachevalue, true).then(data => resolve(data)).catch(error => reject(error));
+              this.sendRequestWithCache(url, cachevalue, true, filename).then(data => resolve(data)).catch(error => reject(error));
             }
           } else {
             console.log(url + ': NOT in CACHE');
-            this.sendRequestWithCache(url, null, true).then(data => resolve(data)).catch(error => reject(error));
+            this.sendRequestWithCache(url, null, true, filename).then(data => resolve(data)).catch(error => reject(error));
           }
         } else {
           console.log(url + ': NO datarevision downloaded');
           if (cachevalue) {
-            this.sendRequestWithCache(url, cachevalue, false).then(data => resolve(data)).catch(error => reject(error));
+            this.sendRequestWithCache(url, cachevalue, false, filename).then(data => resolve(data)).catch(error => reject(error));
           } else {
-            this.sendRequestWithCache(url, null, false).then(data => resolve(data)).catch(error => reject(error));
+            this.sendRequestWithCache(url, null, false, filename).then(data => resolve(data)).catch(error => reject(error));
           }
         }
       }).catch((error) => {
         console.log(url + ': looking in CACHE FAILED');
-        this.sendRequestWithCache(url, null, false).then(data => resolve(data)).catch(error => reject(error));
+        this.sendRequestWithCache(url, null, true, filename).then(data => resolve(data)).catch(error => reject(error));
       })
     })
   }
@@ -690,7 +738,6 @@ export default class Index extends BaseComponent {
     this.setLanguage();
     this.setAppHost();
     this.setStoreToken();
-    this.createIdbStore();
     await this.downloadDataRevision();
     this.createMap([52.743682, 16.273668], 11);
     console.log('Map created');
@@ -925,7 +972,7 @@ export default class Index extends BaseComponent {
 
     const endPoint = this.$store.state.appHost + 'api/maplayers/';
     try {
-      const response: any = await this.downloadUrlWithCache(endPoint);
+      const response: any = await this.downloadUrlWithCache(endPoint, 'maplayers.txt');
       this.processMapLayers(response.results);
       this.createAlert(AlertStatus.success, this.$t('layersDownloaded', [response.results.length]).toString(), 2000);
     } catch {
@@ -1440,7 +1487,7 @@ export default class Index extends BaseComponent {
 
   private downloadRegions() {
     const endPoint = this.$store.state.appHost + 'api/regions/';
-    this.downloadUrlWithCache(endPoint).then(
+    this.downloadUrlWithCache(endPoint, 'regions.txt').then(
       (response) => {
         const regions = [];
         for (const responseRegion of response.results) {
@@ -1479,7 +1526,7 @@ export default class Index extends BaseComponent {
 
   private downloadPlaces() {
     const endPoint = this.$store.state.appHost + 'api/places/';
-    this.downloadUrlWithCache(endPoint).then((response) => {
+    this.downloadUrlWithCache(endPoint, 'places.txt').then((response) => {
       this.processPlaces(response.results);
       this.createAlert(AlertStatus.success, this.$t('placesDownloaded', [response.results.length]).toString(), 2000);
     }).catch((response) => {
@@ -1489,7 +1536,7 @@ export default class Index extends BaseComponent {
 
   private downloadPlaceTypes() {
     const endPoint = this.$store.state.appHost + 'api/placetypes/'
-    this.downloadUrlWithCache(endPoint).then(
+    this.downloadUrlWithCache(endPoint, 'placetypes.txt').then(
       (response) => {
         const placeTypes = [];
         for (const responsePlaceType of response.results) {
@@ -1510,7 +1557,7 @@ export default class Index extends BaseComponent {
 
   private downloadAreas() {
     const endPoint = this.$store.state.appHost + 'api/areas/';
-    this.downloadUrlWithCache(endPoint).then(
+    this.downloadUrlWithCache(endPoint, 'areas.txt').then(
       (response) => {
         const areas = [];
         for (const responseAreas of response.results) {
@@ -1604,7 +1651,7 @@ export default class Index extends BaseComponent {
 
   private downloadTracks() {
     const endPoint = this.$store.state.appHost + 'api/tracks/' + (process.env.VUE_APP_TRACKS_QUERY || '');
-    this.downloadUrlWithCache(endPoint).then((response) => {
+    this.downloadUrlWithCache(endPoint, 'tracks.txt').then((response) => {
       this.processTracks(response.results);
       this.createAlert(AlertStatus.success, this.$t('tracksDownloaded', [response.results.length]).toString(), 2000);
     }).catch((response) => {
