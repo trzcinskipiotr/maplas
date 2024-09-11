@@ -110,6 +110,7 @@
                     <br>
                     <button class="btn btn-primary" @click="noSleepToggle">{{ noSleepActive ? $t('noSleepActive') : $t('noSleepInactive')}}</button>
                     <span v-if="VUE_APP_BUILD_DATE"><br><br>{{ $t('buildDate') }}: {{ VUE_APP_BUILD_DATE | formatDateSecondsEpoch }}<br></span>
+                    <router-link :to="{'name': 'cache'}">Show cache files</router-link><br>
                     <br><br>
                   </div>
                 </div>
