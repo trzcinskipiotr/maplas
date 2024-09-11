@@ -103,10 +103,10 @@ const store: StoreOptions<RootState> = {
       state.token = payload.token;
       if (payload.token) {
         axios.defaults.headers.common['Authorization'] = 'Token ' + payload.token;
-        payload.vue.$session.set('token', payload.token);
+        localStorage.setItem('maplasToken', payload.token);
       } else {
         delete axios.defaults.headers.common['Authorization'];
-        payload.vue.$session.remove('token');
+        localStorage.removeItem('maplasToken');
       }
     },
     setUser(state, user: any) {

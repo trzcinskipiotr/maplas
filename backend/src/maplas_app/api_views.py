@@ -2,8 +2,13 @@ from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin, CreateModelMixin, RetrieveModelMixin
 
 from maplas_app import serializers
-from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer
+from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer, StringField
 from maplas_app.utils import fill_array_from_gpx_file
+
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+from django.conf import settings
 
 class TrackViewSet(ListModelMixin, UpdateModelMixin, RetrieveModelMixin, CreateModelMixin, viewsets.GenericViewSet):
     queryset = Track.objects.all().order_by('-start_time')
@@ -92,3 +97,11 @@ class AreaViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateMo
         if full:
             return self.full_serializer_class
         return self.basic_serializer_class
+
+@api_view(['GET'])
+def datarevision(request):
+    revision = StringField.objects.filter(key=settings.DATA_REVISION_KEY).first()
+    if revision:
+        return Response({"datarevision": revision.value})
+    else:
+        return Response({"error": "no data revision in DB"}, status=500)

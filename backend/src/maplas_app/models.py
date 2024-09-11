@@ -264,6 +264,14 @@ class StringField(models.Model):
 @receiver(models.signals.post_save, sender=PlaceType)
 @receiver(models.signals.post_save, sender=Track)
 @receiver(models.signals.post_save, sender=Region)
+@receiver(models.signals.post_delete, sender=Area)
+@receiver(models.signals.post_delete, sender=MapLayer)
+@receiver(models.signals.post_delete, sender=VideoLink)
+@receiver(models.signals.post_delete, sender=Photo)
+@receiver(models.signals.post_delete, sender=Place)
+@receiver(models.signals.post_delete, sender=PlaceType)
+@receiver(models.signals.post_delete, sender=Track)
+@receiver(models.signals.post_delete, sender=Region)
 def update_revision(sender, instance, **kwargs):
     field = StringField.objects.filter(key=settings.DATA_REVISION_KEY).first()
     if field:

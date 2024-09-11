@@ -86,6 +86,7 @@ self.addEventListener('fetch', event => {
         if (url.includes('/djangoapp/api/regions/')) {
             processByServiceWorker = true;
         }
+        processByServiceWorker = false;
         if (processByServiceWorker) {
             console.log(event.request.url + ': intercepted by ServiceWorker');
             event.respondWith(fetchOrGetEvent(event));
@@ -96,4 +97,4 @@ self.addEventListener('fetch', event => {
 self.__precacheManifest = [].concat(self.__precacheManifest || []);
 workbox.precaching.precacheAndRoute(self.__precacheManifest, {});
 
-const SERVICE_WORKER_VERSION = 110;
+const SERVICE_WORKER_VERSION = 111;

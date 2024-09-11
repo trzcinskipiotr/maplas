@@ -293,6 +293,7 @@ import VideoLink from '@/ts/VideoLink';
 import moment from 'moment';
 import { TileLayerOffline, createSaveTilesControl } from '@/ts/leafletoffline';
 import * as icons from '@/ts/icons';
+import * as idbkeyval from 'idb-keyval';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -557,11 +558,13 @@ export default class Index extends BaseComponent {
     this.refreshPhotos();
   }
 
+  private maplasToken: string = null;
+
   private setStoreToken() {
     // @ts-ignore
-    const token = this.$session.get('token');
-    if (token) {
-      this.$store.commit('setToken', {token, vue: this});
+    this.maplasToken = localStorage.getItem('maplasToken');
+    if (this.maplasToken) {
+      this.$store.commit('setToken', {'token': this.maplasToken});
       this.refreshLoginInfo(true);
     }
   }
@@ -592,12 +595,103 @@ export default class Index extends BaseComponent {
     console.log('KV settings loaded');
   }
 
+  private dataRevision: string = null;
+
+  private async downloadDataRevision() {
+    const endPoint = this.$store.state.appHost + 'api/datarevision/';
+    try {
+      const response = await axios.get(endPoint);
+      this.dataRevision = response.data.datarevision;
+    } catch {
+      
+    };
+  }
+
+  private idbStore: any = null;
+
+  private createIdbStore() {
+    this.idbStore = idbkeyval.createStore('maplas_store', 'api_cache');
+  }
+
+  private sendRequestWithCache(url: string, lastcache: any, save: boolean) {
+    return new Promise((resolve, reject) => {
+      console.log(url + ': sending request to SERVER');
+      axios.get(url).then((response) => {
+        console.log(url + ': response from server OK');
+        if (save) {
+          console.log(url + ': saving to cache');
+          idbkeyval.set(url, {'revision': this.dataRevision, 'logged': !!this.maplasToken, 'count': response.data.results.length, 'size': JSON.stringify(response.data).length, 'responsedata': response.data}, this.idbStore).then(() => {
+            console.log(url + ': saving to cache OK');
+            console.log(url + ': returning response from SERVER');
+            resolve(response.data);
+          }).catch((error) => {
+            console.log(url + ': saving to cache ERROR');
+            console.log(url + ': returning response from SERVER');
+            resolve(response.data);
+          })
+        } else {
+          console.log(url + ': returning response from SERVER');
+          resolve(response.data);
+        }
+      }).catch((error) => {
+        if (lastcache) {
+          console.log(url + ': response from server ERROR');
+          console.log(url + ': returning response from CACHE');
+          resolve(lastcache.responsedata);
+        } else {
+          console.log(url + ': response from server ERROR');
+          console.log(url + ': returning ERROR');
+          reject(error);
+        }
+      })
+    })
+  }
+
+  private downloadUrlWithCache(url: string) {
+    return new Promise((resolve, reject) => {
+      console.log(url + ': running downloadUrlWithCache');
+      console.log(url + ': looking for CACHE');
+      idbkeyval.get(url, this.idbStore).then((cachevalue) => {
+        console.log(url + ': looking to cache OK, value: ' + cachevalue);
+        if (this.dataRevision) {
+          console.log(url + ': datarevision downloaded: ' + this.dataRevision);
+          if (cachevalue) {
+            console.log(url + ': IS in CACHE');
+            if ((cachevalue.revision == this.dataRevision) && (cachevalue.logged == (!!this.maplasToken))) {
+              console.log(url + ': datarevision and logged equal');
+              console.log(url + ': returning response from CACHE');
+              resolve(cachevalue.responsedata);
+            } else {
+              console.log(url + ': datarevision or logged differs');
+              this.sendRequestWithCache(url, cachevalue, true).then(data => resolve(data)).catch(error => reject(error));
+            }
+          } else {
+            console.log(url + ': NOT in CACHE');
+            this.sendRequestWithCache(url, null, true).then(data => resolve(data)).catch(error => reject(error));
+          }
+        } else {
+          console.log(url + ': NO datarevision downloaded');
+          if (cachevalue) {
+            this.sendRequestWithCache(url, cachevalue, false).then(data => resolve(data)).catch(error => reject(error));
+          } else {
+            this.sendRequestWithCache(url, null, false).then(data => resolve(data)).catch(error => reject(error));
+          }
+        }
+      }).catch((error) => {
+        console.log(url + ': looking in CACHE FAILED');
+        this.sendRequestWithCache(url, null, false).then(data => resolve(data)).catch(error => reject(error));
+      })
+    })
+  }
+
   private async mounted() {
     this.VUE_APP_BUILD_DATE = process.env.VUE_APP_BUILD_DATE;
     this.loadKVsettings();
     this.setLanguage();
     this.setAppHost();
     this.setStoreToken();
+    this.createIdbStore();
+    await this.downloadDataRevision();
     this.createMap([52.743682, 16.273668], 11);
     console.log('Map created');
     await this.downloadAndAddLayers();
@@ -829,17 +923,11 @@ export default class Index extends BaseComponent {
   private async downloadAndAddLayers() {
     const layers: LayersDictionary = {};
 
-    let attributionString: string = '';
-    const noattr: string = (typeof this.$route.query.noattr === 'string') ? this.$route.query.noattr : '';
-    if (noattr) {
-      attributionString = '.';
-    }
-
     const endPoint = this.$store.state.appHost + 'api/maplayers/';
     try {
-      const response = await axios.get(endPoint);
-      this.processMapLayers(response.data.results);
-      this.createAlert(AlertStatus.success, this.$t('layersDownloaded', [response.data.results.length]).toString(), 2000);
+      const response: any = await this.downloadUrlWithCache(endPoint);
+      this.processMapLayers(response.results);
+      this.createAlert(AlertStatus.success, this.$t('layersDownloaded', [response.results.length]).toString(), 2000);
     } catch {
       this.createAlert(AlertStatus.danger, this.$t('layersError').toString(), 2000);
     };
@@ -1351,17 +1439,18 @@ export default class Index extends BaseComponent {
   }
 
   private downloadRegions() {
-    axios.get(this.$store.state.appHost + 'api/regions/').then(
+    const endPoint = this.$store.state.appHost + 'api/regions/';
+    this.downloadUrlWithCache(endPoint).then(
       (response) => {
         const regions = [];
-        for (const responseRegion of response.data.results) {
+        for (const responseRegion of response.results) {
           const region = new Region(responseRegion.id, responseRegion.name);
           this.$store.commit('addTranslation', {lang: 'pl', key: responseRegion.name, value: responseRegion.pl})
           this.$store.commit('addTranslation', {lang: 'en', key: responseRegion.name, value: responseRegion.en})
           regions.push(region);
         }
         this.$store.commit('setRegions', regions);
-        this.createAlert(AlertStatus.success, this.$t('regionsDownloaded', [response.data.results.length]).toString(), 2000);
+        this.createAlert(AlertStatus.success, this.$t('regionsDownloaded', [response.results.length]).toString(), 2000);
       },
     ).catch(
       (response) => {
@@ -1390,26 +1479,27 @@ export default class Index extends BaseComponent {
 
   private downloadPlaces() {
     const endPoint = this.$store.state.appHost + 'api/places/';
-    axios.get(endPoint).then((response) => {
-      this.processPlaces(response.data.results);
-      this.createAlert(AlertStatus.success, this.$t('placesDownloaded', [response.data.results.length]).toString(), 2000);
+    this.downloadUrlWithCache(endPoint).then((response) => {
+      this.processPlaces(response.results);
+      this.createAlert(AlertStatus.success, this.$t('placesDownloaded', [response.results.length]).toString(), 2000);
     }).catch((response) => {
       this.createAlert(AlertStatus.danger, this.$t('placesError').toString(), 2000);
     });
   }
 
   private downloadPlaceTypes() {
-    axios.get(this.$store.state.appHost + 'api/placetypes/').then(
+    const endPoint = this.$store.state.appHost + 'api/placetypes/'
+    this.downloadUrlWithCache(endPoint).then(
       (response) => {
         const placeTypes = [];
-        for (const responsePlaceType of response.data.results) {
+        for (const responsePlaceType of response.results) {
           const placeType = new PlaceType(responsePlaceType.id, responsePlaceType.name, responsePlaceType.icon);
           this.$store.commit('addTranslation', {lang: 'pl', key: responsePlaceType.name, value: responsePlaceType.pl})
           this.$store.commit('addTranslation', {lang: 'en', key: responsePlaceType.name, value: responsePlaceType.en})
           placeTypes.push(placeType);
         }
         this.$store.commit('setPlaceTypes', placeTypes);
-        this.createAlert(AlertStatus.success, this.$t('placeTypesDownloaded', [response.data.results.length]).toString(), 2000);
+        this.createAlert(AlertStatus.success, this.$t('placeTypesDownloaded', [response.results.length]).toString(), 2000);
       },
     ).catch(
       (response) => {
@@ -1419,15 +1509,16 @@ export default class Index extends BaseComponent {
   }
 
   private downloadAreas() {
-    axios.get(this.$store.state.appHost + 'api/areas/').then(
+    const endPoint = this.$store.state.appHost + 'api/areas/';
+    this.downloadUrlWithCache(endPoint).then(
       (response) => {
         const areas = [];
-        for (const responseAreas of response.data.results) {
+        for (const responseAreas of response.results) {
           const area = new Area(responseAreas.id, responseAreas.name, responseAreas.description, responseAreas.points_json, responseAreas.color, true);
           areas.push(area);
         }
         this.$store.state.areas = areas;
-        this.createAlert(AlertStatus.success, this.$t('areasDownloaded', [response.data.results.length]).toString(), 2000);
+        this.createAlert(AlertStatus.success, this.$t('areasDownloaded', [response.results.length]).toString(), 2000);
       },
     ).catch(
       (response) => {
@@ -1513,9 +1604,9 @@ export default class Index extends BaseComponent {
 
   private downloadTracks() {
     const endPoint = this.$store.state.appHost + 'api/tracks/' + (process.env.VUE_APP_TRACKS_QUERY || '');
-    axios.get(endPoint).then((response) => {
-      this.processTracks(response.data.results);
-      this.createAlert(AlertStatus.success, this.$t('tracksDownloaded', [response.data.results.length]).toString(), 2000);
+    this.downloadUrlWithCache(endPoint).then((response) => {
+      this.processTracks(response.results);
+      this.createAlert(AlertStatus.success, this.$t('tracksDownloaded', [response.results.length]).toString(), 2000);
     }).catch((response) => {
       this.createAlert(AlertStatus.danger, this.$t('tracksError').toString(), 2000);
     }).finally(() => {

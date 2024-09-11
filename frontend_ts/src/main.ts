@@ -145,10 +145,6 @@ declare global {
   }
 }
 
-// @ts-ignore
-import VueSession from 'vue-session';
-Vue.use(VueSession, {persist: true});
-
 window.detailsX = 50;
 window.detailsY = 50;
 window.detailsLastZIndex = 1;
