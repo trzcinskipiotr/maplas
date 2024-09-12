@@ -64,9 +64,9 @@ addEventListener('message', event => {
     downloadTile(tile.url).then((blob) => {
       const t3 = Date.now();
       if (blob) {
-        saveTileToDatabase(tile, blob).then(() => {
+        saveTileToFile(tile, blob).then(() => {
           const t4 = Date.now();
-          saveTileToFile(tile, blob).then(() => {
+          saveTileToDatabase(tile, blob).then(() => {
             const t5 = Date.now();
             const loadTime = t3 - t2;
             const saveTime = t4 - t3;
