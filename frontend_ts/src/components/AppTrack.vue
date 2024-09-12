@@ -6,10 +6,14 @@
         <label style="margin-right: 2px;" class="custom-control-label" :for="'checkbox' + track.gpsTrack.id">{{ track.gpsTrack.name }}</label>
         <span class="badge badge-dark" style="margin-right: 2px;">{{ track.gpsTrack.start_time|formatDateDay }}</span>
         <span :class="getDisanseBadgeClasses(track.gpsTrack)" style="margin-right: 2px;">{{ track.gpsTrack.distance|roundTrackDistance }}</span>
-        <span style="margin-right: 2px;" v-b-tooltip.hover :title="'' + track.gpsTrack.photos.length + ' ' + $t('photos')"><font-awesome-icon v-if="track.gpsTrack.photos.length" style="cursor: pointer" icon="images" @click="clickOpenGallery"/></span>
-        <span v-b-tooltip.hover :title="'' + track.gpsTrack.videos.length + ' ' + $t('videos')"><font-awesome-icon v-if="track.gpsTrack.videos.length" style="cursor: pointer" icon="video" @click="clickOpenVideos"/></span>
+        <span style="margin-right: 2px;" v-b-tooltip.hover :title="'' + track.gpsTrack.photos.length + ' ' + $t('photos')">
+          <img v-if="track.gpsTrack.photos.length" @click="clickOpenGallery" style="height: 20px; cursor: pointer;" :src="icons.images" />
+        </span>
+        <span v-b-tooltip.hover :title="'' + track.gpsTrack.videos.length + ' ' + $t('videos')">
+          <img v-if="track.gpsTrack.videos.length" @click="clickOpenVideos" style="height: 20px; cursor: pointer;" :src="icons.video" />
+        </span>
         <div style="float: right;">
-          <font-awesome-icon @click="togglePanel(); renderComponent = true;" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
+          <img @click="togglePanel(); renderComponent = true;" style="height: 13px; cursor: pointer;" :src="iconsVisible ? icons.chevronUp : icons.chevronDown" />
         </div>
       </div><br>
       <div style="display: none">
@@ -29,25 +33,39 @@
           <span v-if="$store.state.isDesktop" style='margin-right: 3px;'><TrackTypeIcon :gpsTrack="track.gpsTrack" height=24 imgheight=16 verticalAlign="2px"></TrackTypeIcon></span>
           <span v-if="$store.state.isDesktop" style='margin-right: 3px;'><TrackStatusIcon :gpsTrack="track.gpsTrack" height=24></TrackStatusIcon></span>
           <span style='margin-right: 3px;'><TrackDownload :gpsTrack="track.gpsTrack" :height="$store.state.isDesktop ? '24' : '32'" :width="$store.state.isDesktop ? null : '32px'"></TrackDownload></span>
-          <span v-if="$store.state.isDesktop" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('centerTrack')"><font-awesome-icon @click="centerTrack" style="height: 24px; cursor: pointer" icon="search-location"/></span>
-          <span v-if="$store.state.isDesktop" ref="tooltipSpan" style='margin-right: 3px;'><font-awesome-icon @click="playTrack" style="height: 24px; cursor: pointer" :icon="playing ? 'stop-circle' : 'play'"/></span>
-          <span v-if="(track.gpsTrack.status === TrackStatus.done) && ($store.state.isDesktop)" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('maximizeTrack')"><font-awesome-icon @click="track.maximized = true" style="height: 24px; cursor: pointer" :icon="['far', 'window-maximize']" /></span>
+          <span v-if="$store.state.isDesktop" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('centerTrack')">
+            <img @click="centerTrack" style="height: 24px; cursor: pointer;" :src="icons.center" />
+          </span>
+          <span v-if="$store.state.isDesktop" ref="tooltipSpan" style='margin-right: 3px;'>
+            <img @click="playTrack" style="height: 24px; cursor: pointer;" :src="playing ? icons.stop : icons.play" />
+          </span>
+          <span v-if="$store.state.isDesktop" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('maximizeTrack')">
+            <img @click="track.maximized = true" style="height: 24px; cursor: pointer;" :src="icons.maximize" />
+          </span>
           <b-tooltip v-if="(track.gpsTrack.status === TrackStatus.done) && (renderedComponent) && ($store.state.isDesktop)" :target="$refs.tooltipSpan">{{ playing ? $t('stopTrack') : $t('playTrack') }}</b-tooltip>
           <span v-if="($store.state.user) && ($store.state.isDesktop)">
-            <span v-if="track.onServer" v-b-tooltip.hover :title="$t('saveTrack')"><font-awesome-icon @click="showUploadModal" style="height: 24px; cursor: pointer" icon="save"/></span>
-            <span v-else v-b-tooltip.hover :title="$t('uploadTrack')"><font-awesome-icon @click="showUploadModal" style="height: 24px; cursor: pointer" icon="upload"/></span>
+            <span v-if="track.onServer" v-b-tooltip.hover :title="$t('saveTrack')">
+              <img @click="showUploadModal" style="height: 24px; cursor: pointer;" :src="icons.save" />
+            </span>
+            <span v-else v-b-tooltip.hover :title="$t('uploadTrack')">
+              <img @click="showUploadModal" style="height: 24px; cursor: pointer;" :src="icons.upload" />
+            </span>  
             <span style='margin-right: 3px;'></span>
           </span>
-          <span style="display: inline-block; margin-right: 3px;" @click="toggleRuler"><font-awesome-icon :style="{'cursor': 'pointer', 'height': $store.state.isDesktop ? '24px' : '32px', 'width': $store.state.isDesktop ? null : '32px'}" :icon="rulerActive ? 'ruler-vertical' : 'ruler-horizontal'"></font-awesome-icon></span>
+          <span style="display: inline-block; margin-right: 3px;" @click="toggleRuler">
+            <img :style="{'cursor': 'pointer', 'height': $store.state.isDesktop ? '24px' : '32px', 'width': $store.state.isDesktop ? null : '32px'}" :src="rulerActive ? icons.rulerVertical : icons.rulerHorizontal" />
+          </span>
           <span v-if="(track.gpsTrack.status === TrackStatus.planned) && ($store.state.isDesktop)">
             <span v-if="track === $store.state.editedTrack">
-              <font-awesome-icon @click="setEdited(null)" style="height: 24px; cursor: pointer" icon="lock-open"/>
+              <img @click="setEdited(null)" style="height: 24px; cursor: pointer" :src="icons.unlock" />
             </span>
             <span v-else>
-              <font-awesome-icon @click="setEdited(track)" style="height: 24px; cursor: pointer" icon="lock"/>
+              <img @click="setEdited(track)" style="height: 24px; cursor: pointer" :src="icons.lock" />
             </span>
           </span>
-          <span v-if="! track.onServer" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('removeTrack')"><font-awesome-icon @click="removeImportedTrack" style="height: 24px; cursor: pointer" icon="trash"/></span>
+          <span v-if="! track.onServer" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('removeTrack')">
+            <img @click="removeImportedTrack" style="height: 24px; cursor: pointer;" :src="icons.trash" />
+          </span>
         </div>
       </div>    
     </div>

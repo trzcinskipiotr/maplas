@@ -1,6 +1,8 @@
 <template>
   <span>
-    <span ref="icon"><font-awesome-icon @click="saveGPX" :style="{height: height + 'px', width: width || null, cursor: 'pointer'}" icon="download"/></span>
+    <span ref="icon">
+      <img @click="saveGPX" :style="{height: height + 'px', width: width || null, cursor: 'pointer'}" :src="icons.download" />
+    </span>
     <b-tooltip v-if="(rendered) && ($store.state.isDesktop)" :target="$refs.icon">{{ $t('downloadGPX') }}</b-tooltip>
   </span>  
 </template>

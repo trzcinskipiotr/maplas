@@ -1,6 +1,10 @@
 <template>
-  <span v-if="isDoneTrack(gpsTrack)" v-b-tooltip.hover :title="$t('doneTrack')"><font-awesome-icon :style="{height: height + 'px'}" :icon="['far', 'calendar-check']"/></span>
-  <span v-else-if="isPlannedTrack(gpsTrack)" v-b-tooltip.hover :title="$t('plannedTrack')"><font-awesome-icon :style="{height: height + 'px'}" :icon="['far', 'calendar-times']"/></span>
+  <span v-if="isDoneTrack(gpsTrack)" v-b-tooltip.hover :title="$t('doneTrack')">
+    <img  :style="{height: height + 'px'}" :src="icons.calendarCheck" />
+  </span>
+  <span v-else-if="isPlannedTrack(gpsTrack)" v-b-tooltip.hover :title="$t('plannedTrack')">
+    <img  :style="{height: height + 'px'}" :src="icons.calendarTimes" />
+  </span>
 </template>
 
 <script lang="ts">

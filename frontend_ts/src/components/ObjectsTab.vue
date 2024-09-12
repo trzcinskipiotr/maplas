@@ -7,7 +7,7 @@
       {{ $t('places') }}
       <button v-if="($store.state.user) && ($store.state.isDesktop)" class="btn btn-primary btn-sm" @click="openNewPlaceModal(true, null)">{{ $t('addPlace') }}</button>
       <div style="float: right;">
-        <font-awesome-icon @click="togglePanel" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
+        <img @click="togglePanel" style="height: 13px; cursor: pointer;" :src="iconsVisible ? icons.chevronUp : icons.chevronDown" />
       </div>
       <div :style="{'margin-top': $store.state.isDesktop ? '3px' : '15px'}">
         <b-form-checkbox style="display: inline;" v-model="showApproved">

@@ -70,7 +70,7 @@
                         <img :src="replaceHTTP(photo.image_thumb)" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
                       </td></tr>
                       <tr><td>
-                        <font-awesome-icon v-if="photo.private" style="width: 16px; height: 16px; margin-right: 2px" icon="key" />
+                        <img v-if="photo.private" style="width: 16px; height: 16px; margin-right: 2px" :src="icons.privacy" />
                         <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
                       </td></tr>    
                     </table>
@@ -80,7 +80,7 @@
                       <img :src="photo.src" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
                     </td></tr>
                     <tr><td>
-                      <font-awesome-icon style="cursor: pointer; width: 16px; height: 16px;" icon="trash" v-on:click="removePhoto(photo)"/>
+                      <img @click="removePhoto(photo)" style="cursor: pointer; width: 16px; height: 16px;" :src="icons.trash" />
                       <div style="display: inline" class="custom-control custom-checkbox" v-b-tooltip.hover :title="$t('setAsPrivate')">
                         <input type="checkbox" class="custom-control-input" :id="'checkbox' + photo.id" v-model="photo.private" />
                         <label style="margin-right: 2px;" class="custom-control-label" :for="'checkbox' + photo.id"></label>
@@ -90,7 +90,7 @@
                   </table>
                   <div id="photouploaddivinner2" style="width: 48px; height: 48px;" @click="openPhotoImportFileInput" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="$t('importPhotoFile')">
                     <input ref="importPhotoFileInput" type="file" style="display:none;" accept=".jpg" v-on:change="importPhotoFile" />
-                    <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="camera"/>
+                    <img style="cursor: pointer; width: 28px; height: 28px;" :src="icons.camera" />
                   </div>
                 </td>
               </tr>
@@ -103,7 +103,9 @@
               </b-progress-bar>
             </b-progress></div>
             <button type="button" class="btn btn-success" :disabled="(((!name) || (!savePlaceType)) || (placeSaving))" @click="saveNewPlaceModal">
-              <template v-if="placeSaving"><font-awesome-icon class="fa-spin" icon="spinner" />&nbsp;</template><strong>{{ place ? $t('save') : $t('addPlaceToMap') }}</strong>
+              <template v-if="placeSaving">
+                <img style='height: 16px; animation: rotation 2s infinite linear;' :src="icons.spinnerWhite" />&nbsp;
+              </template><strong>{{ place ? $t('save') : $t('addPlaceToMap') }}</strong>
             </button>
             <button :disabled="placeSaving" type="button" class="btn btn-primary" @click="closeNewPlaceModal">
               <strong>{{ $t('close') }}</strong>

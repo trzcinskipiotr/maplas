@@ -6,7 +6,7 @@
       {{ $t('areas') }}
       <div style="float: right;">
         <button v-if="$store.state.isDesktop" class="btn btn-primary btn-sm" @click="newArea">{{ $t('newArea') }}</button>&nbsp;
-        <font-awesome-icon @click="togglePanel" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
+        <img @click="togglePanel" style="height: 13px; cursor: pointer;" :src="iconsVisible ? icons.chevronUp : icons.chevronDown" />
       </div>
     </div>
     <div ref="areas" class="card-body p-2">

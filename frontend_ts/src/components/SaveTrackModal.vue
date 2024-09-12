@@ -41,7 +41,6 @@
                 <td>
                   <v-select style="width: 500px" v-model="uploadTrackType" :options="uploadTrackTypes" :clearable="false" :searchable="false" >
                     <template slot="option" slot-scope="option">
-                      <font-awesome-icon v-if="option.icon" :icon="option.icon"/>
                       <img v-if="option.imgsrc" style="height: 20px;" :src="option.imgsrc"/>
                       {{ option.label }}
                     </template>
@@ -66,13 +65,13 @@
               </tr>
               <tr>
                 <th scope="row">{{ $t('photos') }}</th>
-                <td v-if="false">
+                <td>
                   <table v-for="photo in track.gpsTrack.photos" :key="photo.id" class="" style="display: inline; margin: 10px;">
                     <tr><td>
                       <img :src="replaceHTTP(photo.image_thumb)" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
                     </td></tr>
                     <tr><td>
-                      <font-awesome-icon v-if="photo.private" style="width: 16px; height: 16px; margin-right: 2px" icon="key" />
+                      <img v-if="photo.private" style="width: 16px; height: 16px; margin-right: 2px" :src="icons.privacy" />
                       <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
                     </td></tr>    
                   </table>
@@ -81,7 +80,7 @@
                       <img :src="photo.src" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
                     </td></tr>
                     <tr><td>
-                      <font-awesome-icon style="cursor: pointer; width: 16px; height: 16px; margin-right: 2px" icon="trash" v-on:click="removePhoto(photo)"/>
+                      <img @click="removePhoto(photo)" style="cursor: pointer; width: 16px; height: 16px; margin-right: 2px" :src="icons.trash" />
                       <div style="display: inline" class="custom-control custom-checkbox" v-b-tooltip.hover :title="$t('setAsPrivate')">
                         <input type="checkbox" class="custom-control-input" :id="'checkbox' + photo.id" v-model="photo.private" />
                         <label style="margin-right: 2px;" class="custom-control-label" :for="'checkbox' + photo.id"></label>
@@ -91,7 +90,7 @@
                   </table>
                   <div id="photouploaddivinner2" style="width: 48px; height: 48px;" @click="openPhotoImportFileInput" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="$t('importPhotoFile')">
                     <input ref="importPhotoFileInput" type="file" style="display:none;" accept=".jpg" v-on:change="importPhotoFile" multiple />
-                    <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="camera"/>
+                    <img style="cursor: pointer; width: 28px; height: 28px;" :src="icons.camera" />
                   </div>
                 </td>
               </tr>
@@ -104,7 +103,8 @@
               </b-progress-bar>
             </b-progress></div>
             <button type="button" class="btn btn-success" :disabled="trackSaving" @click="track.onServer ? saveTrackModal() : saveUploadTrackModal()">
-              <strong><template v-if="trackSaving"><font-awesome-icon class="fa-spin" icon="spinner" />&nbsp;</template>{{ $t('save') }}</strong>
+              <strong><template v-if="trackSaving">
+                <img style='height: 16px; animation: rotation 2s infinite linear;' :src="icons.spinnerWhite" />&nbsp;</template>{{ $t('save') }}</strong>
             </button>
             <button type="button" class="btn btn-primary" @click="closeUploadTrackModal">
               <strong>{{ $t('close') }}</strong>
@@ -149,12 +149,12 @@ export default class SaveTrackModal extends BaseComponent {
 
   public constructor() {
     super();
-    this.uploadTrackTypes = [{translate: 'bicycleTrack', label: '', icon: 'biking', value: TrackType.bicycle},
-                             {translate: 'walkTrack', label: '', icon: 'shoe-prints', value: TrackType.walk},
+    this.uploadTrackTypes = [{translate: 'bicycleTrack', label: '', imgsrc: icons.bicycle, value: TrackType.bicycle},
+                             {translate: 'walkTrack', label: '', imgsrc: icons.shoe, value: TrackType.walk},
                              {translate: 'mushroomTrack', label: '', imgsrc: icons.mushroomIcon, value: TrackType.mushroom}];
     if (process.env.VUE_APP_BICYCLE_WALK_TRACKS_ONLY) {
-      this.uploadTrackTypes = [{translate: 'bicycleTrack', label: '', icon: 'biking', value: TrackType.bicycle},
-                               {translate: 'walkTrack', label: '', icon: 'shoe-prints', value: TrackType.walk}];
+      this.uploadTrackTypes = [{translate: 'bicycleTrack', label: '', imgsrc: icons.bicycle, value: TrackType.bicycle},
+                               {translate: 'walkTrack', label: '', imgsrc: icons.shoe, value: TrackType.walk}];
     }
     if (process.env.VUE_APP_MUSHROOM_TRACKS_ONLY) {
       this.uploadTrackTypes = [{translate: 'mushroomTrack', label: '', imgsrc: icons.mushroomIcon, value: TrackType.mushroom}];

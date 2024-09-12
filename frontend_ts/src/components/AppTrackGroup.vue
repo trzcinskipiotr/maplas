@@ -6,13 +6,13 @@
       {{ trackGroup.translate ? $t(trackGroup.translate) : trackGroup.label }}
       <div style="float: right;">
         <slot></slot>&nbsp;
-        <font-awesome-icon @click="togglePanel" style="cursor: pointer;" :icon="iconsVisible ? 'chevron-up' : 'chevron-down'"/>
+        <img @click="togglePanel" style="height: 13px; cursor: pointer;" :src="iconsVisible ? icons.chevronUp : icons.chevronDown" />
       </div>
     </div>
     <div ref="tracks" class="card-body p-2">
       <div>
       {{ $t('tracksSelectedDistance') }}: {{ checkedTracks|sumTracksDistance|roundTrackDistance }}
-      <font-awesome-icon v-if="calendar" @click="openCalendarModal" style="cursor: pointer; float: right;" :icon="['far', 'calendar']" size="lg" />
+      <img  v-if="calendar" @click="openCalendarModal" style="height: 20px; cursor: pointer; float: right;" :src="icons.calendar" />
       </div>
       <ul>
         <li v-if="countTracksByType(trackGroup.tracks, TrackType.walk) > 0">{{ $t('tracksSelectedDistanceWalk') }} {{ countWalkTracks(checkedTracks) }}: {{ checkedTracks|sumTracksDistanceWalk|roundTrackDistance }}</li>
@@ -21,6 +21,7 @@
       </ul>
       <div v-for="track in trackGroup.tracks" :key="track.gpsTrack.id">
         <AppTrack v-show="showAppTrack(track)" :track="track" :highlightOnStart="highlightOnStart(track)"></AppTrack>
+        <div style="height: 5px; width: 5px;"></div>
       </div>
     </div>
 

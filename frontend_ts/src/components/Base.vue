@@ -9,9 +9,12 @@ import GpsTrack from '@/ts/GpsTrack';
 import Track from '@/ts/Track';
 import listTranslator, {Transaltor} from '@/ts/list_translator';
 import $ from 'jquery';
+import * as icons from '@/ts/icons';
 
 @Component
 export default class BaseComponent extends Vue {
+
+  public icons = icons;
 
   private alertId: number = 1;
   // @ts-ignore

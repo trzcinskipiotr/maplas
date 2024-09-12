@@ -9,9 +9,13 @@ reboot
 apt-get autoremove
 
 # Instalacja pakietów
-curl -sL https://deb.nodesource.com/setup_12.x | sudo -E bash -
+RUN curl -sL https://deb.nodesource.com/setup_20.x | bash -
 apt-get install wget curl rsync nginx dstat vim psmisc git python3-pip python3-venv python3-certbot-nginx nodejs strace man procps
 pip3 install wheel
+
+# Konfiguracja nodejs
+echo "export NODE_OPTIONS=--openssl-legacy-provider" > /etc/profile.d/node_legacy.sh
+chmod 755 /etc/profile.d/node_legacy.sh
 
 # Tworzenie katalogów
 mkdir /src

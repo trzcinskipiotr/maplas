@@ -2,10 +2,16 @@
   <div>
     <div ref="detailsWindow" class="detailsWindow card" v-show="track.maximized">
       <div ref="detailsWindowHeader" class="detailsWindowHeader card-header" style="width: 500px">
-        <span v-b-tooltip.hover :title="$t('centerTrack')"><font-awesome-icon @click="centerTrack" style="cursor: pointer" icon="search-location"/></span>&nbsp;
+        <span v-b-tooltip.hover :title="$t('centerTrack')">
+          <img @click="centerTrack" style="height: 24px; cursor: pointer;" :src="icons.center" />
+        </span>&nbsp;
         <span v-if="($store.state.user) && ($store.state.isDesktop)">
-          <span v-if="track.onServer" v-b-tooltip.hover :title="$t('saveTrack')"><font-awesome-icon @click="showUploadModal" style="cursor: pointer" icon="save"/></span>
-          <span v-else v-b-tooltip.hover :title="$t('uploadTrack')"><font-awesome-icon @click="showUploadModal" style="cursor: pointer" icon="upload"/></span>
+          <span v-if="track.onServer" v-b-tooltip.hover :title="$t('saveTrack')">
+            <img @click="showUploadModal" style="height: 20px; cursor: pointer;" :src="icons.save" />
+          </span>
+          <span v-else v-b-tooltip.hover :title="$t('uploadTrack')">
+            <img @click="showUploadModal" style="height: 20px; cursor: pointer;" :src="icons.upload" />
+          </span>
           <span style='margin-right: 3px;'></span>
         </span>
         <div style="display: inline" class="custom-control custom-checkbox" :id="'detailstrackcheckbox' + track.gpsTrack.id">
@@ -15,12 +21,14 @@
         <span class="badge badge-dark" style="margin-right: 2px; margin-left: 2px;">{{ track.gpsTrack.start_time|formatDateDay }}</span>
         <span :class="getDisanseBadgeClasses(track.gpsTrack)">{{ track.gpsTrack.distance|roundTrackDistance }}</span>
         <div style="float: right;">
-          <font-awesome-icon @click="toggleMaximizedDetails" style="cursor: pointer;" :icon="maximizedDetails ? 'chevron-up' : 'chevron-down'"/>&nbsp;
-          <font-awesome-icon @click="track.maximized = false" style="cursor: pointer;" :icon="['far', 'times-circle']"/>
+          <img @click="toggleMaximizedDetails" style="height: 13px; cursor: pointer;" :src="maximizedDetails ? icons.chevronUp : icons.chevronDown" />&nbsp;
+          <img @click="track.maximized = false" style="height: 20px; cursor: pointer;" :src="icons.closeIcon" />
         </div>
       </div>
       <div ref="maximizedBody" class="card-body">
-        <center v-if="trackDetailsLoading"><font-awesome-icon class="fa-spin" icon="spinner" size="4x"/></center>
+        <center v-if="trackDetailsLoading">
+          <img style='height: 32px; animation: rotation 2s infinite linear;' v-if="clearing" :src="icons.spinnerBlack" />&nbsp;
+        </center>
         <div v-else>
           <b>{{ $t('name') }}</b>: {{ track.gpsTrack.name }}<br>
           <span v-if="track.gpsTrack.description"><b>{{ $t('description') }}</b>: {{ track.gpsTrack.description }}<br></span>
@@ -31,8 +39,8 @@
           <b>{{ $t('id') }}</b>: {{ track.gpsTrack.id }}<br>
           <span ref="gallerySpan"/>
           <b>{{ $t('photosAndMovies') }}</b>: 
-            {{ track.gpsTrack.photos.length }} <font-awesome-icon v-if="track.gpsTrack.photos.length" @click="clickOpenGallery" style="cursor: pointer" icon="images"/>&nbsp;
-            {{ track.gpsTrack.videos.length }} <font-awesome-icon v-if="track.gpsTrack.videos.length" @click="clickOpenVideos" style="cursor: pointer" icon="video"/><br>
+            {{ track.gpsTrack.photos.length }}<img v-if="track.gpsTrack.photos.length" @click="clickOpenGallery" style="height: 20px; cursor: pointer;" :src="icons.images" />&nbsp;
+            {{ track.gpsTrack.videos.length }}<img v-if="track.gpsTrack.videos.length" @click="clickOpenVideos" style="height: 20px; cursor: pointer;" :src="icons.video" /><br>
           <template v-if="track.gpsTrack.gpx_file"><b>{{ $t('gpxFile') }}: </b>{{ track.gpsTrack.gpx_file.length|roundFileBytes }} <button @click="saveGPX" type="button" class="btn btn-primary btn-sm">Download</button><br><br></template>
           <template v-if="track.gpsTrack.gpx_file"><button @click="showHideTimeLables" type="button" class="btn btn-primary btn-sm">{{ timeLabelsVisible ? $t('hideTimeLabels') : $t('showTimeLabels') }}</button></template>&nbsp;
           <template v-if="track.gpsTrack.gpx_file"><button @click="showHideSpeedLables" type="button" class="btn btn-primary btn-sm">{{ speedLabelsVisible ? $t('hideSpeedLabels') : $t('showSpeedLabels') }}</button></template>&nbsp;&nbsp;

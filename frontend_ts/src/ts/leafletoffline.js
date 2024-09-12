@@ -51,6 +51,18 @@ export async function removeTile(key) {
   return result;
 }
 
+let opfsRoot;
+
+export async function saveTileToFile(tileInfo, blob) {
+  if (! opfsRoot) {
+    opfsRoot = await navigator.storage.getDirectory();
+  }
+  const fileHandle = await opfsRoot.getFileHandle('' + tileInfo.z + '_' + tileInfo.x + '_' + tileInfo.y, { create: true });
+  const writable = await fileHandle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+}
+
 export async function saveTile(tileInfo, blob) {
   const db = await openTilesDataBase();
   const result = await db.put(tileStoreName, {blob, ...tileInfo});
@@ -249,12 +261,25 @@ class ControlSaveTiles {
     const saveTilesToDatabase = async () => {
       this._baseLayer.fire('savestart', this.status);
       const loader = async () => {
+        const t1 = Date.now();
         const tile = tiles.pop();
         if (tile === undefined) {
           return Promise.resolve();
         }
+        const t2 = Date.now();
         const blob = await this._loadTile(tile);
+        const t3 = Date.now();
         await this._saveTile(tile, blob);
+        const t4 = Date.now();
+        if (blob) {
+          await saveTileToFile(tile, blob);
+        }
+        const t5 = Date.now();
+        const poptime = t2 - t1;
+        const loadtime = t3 - t2;
+        const savetime = t4 - t3;
+        const savetime2 = t5 - t4;
+        console.log('TILE: ' + tile.url + ' times: ' + poptime + ' ' + loadtime + ' ' + savetime + ' ' + savetime2);
         return loader();
       };
       const parallel = Math.min(tiles.length, this.options.parallel);

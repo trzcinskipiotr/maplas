@@ -6,7 +6,7 @@
           <div class="card-header">
             {{ $t('mainMenu') }}
             <div style="float: right;">
-              <font-awesome-icon @click="togglePanel" style="cursor: pointer;" :icon="['far', 'times-circle']"/>
+              <img @click="togglePanel" style="height: 20px; cursor: pointer;" :src="icons.closeIcon" />
             </div>
           </div>
           <div class="mx-0 px-0 card-body">
@@ -100,8 +100,8 @@
                     </v-select>
                     <br>
                     {{ $t('playingSpeed') }}:
-                    <font-awesome-icon icon="biking"/> {{ playingSpeed }} km/s&nbsp;&nbsp;
-                    <font-awesome-icon icon="shoe-prints"/> {{ playingSpeed / 10 }} km/s 
+                    <img style="height: 20px;" :src="icons.bicycle" /> {{ playingSpeed }} km/s&nbsp;&nbsp;
+                    <img style="height: 20px;" :src="icons.shoe" /> {{ playingSpeed / 10 }} km/s 
                     <b-form-slider style="width: 100%;" v-model="playingSpeed" :min=1 :max=20></b-form-slider><br><br>
                     <b-form-checkbox :disabled="locationActive" style="display: inline;" v-model="useHTML5location"></b-form-checkbox>{{ $t('useHTML5location') }}<br>
                     <b-form-checkbox style="display: inline;" v-model="largeButtonsDuringLocation"></b-form-checkbox>{{ $t('largeButtonsDuringLocation') }}<br>
@@ -151,7 +151,7 @@
         </div>
         <div id="map">
           <span class="centerloading">
-            <font-awesome-icon v-if="tileLoading" class="fa-spin" icon="spinner" size="4x"/>
+            <img style='height: 48px; animation: rotation 2s infinite linear;' v-if="tileLoading" :src="icons.spinnerBlack" />&nbsp;
           </span>
         </div>
       </div>
@@ -160,7 +160,7 @@
       <div id="cogsdivinner" class="leaflet-bar leaflet-control">
         <a id="cogsdivinnera" :style="{'width': '48px', 'height': '48px', 'background-color': menuOpened ? 'yellow' : 'white'}" @click="togglePanel" class="leaflet-control-zoom-out centerall">
           <b-tooltip v-if="(document.getElementById('cogsdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('cogsdivinner')">{{ menuOpened ? $t('closeMenu') : $t('openMenu') }}</b-tooltip>
-          <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="bars" size="lg"/>
+          <img style="height: 28px; cursor: pointer;" :src="icons.bars" />
         </a>
       </div>
     </div>
@@ -168,7 +168,7 @@
       <div id="rulerdivinner" class="leaflet-bar leaflet-control">
         <a id="rulerdivinnera" :style="{'width': '48px', 'height': '48px', 'background-color': $store.state.editedTrack ? 'yellow' : 'white'}" @click="rulerClick" class="leaflet-control-zoom-out centerall">
           <b-tooltip v-if="(document.getElementById('rulerdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('rulerdivinner')">{{ $store.state.editedTrack ? $t('closeRuler') : $t('openRuler') }}</b-tooltip>
-          <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="ruler-horizontal" size="lg"/>
+          <img style="height: 28px; cursor: pointer;" :src="icons.rulerHorizontal" />
         </a>
       </div>
     </div>
@@ -176,7 +176,7 @@
       <div id="gallerydivinner" class="leaflet-bar leaflet-control">
         <a id="gallerydivinnera" :style="{'width': '48px', 'height': '48px', 'background-color': galleryOpened ? 'yellow' : 'white'}" @click="toggleGalleryPanel" class="leaflet-control-zoom-out centerall">
           <b-tooltip v-if="(document.getElementById('gallerydivinner')) && ($store.state.isDesktop)" :target="document.getElementById('gallerydivinner')">{{ galleryOpened ? $t('closeGallery') : $t('openGallery') }}</b-tooltip>
-          <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="images" size="lg"/>
+          <img style="height: 28px; cursor: pointer;" :src="icons.images" />
         </a>
       </div>
     </div>
@@ -185,7 +185,7 @@
         <a id="importdivinnera" style="width: 48px; height: 48px;" @click="openImportFileInput" class="leaflet-control-zoom-out centerall">
           <b-tooltip v-if="(document.getElementById('importdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('importdivinner')">{{ $t('importGpxFile') }}</b-tooltip>
           <input id="importFileInput" multiple type="file" style="display:none;" accept=".gpx" v-on:change="importGpxFile" />
-          <font-awesome-icon style="cursor: pointer; width: 28px; height: 28px;" icon="file-upload"/>
+          <img style="height: 28px; cursor: pointer;" :src="icons.upload" />
         </a>
       </div>
     </div>
@@ -194,10 +194,10 @@
         <a id="locationdivinnera" @click="toggleLocation" class="leaflet-control-zoom-out centerall">
           <b-tooltip v-if="(document.getElementById('locationdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('locationdivinner')">{{ locationActive ? $t('hideLocation') : $t('showLocation') }}</b-tooltip>
           <template v-if="locationActive">
-            <font-awesome-icon v-if="! currentLocation" class="fa-spin" icon="spinner" size="lg"/>
-            <font-awesome-icon v-else style="color: green; cursor: pointer; width: 28px; height: 28px;" icon="map-marker" size="lg"/>
+            <img v-if="! currentLocation" style='height: 16px; animation: rotation 2s infinite linear;' :src="icons.spinnerBlack" />
+            <img v-else style="color: green; cursor: pointer; width: 28px; height: 28px;" :src="icons.locationGreen" />
           </template>
-          <font-awesome-icon v-else style="color: black; cursor: pointer; width: 28px; height: 28px;" icon="map-marker" size="lg"/>  
+          <img v-else style="color: green; cursor: pointer; width: 28px; height: 28px;" :src="icons.locationBlack" />
         </a>
       </div>
     </div>
@@ -211,7 +211,9 @@
       </div>
     </div>
     <div class="alertmessage">
-      <div class="flexcenter"><font-awesome-icon v-if="loading" class="fa-spin" icon="spinner" size="3x"/></div>
+      <div class="flexcenter">
+        <img style='height: 48px; animation: rotation 2s infinite linear;' v-if="loading" :src="icons.spinnerBlack" />&nbsp;
+      </div>
       <div v-for="alert in $store.state.alerts" class="alert border border-dark" v-bind:class="{ 'alert-success': isSuccessAlert(alert), 'alert-danger': isDangerAlert(alert) }" v-bind:key="alert.date" role="alert">
         {{ alert.message }}
       </div>
@@ -360,6 +362,8 @@ export default class Index extends BaseComponent {
   private useHTML5location = false;
   private largeButtonsDuringLocation = false;
   private showAllButtonsDuringLocation = false;
+
+  private icons = icons;
 
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {

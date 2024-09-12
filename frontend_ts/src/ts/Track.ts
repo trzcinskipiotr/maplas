@@ -78,7 +78,7 @@ export default class Track {
       iconSize: [21, 21],
       iconAnchor: [10, 10],
     });
-    const animateTrackHtml = this.gpsTrack.isBicycleTrack() ? '<i class="fa fa-bicycle fa-2x" style="color: black"></i>' : '<i class="fa fa-shoe-prints fa-2x" style="color: black"></i>';
+    const animateTrackHtml = this.gpsTrack.isBicycleTrack() ? '<img style="height: 20px;" src="' + icons.bicycle + '" />' : '<img style="height: 20px;" src="' + icons.shoe + '" />';
     for (const segment of this.gpsTrack.segments) {
       // @ts-ignore
       const animateTrack = L.motion.polyline(segment.pointsArray, {

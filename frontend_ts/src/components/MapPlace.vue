@@ -4,9 +4,13 @@
       <div v-if="renderPopup">
         {{ place.id }} <b>{{ place.name }}</b> {{ place.lat}}, {{ place.lon }}
         <span style="float: right">
-          <span :id="'tooltipPlace' + place.id" style='margin-right: 3px;'><font-awesome-icon style="height: 24px; cursor: pointer" :icon="place.approved ? 'check' : 'question-circle'"/></span>
+          <span :id="'tooltipPlace' + place.id" style='margin-right: 3px;'>
+            <img style="height: 12px" :src="place.approved ? icons.approved : icons.question" />
+          </span>
           <b-tooltip v-if="$store.state.isDesktop" :target="'tooltipPlace' + place.id">{{ place.approved ? $t('placeApproved') : $t('placeNotApproved') }}</b-tooltip>
-          <span v-if="place.photos.length" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('fullRes')"><font-awesome-icon ref="fullResImage" @click="makeFullResGallery" style="height: 24px; cursor: pointer" icon="search-plus"/></span>
+          <span v-if="place.photos.length" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('fullRes')">
+            <img ref="fullResImage" @click="makeFullResGallery" style="height: 12px; cursor: pointer" :src="icons.fullResolution" />
+          </span>
         </span>  
         <span v-if="place.photos.length">
           <br><img @load="resizePopup" ref="smallImage" :src="replaceHTTP(place.photos[0].image_thumb)" :class="$store.state.isDesktop ? 'popupimgbig' : 'popupimgsmall'" @click="makeGallery"><br>
@@ -20,10 +24,12 @@
         </span> 
         {{ place.description }}<br>
         <span v-if="(place.marker.getLatLng().lat != place.lat) && (place.marker.getLatLng().lng != place.lon)">
-          <font-awesome-icon style="cursor: pointer" icon="undo" @click="undoLocation" />&nbsp;
-          <font-awesome-icon style="cursor: pointer" icon="save" @click="saveLocation" />
+          <img @click="undoLocation" style="height: 20px; cursor: pointer;" :src="icons.undo" />&nbsp;
+          <img @click="saveLocation" style="height: 20px; cursor: pointer;" :src="icons.save" />&nbsp;
         </span>
-        <span v-b-tooltip.hover :title="$t('editPlace')"><font-awesome-icon @click="showEditPlaceModal" style="cursor: pointer" icon="upload"/></span>
+        <span v-b-tooltip.hover :title="$t('editPlace')">
+          <img @click="showEditPlaceModal" style="height: 20px; cursor: pointer;" :src="icons.upload" />
+        </span>
       </div>  
     </div>
   </div>

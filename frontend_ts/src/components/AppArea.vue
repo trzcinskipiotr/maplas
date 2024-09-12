@@ -6,14 +6,18 @@
         <label style="margin-right: 2px;" class="custom-control-label" :for="'acheckbox' + area.id">{{ area.name }}</label>
       </div>
       <span v-if="area === $store.state.editedArea">
-        <font-awesome-icon v-if="$store.state.isDesktop" @click="setEdited(null)" style="height: 24px; cursor: pointer" icon="lock-open"/>
+        <img v-if="$store.state.isDesktop" @click="setEdited(null)" style="height: 24px; cursor: pointer" :src="icons.unlock" />
       </span>
       <span v-else>
-        <font-awesome-icon v-if="$store.state.isDesktop" @click="setEdited(area)" style="height: 24px; cursor: pointer" icon="lock"/>
+        <img v-if="$store.state.isDesktop" @click="setEdited(area)" style="height: 24px; cursor: pointer" :src="icons.lock" />
       </span>
       &nbsp;
-      <template v-if="areaSaving"><font-awesome-icon class="fa-spin" icon="spinner" />&nbsp;</template>
-        <span v-if="($store.state.user) && ($store.state.isDesktop)" v-b-tooltip.hover :title="$t('saveArea')"><font-awesome-icon @click="saveArea" style="height: 24px; cursor: pointer" icon="save"/></span>
+      <template v-if="areaSaving">
+        <img style='height: 16px; animation: rotation 2s infinite linear;' :src="icons.spinnerBlack" />&nbsp;
+      </template>
+        <span v-if="($store.state.user) && ($store.state.isDesktop)" v-b-tooltip.hover :title="$t('saveArea')">
+          <img @click="saveArea" style="height: 24px; cursor: pointer;" :src="icons.save" />
+        </span>
       <br>
     </div>
   </div>  

@@ -19,31 +19,31 @@
             </template>
           </select><br>
           <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="activateAreas">
-            <font-awesome-icon v-if="activatingAreas" class="fa-spin" icon="spinner" />&nbsp;
+            <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="activatingAreas" :src="icons.spinnerWhite" />&nbsp;
             {{ $t('activateAreas') }}
           </button>&nbsp;
         </div>
         <div class="buttongroup">
           <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="deleteOffline">
-            <font-awesome-icon v-if="deleting" class="fa-spin" icon="spinner" />&nbsp;
+            <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="deleting" :src="icons.spinnerWhite" />&nbsp;
             {{ $t('deleteOffline') }}
           </button>&nbsp;
           <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="countOffline">
-            <font-awesome-icon v-if="counting" class="fa-spin" icon="spinner" />&nbsp;
+            <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="counting" :src="icons.spinnerWhite" />&nbsp;
             {{ $t('countOffline') }}
           </button>&nbsp;
           <button :disabled="operationInProgess || (! area)" class="btn btn-primary btn-sm" @click="addToExport">
-            <font-awesome-icon v-if="addingToExport" class="fa-spin" icon="spinner" />&nbsp;
+            <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="addingToExport" :src="icons.spinnerWhite" />&nbsp;
             {{ $t('addToExport') }}
           </button>
         </div>
         <div class="buttongroup">
           <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="exportOffline">
-            <font-awesome-icon v-if="exporting" class="fa-spin" icon="spinner" />&nbsp;
+            <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="exporting" :src="icons.spinnerWhite" />&nbsp;
             {{ $t('exportOffline') }}
           </button>&nbsp;
           <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="openImportFileInput">
-            <font-awesome-icon v-if="importing" class="fa-spin" icon="spinner" />&nbsp;
+            <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="importing" :src="icons.spinnerWhite" />&nbsp;
             {{ $t('importOffline') }}
           </button>
           <template v-if="areasToExport.length">
@@ -55,7 +55,7 @@
             {{ $t('sum') }}: {{ keysToExport.length }}
             &nbsp;
             <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="exportOfflineSelection">
-              <font-awesome-icon v-if="exporting" class="fa-spin" icon="spinner" />&nbsp;
+              <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="exporting" :src="icons.spinnerWhite" />&nbsp;
               {{ $t('exportOfflineSelection') }}
             </button>
             &nbsp;
@@ -71,27 +71,29 @@
         <b-form-checkbox style="display: inline;" v-model="useCache">
         </b-form-checkbox>{{ $t('useCache') }}
         <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="downloadOffline">
-          <font-awesome-icon v-if="saving" class="fa-spin" icon="spinner" />&nbsp;
+          <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="saving" :src="icons.spinnerWhite" />&nbsp;
           {{ $t('downloadOffline') }}
         </button>&nbsp;
-        <span v-b-tooltip.hover :title="$t('corsWarning')"><font-awesome-icon style="height: 24px; cursor: pointer" icon="info"/></span>
+        <span v-b-tooltip.hover :title="$t('corsWarning')">
+          <img style="height: 24px; cursor: pointer;" :src="icons.info" />
+        </span>
         </div>
         <div class="buttongroup">
         {{ $t('showZoom') }} <select v-model="showZoom">
           <option v-for="zoom in allowZoomToShow" :value="zoom" :key="zoom">{{ zoom }}</option>
         </select>&nbsp;
         <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="toggleOffline">
-          <font-awesome-icon v-if="showZoomLoading" class="fa-spin" icon="spinner" />&nbsp;
+          <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="showZoomLoading" :src="icons.spinnerWhite" />&nbsp;
           {{ offlineShowing ? $t('hideOffline') : $t('showOffline') }}
         </button><template v-if="offlineShowing">&nbsp;{{ offlineShowingCount }}</template>
         </div>
         <div class="buttongroup">
           <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="clearOffline">
-            <font-awesome-icon v-if="clearing" class="fa-spin" icon="spinner" />&nbsp;
+            <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="clearing" :src="icons.spinnerWhite" />&nbsp;
             {{ $t('clearOffline') }}
           </button>&nbsp;
           <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="countGlobalOffline">
-            <font-awesome-icon v-if="countingGlobal" class="fa-spin" icon="spinner" />&nbsp;
+            <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="countingGlobal" :src="icons.spinnerWhite" />&nbsp;
             {{ $t('countGlobalOffline') }}
           </button>
         </div>

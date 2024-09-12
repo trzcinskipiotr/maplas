@@ -68,10 +68,10 @@ export default class Place {
       if (this.type.icon) {
         return this.type.icon;
       } else {
-        return 'fa-map-marker';
+        return 'maplas-other';
       }
     } else {
-      return 'fa-map-marker';
+      return 'maplas-other';
     }
   }
 
