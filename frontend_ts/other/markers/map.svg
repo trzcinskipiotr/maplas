@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" version="1.1" width="1000" height="1000" viewBox="0 0 1000 1000" xml:space="preserve">
+<desc>Created with Fabric.js 3.5.0</desc>
+<defs>
+</defs>
+<rect x="0" y="0" width="100%" height="100%" fill="rgba(255,255,255,0)"/>
+<g transform="matrix(10.4513 0 0 10.4513 489.2927 469.0104)" id="554414">
+<path style="stroke: rgb(0,153,255); stroke-width: 5; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(255,255,255); fill-rule: nonzero; opacity: 1;" vector-effect="non-scaling-stroke" transform=" translate(-43.5, -25)" d="M 2.5 2.5 H 84.5 V 47.5 H 2.5 V 2.5 Z" stroke-linecap="round"/>
+</g>
+<g transform="matrix(31.25 0 0 31.25 500.5 500.5)" id="244993">
+<path style="stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(0,158,255); fill-rule: evenodd; opacity: 1;" vector-effect="non-scaling-stroke" transform=" translate(-222, -429)" d="M 232 430 C 232 430.553 231.552 431 231 431 C 230.448 431 230 430.553 230 430 L 230 422 C 230 421.448 230.448 421 231 421 C 231.552 421 232 421.448 232 422 L 232 430 L 232 430 Z M 224 433 C 224 433.553 223.552 434 223 434 C 222.448 434 222 433.553 222 433 L 222 427 C 222 426.448 222.448 426 223 426 C 223.552 426 224 426.448 224 427 L 224 433 L 224 433 Z M 216 434 C 216 434.553 215.552 435 215 435 C 214.448 435 214 434.553 214 434 L 214 424 C 214 423.448 214.448 423 215 423 C 215.552 423 216 423.448 216 424 L 216 434 L 216 434 Z M 230 413 L 222 419 L 214 416 L 206 421 L 206 445 L 214 440 L 222 443 L 230 437 L 238 443 L 238 419 L 230 413 L 230 413 Z" stroke-linecap="round"/>
+</g>
+</svg>

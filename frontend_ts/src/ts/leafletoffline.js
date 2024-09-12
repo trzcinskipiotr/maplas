@@ -206,6 +206,7 @@ class ControlSaveTiles {
     };
     this._baseLayer = baseLayer;
     this._map = map;
+    this.tiles = [];
     this.options = {
       ...{
         saveWhatYouSee: false,
@@ -216,6 +217,22 @@ class ControlSaveTiles {
       },
       ...options
     };
+
+    document.worker.addEventListener('message', event => {
+      const message = event.data;
+      if (message == 'OK') {
+        this.status.lengthLoadedFromNetwork += 1;
+        this.status.lengthSaved += 1;
+      }
+      if (message == 'DOWNLOADERROR') {
+        this.status.lengthLoadErrors += 1;
+      }
+      this._baseLayer.fire('refreshstatus', this.status);
+      if (this.status.lengthSaved === this.status.lengthToBeSaved - this.status.lengthLoadErrors - this.status.lengthLoadedFromCache) {
+        this._baseLayer.fire('saveend', this.status);
+      }
+      this.loadAndSaveTile(this.tiles);
+    });
   }
 
   setLayer(layer) {
@@ -255,39 +272,42 @@ class ControlSaveTiles {
     };
   }
 
+  async loadAndSaveTile(tiles) {
+    const t1 = Date.now();
+    const tile = tiles.pop();
+    if (tile === undefined) {
+      return Promise.resolve();
+    }
+    document.worker.postMessage(tile);
+    //const t2 = Date.now();
+    //const blob = await this._loadTile(tile);
+    //const t3 = Date.now();
+    //await this._saveTile(tile, blob);
+    //const t4 = Date.now();
+    //if (blob) {
+    //  await saveTileToFile(tile, blob);
+    //}
+    //const t5 = Date.now();
+    //const poptime = t2 - t1;
+    //const loadtime = t3 - t2;
+    //const savetime = t4 - t3;
+    //const savetime2 = t5 - t4;
+    //console.log('TILE: ' + tile.url + ' times: ' + poptime + ' ' + loadtime + ' ' + savetime + ' ' + savetime2);
+    //return this.loadAndSaveTile(tiles);
+  };
+
+  async saveTilesToDatabase(tiles) {
+    this._baseLayer.fire('savestart', this.status);
+    const parallel = Math.min(tiles.length, this.options.parallel);
+    for (let i = 0; i < parallel; i += 1) {
+      this.loadAndSaveTile(tiles);
+    }
+  };
+
   _saveTiles() {
-    const tiles = this._calculateTiles();
-    this._resetStatus(tiles);
-    const saveTilesToDatabase = async () => {
-      this._baseLayer.fire('savestart', this.status);
-      const loader = async () => {
-        const t1 = Date.now();
-        const tile = tiles.pop();
-        if (tile === undefined) {
-          return Promise.resolve();
-        }
-        const t2 = Date.now();
-        const blob = await this._loadTile(tile);
-        const t3 = Date.now();
-        await this._saveTile(tile, blob);
-        const t4 = Date.now();
-        if (blob) {
-          await saveTileToFile(tile, blob);
-        }
-        const t5 = Date.now();
-        const poptime = t2 - t1;
-        const loadtime = t3 - t2;
-        const savetime = t4 - t3;
-        const savetime2 = t5 - t4;
-        console.log('TILE: ' + tile.url + ' times: ' + poptime + ' ' + loadtime + ' ' + savetime + ' ' + savetime2);
-        return loader();
-      };
-      const parallel = Math.min(tiles.length, this.options.parallel);
-      for (let i = 0; i < parallel; i += 1) {
-        loader();
-      }
-    };
-    saveTilesToDatabase();
+    this.tiles = this._calculateTiles();
+    this._resetStatus(this.tiles);  
+    this.saveTilesToDatabase(this.tiles);
   }
 
   async _loadTile(tile) {
