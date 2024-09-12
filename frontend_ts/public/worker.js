@@ -66,14 +66,14 @@ addEventListener('message', event => {
       if (blob) {
         saveTileToFile(tile, blob).then(() => {
           const t4 = Date.now();
-          saveTileToDatabase(tile, blob).then(() => {
-            const t5 = Date.now();
-            const loadTime = t3 - t2;
-            const saveTime = t4 - t3;
-            const saveTime2 = t5 - t4;
-            console.log(tile.url + ': ' + loadTime + ' ' + saveTime + ' ' + saveTime2);
-            postMessage('OK');
-          })
+          const loadTime = t3 - t2;
+          const saveTime = t4 - t3;
+          console.log(tile.url + ': ' + loadTime + ' ' + saveTime);
+          postMessage('OK');
+          //saveTileToDatabase(tile, blob).then(() => {
+          //  const t5 = Date.now();
+          //  const saveTime2 = t5 - t4;
+          //})
         })
       } else {
         postMessage('DOWNLOADERROR');
