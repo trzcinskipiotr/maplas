@@ -21,7 +21,7 @@
         <div :style="{'margin-bottom': $store.state.isDesktop ? 0 : '15px'}">
           <b-form-checkbox style="display: inline;" v-model="placeGroups[placeType.id].checked" @change="onPlaceGroupsChanged($event, placeGroups[placeType.id].id)">
           </b-form-checkbox>
-          <i style="color: blue" :class="'fas maplas-icon icon16px ' + placeType.icon"></i>
+          <i style="color: blue" :class="'maplas-icon icon16px ' + placeType.icon"></i>
           {{ $t(placeType.name) }}
         </div>  
       </div>

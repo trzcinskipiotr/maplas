@@ -18,7 +18,7 @@ export default class Place {
   constructor(public id: number, public name: string, public description: string, public lat: number, public lon: number, public type: PlaceType, public approved: boolean, zoomLevel: number, draggable: boolean) {
     const markerSizeClass = this.getMarkerSizeClass(zoomLevel);
     const markerIconClass = this.getMarkerIconClass();
-    const iconHtml = '<i style="color: blue" class="fas maplas-icon ' + markerIconClass + ' ' + markerSizeClass + '"></i>';
+    const iconHtml = '<i style="color: blue" class="maplas-icon ' + markerIconClass + ' ' + markerSizeClass + '"></i>';
     const markerIcon = L.divIcon({
       html: iconHtml,
       className: 'dummy',
@@ -78,7 +78,7 @@ export default class Place {
   public changeMarkerSize(zoomLevel: number) {
     const markerSizeClass = this.getMarkerSizeClass(zoomLevel);
     const markerIconClass = this.getMarkerIconClass();
-    const iconHtml = '<i style="color: blue" class="fas maplas-icon ' + markerIconClass + ' ' + markerSizeClass + '"></i>';
+    const iconHtml = '<i style="color: blue" class="maplas-icon ' + markerIconClass + ' ' + markerSizeClass + '"></i>';
     const markerIcon = L.divIcon({
       html: iconHtml,
       className: 'dummy',

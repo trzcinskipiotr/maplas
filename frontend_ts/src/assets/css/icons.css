@@ -37,6 +37,7 @@
   background-size: cover; 
   background-repeat: no-repeat; 
   background-position: center center;
+  display: inline-block;
 }
 
 .maplas-parking {
