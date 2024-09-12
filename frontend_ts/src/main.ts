@@ -8,7 +8,6 @@ Vue.config.silent = true
 import './registerServiceWorker';
 
 import 'leaflet.gridlayer.googlemutant';
-import 'leaflet.locatecontrol';
 import 'leaflet-hotline';
 import 'Leaflet.MultiOptionsPolyline';
 import 'leaflet/dist/leaflet.css';

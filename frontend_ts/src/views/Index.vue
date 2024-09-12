@@ -267,7 +267,6 @@ import { Component, Prop, Vue, Watch } from 'vue-property-decorator';
 import L, { LatLngBounds, latLngBounds } from 'leaflet';
 import 'leaflet.gridlayer.googlemutant';
 import 'leaflet.fullscreen';
-import 'leaflet.locatecontrol';
 import axios from 'axios';
 import $ from 'jquery';
 import BaseComponent from '@/components/Base.vue';
