@@ -1,5 +1,5 @@
 if (typeof idb === "undefined") {
-  self.importScripts('https://cdn.jsdelivr.net/npm/idb@8/build/umd.js');
+  self.importScripts('idb.js');
 }
 
 let opfsRoot;
@@ -59,7 +59,7 @@ async function saveTileToFile(tileInfo, blob) {
 }
 
 addEventListener('message', event => {
-    tile = event.data;
+    const tile = event.data;
     const t2 = Date.now();
     downloadTile(tile.url).then((blob) => {
       const t3 = Date.now();
