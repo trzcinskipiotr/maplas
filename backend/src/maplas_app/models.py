@@ -159,6 +159,8 @@ class Photo(models.Model):
         return os.path.join('photos', filename)
 
     private = models.BooleanField(db_index=True, null=False, default=False)
+    past = models.BooleanField(db_index=True, null=False, default=False)
+    order = models.IntegerField(null=True, blank=True, default=1)
 
     name = models.CharField(max_length=2000, null=False, default='', blank=True)
     description = models.CharField(max_length=2000, null=False, default='', blank=True)
@@ -218,7 +220,7 @@ class Photo(models.Model):
         piexif.insert(piexif.dump(exif_thumb), self.image_thumb.path)
 
     class Meta:
-        ordering = ['id']
+        ordering = ['order', 'id']
 
 def delete_file(image):
     if image and image.path and os.path.isfile(image.path):

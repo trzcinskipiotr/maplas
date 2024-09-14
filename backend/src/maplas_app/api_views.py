@@ -68,17 +68,17 @@ class PlaceTypeViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = PlaceType.objects.all().order_by('order')
     serializer_class = serializers.PlaceTypeSerializer
 
-class PhotoViewSet(ListModelMixin, CreateModelMixin, viewsets.GenericViewSet):
-    queryset = Photo.objects.all().order_by('id')
+class PhotoViewSet(ListModelMixin, CreateModelMixin, UpdateModelMixin, viewsets.GenericViewSet):
+    queryset = Photo.objects.all().order_by('order', 'id')
     list_serializer_class = serializers.PhotoSerializerUrlNested
     create_update_serializer_class = serializers.PhotoSerializer
     retrieve_serializer_class = serializers.PhotoSerializerUrlNested
 
     def get_queryset(self):
         if self.request.user and self.request.user.is_authenticated:
-            return Photo.objects.all().order_by('id')
+            return Photo.objects.all().order_by('order', 'id')
         else:
-            return Photo.objects.filter(private=False).order_by('id')
+            return Photo.objects.filter(private=False).order_by('order', 'id')
 
     def get_serializer_class(self):
         if self.action == 'list':

@@ -11,11 +11,22 @@
           <span v-if="place.photos.length" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('fullRes')">
             <img ref="fullResImage" @click="makeFullResGallery" style="height: 12px; cursor: pointer" :src="icons.fullResolution" />
           </span>
+          <br>
         </span>  
-        <span v-if="place.photos.length">
-          <br><img @load="resizePopup" ref="smallImage" :src="replaceHTTP(place.photos[0].image_thumb)" :class="$store.state.isDesktop ? 'popupimgbig' : 'popupimgsmall'" @click="makeGallery"><br>
+        <div v-if="place.photos.length" style="float: left;">
+          <center>
+            <table v-if="((place.photos.length > 1) && ($store.state.isDesktop))">
+              <tr>
+                <td @click="photoIndex != 0 ? prevPhoto() : null" style="padding: 0px"><img @load="resizePopup" :style="{width: '10px', height: '20px', cursor: photoIndex == 0 ? 'arrow' : 'pointer'}" :src="photoIndex == 0 ? icons.arrowLeftDisabled : icons.arrowLeft"></td>
+                <td style="padding-left: 5px; padding-right: 5px;"><img @load="resizePopup" ref="smallImage" :src="replaceHTTP(place.photos[photoIndex].image_thumb)" class="popupimgbigmorephotos" @click="makeGallery"></td>
+                <td @click="photoIndex != place.photos.length - 1 ? nextPhoto() : null" style="padding: 0px"><img @load="resizePopup" :style="{width: '10px', height: '20px', cursor: photoIndex == place.photos.length - 1 ? 'arrow' : 'pointer'}" :src="photoIndex == place.photos.length - 1 ? icons.arrowRightDisabled : icons.arrowRight"></td>
+              </tr>
+            </table>
+            <img v-else @load="resizePopup" ref="smallImage" :src="replaceHTTP(place.photos[0].image_thumb)" :class="$store.state.isDesktop ? 'popupimgbig' : 'popupimgsmall'" @click="makeGallery"></td>
+          </center>
+          <br>
           <span style="float: right; color: gray">{{ place.photos[0].org_filename }} {{ place.photos[0].exif_time_taken | formatDateSeconds }}</span><br>
-        </span>
+        </div>
         <span v-if="place.videos.length">
           <div v-for="video in place.videos" :key="video.id">
             <b>{{ video.name }}</b> {{ video.description }}<br>
@@ -50,6 +61,22 @@ export default class MapPlace extends BaseComponent {
   @Prop({ required: true }) private place: Place;
 
   private renderPopup = false;
+
+  private photoIndex = 0;
+
+  private prevPhoto() {
+    this.photoIndex = this.photoIndex - 1;
+    if (this.photoIndex == -1) {
+      this.photoIndex = this.place.photos.length - 1;
+    }
+  }
+
+  private nextPhoto() {
+    this.photoIndex = this.photoIndex + 1;
+    if (this.photoIndex == this.place.photos.length) {
+      this.photoIndex = 0;
+    }
+  }
 
   private mounted() {
     this.place.marker.bindPopup(this.$refs.tooltip as HTMLElement, {}).on("popupopen", (event) => {
@@ -89,6 +116,9 @@ export default class MapPlace extends BaseComponent {
       fullHDs.push(fullHD);
     }
     const time = new Date().getTime();
+    if (window.lgData[this.$refs.smallImage.getAttribute('lg-uid')]) {
+      window.lgData[this.$refs.smallImage.getAttribute('lg-uid')].destroy(true);
+    }
     window.lightGallery(this.$refs.smallImage, {
       dynamic: true,
       autoplay: true,
@@ -105,6 +135,9 @@ export default class MapPlace extends BaseComponent {
       fullRess.push(fullRes);
     }
     const time = new Date().getTime();
+    if (window.lgData[this.$refs.fullResImage.getAttribute('lg-uid')]) {
+      window.lgData[this.$refs.fullResImage.getAttribute('lg-uid')].destroy(true);
+    }
     window.lightGallery(this.$refs.fullResImage, {
       dynamic: true,
       autoplay: true,
@@ -123,7 +156,13 @@ export default class MapPlace extends BaseComponent {
 .popupimgbig {
   cursor: pointer; 
   max-width: 300px; 
-  max-height: 300px
+  max-height: 300px;
+}
+
+.popupimgbigmorephotos {
+  cursor: pointer; 
+  max-width: 270px; 
+  max-height: 270px;
 }
 
 .popupimgsmall {

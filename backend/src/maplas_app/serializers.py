@@ -87,7 +87,7 @@ class PhotoSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Photo
-        fields = ['id', 'name', 'org_filename', 'description', 'place', 'track', 'exif_lat', 'exif_lon', 'image', 'private']
+        fields = ['id', 'name', 'org_filename', 'description', 'place', 'track', 'exif_lat', 'exif_lon', 'image', 'private', 'order', 'past']
 
 class PlaceSerializerTypeNested(serializers.ModelSerializer):
     type = PlaceTypeSerializer(many=False)

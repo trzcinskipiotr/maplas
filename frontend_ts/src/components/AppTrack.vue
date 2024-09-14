@@ -142,7 +142,7 @@ export default class AppTrack extends BaseComponent {
           mapTrack.bindTooltip(element, {sticky: true, opacity: 0.95});
         }
         mapTrack.on('mouseover', (e) => {
-          this.highlightMapTrack();
+          this.highlightMapTrack(e);
         });
         mapTrack.on('mouseout', (e) => {
           this.unhighlightMapTrack();
@@ -255,7 +255,16 @@ export default class AppTrack extends BaseComponent {
     }
   }
 
-  private highlightMapTrack() {
+  private highlightMapTrack(e: any) {
+    if (e) {
+      if (e.target._tooltip) {
+        if (e.latlng.lng < this.track.startMarker._latlng.lng) {
+          e.target._tooltip.options.direction = 'left';
+        } else {
+          e.target._tooltip.options.direction = 'right';
+        }
+      }
+    }
     this.highlighted = true;
     document.getElementById('trackcheckbox' + this.track.gpsTrack.id)!.style.fontWeight = 'bold';
     this.changeWidth(6);

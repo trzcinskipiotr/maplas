@@ -16,7 +16,7 @@
         </b-form-checkbox>{{ $t('showNotApproved') }}
       </div>  
     </div>
-    <div v-if="placeGroups" ref="places" class="card-body p-2">
+    <div v-if="((placeGroups) && ($store.state.placeTypes.length > 0))" ref="places" class="card-body p-2">
       <div v-for="placeType of $store.state.placeTypes" :key="placeType.name">
         <div :style="{'margin-bottom': $store.state.isDesktop ? 0 : '15px'}">
           <b-form-checkbox style="display: inline;" v-model="placeGroups[placeType.id].checked" @change="onPlaceGroupsChanged($event, placeGroups[placeType.id].id)">
@@ -54,6 +54,7 @@ export default class ObjectsTab extends BaseComponent {
   private showNotApproved = true;
 
   @Watch('$store.state.places')
+  @Watch('$store.state.placeTypes')
   private onStorePlacesChanged(value: string, oldValue: string) {
     let tmpplaceGroups: any = {}
     for (const placeType of this.$store.state.placeTypes) {

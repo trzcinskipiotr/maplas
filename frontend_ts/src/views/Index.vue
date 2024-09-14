@@ -759,8 +759,8 @@ export default class Index extends BaseComponent {
     this.addOffline();
     this.downloadTracks();
     this.downloadRegions();
-    this.downloadPlaces();
     this.downloadPlaceTypes();
+    this.downloadPlaces();
     this.downloadAreas();
     this.noSleep = new NoSleep();
     setTimeout(() => {
@@ -1516,7 +1516,7 @@ export default class Index extends BaseComponent {
       const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name, responsePlace.type.icon);
       const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, responsePlace.approved, this.$store.state.map.getZoom(), !!this.$store.state.user);
       for (const responsePhoto of responsePlace.photo_set) {
-        const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private);
+        const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private, responsePhoto.order, responsePhoto.past);
         place.addPhoto(photo);
       }
       for (const responseVideoLink of responsePlace.videolink_set) {
@@ -1586,7 +1586,7 @@ export default class Index extends BaseComponent {
           if (gpstrack.id === currentTrack.gpsTrack.id) {
             currentTrack.gpsTrack.photos = [];
             for (const responsePhoto of gpstrack.photo_set) {
-              const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private);
+              const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private, responsePhoto.order, responsePhoto.past);
               currentTrack.gpsTrack.addPhoto(photo);
             }
           }
@@ -1615,7 +1615,7 @@ export default class Index extends BaseComponent {
         }
         const track = new Track(newGpstrack, checked, true);
         for (const responsePhoto of gpstrack.photo_set) {
-          const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private);
+          const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private, responsePhoto.order, responsePhoto.past);
           newGpstrack.addPhoto(photo);
         }
         for (const responseVideoLink of gpstrack.videolink_set) {

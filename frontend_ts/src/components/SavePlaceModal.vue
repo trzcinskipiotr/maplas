@@ -17,6 +17,7 @@
                 <td>
                   <v-select style="width: 500px" v-model="savePlaceType" :options="savePlaceTypes" :clearable="true" :searchable="false" >
                     <template slot="option" slot-scope="option">
+                      <i style="color: blue" :class="'maplas-icon icon16px ' + option.icon"></i>
                       {{ option.label }}
                     </template>
                   </v-select>
@@ -64,29 +65,28 @@
               <tr>
                 <th scope="row">{{ $t('photos') }}</th>
                 <td>
-                  <template v-if="place">
-                    <table v-for="photo in place.photos" :key="photo.id" class="" style="display: inline; margin: 10px;">
-                      <tr><td>
-                        <img :src="replaceHTTP(photo.image_thumb)" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
-                      </td></tr>
-                      <tr><td>
-                        <img v-if="photo.private" style="width: 16px; height: 16px; margin-right: 2px" :src="icons.privacy" />
+                  <table v-for="(photo, index) in placeLocalPhotoOrder" :key="photo.id" class="" style="display: inline; margin: 10px;">
+                    <tr>
+                      <td style="padding: 0px">
+                        <img v-if="photo.image_thumb" :src="replaceHTTP(photo.image_thumb)" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
+                        <img v-else :src="photo.src" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 0px">
+                        <center>
+                          <img v-if="photo.src" @click="removePhoto(photo)" style="cursor: pointer; width: 16px; height: 16px; float: left; margin-top: 4px;" :src="icons.trash" />
+                          <img @click="index != 0 ? moveLeft(photo) : null" :style="{width: '8px', 'cursor': index == 0 ? 'arrow' : 'pointer'}" :src="index == 0 ? icons.arrowLeftDisabled : icons.arrowLeft" />&nbsp;
+                          <img @click="index != placeLocalPhotoOrder.length - 1 ? moveRight(photo) : null" :style="{width: '8px', 'cursor': index == placeLocalPhotoOrder.length - 1 ? 'arrow' : 'pointer'}" :src="index == placeLocalPhotoOrder.length - 1 ? icons.arrowRightDisabled : icons.arrowRight" />
+                        </center>  
+                      </td>
+                    </tr>    
+                    <tr>
+                      <td style="padding: 0px; padding-bottom: 20px;">
+                        <img v-if="photo.image_thumb && photo.private" style="width: 16px; height: 16px; margin-right: 2px" :src="icons.privacy" />
                         <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
-                      </td></tr>    
-                    </table>
-                  </template>  
-                  <table v-for="photo in photos" :key="photo.id" class="" style="display: inline; margin: 10px;">
-                    <tr><td>
-                      <img :src="photo.src" style="max-heigth: 180px; max-width: 180px; border: 1px black solid" />
-                    </td></tr>
-                    <tr><td>
-                      <img @click="removePhoto(photo)" style="cursor: pointer; width: 16px; height: 16px;" :src="icons.trash" />
-                      <div style="display: inline" class="custom-control custom-checkbox" v-b-tooltip.hover :title="$t('setAsPrivate')">
-                        <input type="checkbox" class="custom-control-input" :id="'checkbox' + photo.id" v-model="photo.private" />
-                        <label style="margin-right: 2px;" class="custom-control-label" :for="'checkbox' + photo.id"></label>
-                      </div>
-                      <span style="font-size: 12px; float: right; color: gray">{{ photo.org_filename }}</span>
-                    </td></tr>    
+                      </td>
+                    </tr> 
                   </table>
                   <div id="photouploaddivinner2" style="width: 48px; height: 48px;" @click="openPhotoImportFileInput" class="leaflet-touch leaflet-bar cogsbutton" v-b-tooltip.hover :title="$t('importPhotoFile')">
                     <input ref="importPhotoFileInput" type="file" style="display:none;" accept=".jpg" v-on:change="importPhotoFile" />
@@ -161,22 +161,59 @@ export default class SavePlaceModal extends BaseComponent {
   private firstSwitchToPhotoCoords = false;
 
   private savePlaceType: {translate: string, label: string, value: PlaceType} = null;
-  private savePlaceTypes: Array<{translate: string, label: string, value: PlaceType}> = [];
+  private savePlaceTypes: Array<{translate: string, label: string, value: PlaceType, icon: string}> = [];
 
   private coordinatesRadio = 1;
+
+  private placeLocalPhotoOrder: Photo[] = [];
+
+  private updatePhotoOrder = false;
+
+  private findPhotoCurrentPosition(photo: Photo) {
+    let index = 0;
+    for(const ph of this.placeLocalPhotoOrder) {
+      if (ph.id == photo.id) {
+        return index;
+      }
+      index = index + 1;
+    }
+    return null;
+  }
+
+  private swapElements(array, i, j) {
+    const origin = array[i];
+    array[i] = array[j];
+    Vue.set(array, j, origin);
+  }
+
+  private moveLeft(photo: Photo) {
+    const index = this.findPhotoCurrentPosition(photo);
+    if (index > 0) {
+      this.swapElements(this.placeLocalPhotoOrder, index, index - 1);
+      this.updatePhotoOrder = true;
+    }
+  }
+
+  private moveRight(photo: Photo) {
+    const index = this.findPhotoCurrentPosition(photo);
+    if (index < this.placeLocalPhotoOrder.length - 1) {
+      this.swapElements(this.placeLocalPhotoOrder, index, index + 1);
+      this.updatePhotoOrder = true;
+    }
+  }
 
   @Watch('$store.state.placeTypes')
   private onStorePlaceTypesChanged() {
     this.savePlaceTypes = [];
     for (const placeType of this.$store.state.placeTypes) {
       // @ts-ignore
-      this.savePlaceTypes.push({translate: placeType.name, label: '', value: placeType});
+      this.savePlaceTypes.push({translate: placeType.name, label: '', value: placeType, icon: placeType.icon});
     }
     this.translateAndAddArrayToTranslator(this.savePlaceTypes);
   }
 
   public removePhoto(photo) {
-    this.photos.splice(this.photos.indexOf(photo), 1);
+    this.placeLocalPhotoOrder.splice(this.placeLocalPhotoOrder.indexOf(photo), 1);
     this.refreshFirstPhotoCoords();
   }
 
@@ -184,11 +221,11 @@ export default class SavePlaceModal extends BaseComponent {
     this.renderModal = true;
     this.name = '';
     this.description = '';
-    this.photos = [];
     this.coordinatesRadio = 2;
     this.savePlaceType = null;
     this.manualCords = '';
     this.approved = true;
+    this.updatePhotoOrder = false;
     if (local) {
       this.mapCenterLat = Math.round(this.$store.state.map.getCenter().lat * 100000) / 100000;
       this.mapCenterLon = Math.round(this.$store.state.map.getCenter().lng * 100000) / 100000;
@@ -208,10 +245,10 @@ export default class SavePlaceModal extends BaseComponent {
     this.renderModal = true;
     this.name = this.place.name;
     this.description = this.place.description;
-    this.photos = [];
     this.manualCords = this.place.lat + ' ' + this.place.lon;
     this.coordinatesRadio = 1;
     this.savePlaceType = null;
+    this.updatePhotoOrder = false;
     for (const type of this.savePlaceTypes) {
       if (type.value.id == this.place.type.id) {
         this.savePlaceType = type;
@@ -220,8 +257,8 @@ export default class SavePlaceModal extends BaseComponent {
     this.approved = this.place.approved;
     this.firstPhotoLat = null;
     this.firstPhotoLon = null;
-    this.firstSwitchToPhotoCoords = false;
-    this.openModal(this.$refs.newPlaceModal);
+    this.firstSwitchToPhotoCoords = true;
+    this.openModal(this.$refs.newPlaceModal); 
   }
 
   public closeNewPlaceModal() {
@@ -248,9 +285,29 @@ export default class SavePlaceModal extends BaseComponent {
     return dd;
   }
 
+  private firstNewPhoto() {
+    for(const photo of this.placeLocalPhotoOrder) {
+      if (photo.src) {
+        return photo;
+      }
+    }
+    return null;
+  }
+
+  private newPhotoCount() {
+    let count = 0;
+    for(const photo of this.placeLocalPhotoOrder) {
+      if (photo.src) {
+        count = count + 1;
+      }
+    }
+    return count;
+  }
+
   public refreshFirstPhotoCoords() {
-    if (this.photos.length > 0) {
-      const exifData = EXIF.readFromBinaryFile(this.photos[0].buffer);
+    const firstNewPhoto = this.firstNewPhoto();
+    if (firstNewPhoto) {
+      const exifData = EXIF.readFromBinaryFile(firstNewPhoto.buffer);
       if (exifData.GPSLongitude && exifData.GPSLatitude) {
         let lon = this.ConvertDMSToDD(exifData.GPSLongitude[0].numerator, exifData.GPSLongitude[1].numerator, exifData.GPSLongitude[2].numerator / exifData.GPSLongitude[2].denominator, exifData.GPSLongitudeRef);
         let lat = this.ConvertDMSToDD(exifData.GPSLatitude[0].numerator, exifData.GPSLatitude[1].numerator, exifData.GPSLatitude[2].numerator / exifData.GPSLatitude[2].denominator, exifData.GPSLatitudeRef);
@@ -286,7 +343,8 @@ export default class SavePlaceModal extends BaseComponent {
     reader.onload = (onLoadEvent: Event) => {
       const buffer = (onLoadEvent.target as FileReaderEventTarget).result;
       const now = new Date();
-      this.photos.push({'src': this.arrayBufferToBase64(buffer), 'buffer': buffer, 'id': now.getTime(), 'org_filename': file.name, 'private': false});
+      this.placeLocalPhotoOrder.push({'src': this.arrayBufferToBase64(buffer), 'buffer': buffer, 'id': now.getTime(), 'org_filename': file.name, 'private': false})
+      this.updatePhotoOrder = true;
       this.refreshFirstPhotoCoords()
       $(this.$refs.importPhotoFileInput).val('');
     };
@@ -297,23 +355,23 @@ export default class SavePlaceModal extends BaseComponent {
   }
 
   private downloadNewPlace(id: number) {
-    axios.get(this.$store.state.appHost + 'api/places/' + id + '/').then(
-      (response) => {
-        let responsePlace = response.data;
-        const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name, responsePlace.type.icon);
-        const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, responsePlace.approved, this.$store.state.map.getZoom(), !!this.$store.state.user);
-        for (const responsePhoto of responsePlace.photo_set) {
-          const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private);
-          place.addPhoto(photo);
-        }
-        this.$store.commit('addPlace', place);
-        EventBus.$emit('RefreshPlacesGroups');
+    axios.get(this.$store.state.appHost + 'api/places/' + id + '/').then((response) => {
+      let responsePlace = response.data;
+      const placetype = new PlaceType(responsePlace.type.id, responsePlace.type.name, responsePlace.type.icon);
+      const place = new Place(responsePlace.id, responsePlace.name, responsePlace.description, responsePlace.lat, responsePlace.lon, placetype, responsePlace.approved, this.$store.state.map.getZoom(), !!this.$store.state.user);
+      for (const responsePhoto of responsePlace.photo_set) {
+        const photo = new Photo(responsePhoto.id, responsePhoto.name, responsePhoto.description, responsePhoto.org_filename, responsePhoto.exif_time_taken, responsePhoto.image, responsePhoto.image_fullhd, responsePhoto.image_thumb, responsePhoto.private, responsePhoto.order, responsePhoto.past);
+        place.addPhoto(photo);
       }
-    ).catch(
-      (response) => {
-        this.createAlert(AlertStatus.danger, this.$t('placeRefreshError').toString(), 2000);
-      },
-    );
+      this.$store.commit('addPlace', place);
+      this.placeLocalPhotoOrder = [];
+      for(const photo of place.photos) {
+        this.placeLocalPhotoOrder.push(photo);
+      }
+      EventBus.$emit('RefreshPlacesGroups');
+    }).catch((response) => {
+      this.createAlert(AlertStatus.danger, this.$t('placeRefreshError').toString(), 2000);
+    });
   }
 
   private onUploadProgress(progressEvent: ProgressEvent) {
@@ -327,7 +385,7 @@ export default class SavePlaceModal extends BaseComponent {
   }
 
   private async saveNewPlaceModal() {
-    this.photosToUpload = this.photos.length;
+    this.photosToUpload = this.newPhotoCount();
     this.photosUploaded = 0;
     let obj = {}
     obj.name = this.name;
@@ -367,17 +425,26 @@ export default class SavePlaceModal extends BaseComponent {
         response = await axios.post(this.$store.state.appHost + `api/places/`, obj);
       }
       placeSaved = true;
-      for(let photo of this.photos) {
-        let form_data = new FormData();
-        form_data.append('name', '');
-        form_data.append('description', '');
-        form_data.append('org_filename', photo.org_filename);
-        form_data.append('place', response.data.id);
-        form_data.append('private', photo.private);
-        form_data.append('image', new Blob([new Uint8Array(photo.buffer)], {type: 'image/jpeg'}), '1.jpg');
-        let headers = {'Accept': 'application/json', 'Content-Type': 'multipart/form-data'}
-        let response_photo = await axios.post(this.$store.state.appHost + 'api/photos/', form_data, {headers: headers, onUploadProgress: this.onUploadProgress})
-        this.photosUploaded = this.photosUploaded + 1;
+      if (this.updatePhotoOrder) {
+        let order = 1;
+        for(const photo of this.placeLocalPhotoOrder) {
+          if (photo.image_thumb) {
+            const response_place_order = await axios.patch(this.$store.state.appHost + `api/photos/${photo.id}/`, {order: order});
+          } else {
+            let form_data = new FormData();
+            form_data.append('name', '');
+            form_data.append('description', '');
+            form_data.append('org_filename', photo.org_filename);
+            form_data.append('place', response.data.id);
+            form_data.append('private', photo.private);
+            form_data.append('order', order);
+            form_data.append('image', new Blob([new Uint8Array(photo.buffer)], {type: 'image/jpeg'}), '1.jpg');
+            let headers = {'Accept': 'application/json', 'Content-Type': 'multipart/form-data'}
+            let response_photo = await axios.post(this.$store.state.appHost + 'api/photos/', form_data, {headers: headers, onUploadProgress: this.onUploadProgress})
+            this.photosUploaded = this.photosUploaded + 1;
+          }
+          order = order + 1;
+        }
       }
       photosSaved = true;
       this.downloadNewPlace(response.data.id);
@@ -408,9 +475,14 @@ export default class SavePlaceModal extends BaseComponent {
 
   private mounted() {
     if (this.place) {
-      EventBus.$on('openSavePlaceModal' + this.place.id, this.openEditPlaceModal)
+      EventBus.$on('openSavePlaceModal' + this.place.id, this.openEditPlaceModal);
+      this.placeLocalPhotoOrder = [];
+      for(const photo of this.place.photos) {
+        this.placeLocalPhotoOrder.push(photo);
+      }
     } else {
       EventBus.$on('NewPlaceRequested', (local: boolean, latlng: L.LatLng) => {
+        this.placeLocalPhotoOrder = [];
         this.openNewPlaceModal(local, latlng);
       });
     }
