@@ -20,23 +20,23 @@ export default class PlannedTracks extends BaseComponent {
 
   private plannedGroup: TrackGroup = new TrackGroup();
 
-  @Watch('$store.state.plannedTracks')
+  @Watch('$store.state.tmpPlannedTracks')
   private onStoreTracksChanged(value: string, oldValue: string) {
     this.plannedGroup.tracks = [];
-    for (const plannedTrack of this.$store.state.plannedTracks) {
+    for (const plannedTrack of this.$store.state.tmpPlannedTracks) {
       this.plannedGroup.tracks.push(plannedTrack);
     }
   }
 
   private mounted() {
-    this.plannedGroup.label = 'plannedTracks';
-    this.plannedGroup.translate = 'plannedTracks';
+    this.plannedGroup.label = 'tmpPlannedTracks';
+    this.plannedGroup.translate = 'tmpPlannedTracks';
     this.plannedGroup.tracks = [];
     EventBus.$on('newPlannedTrack', this.newPlannedTrack);
   }
 
   private newPlannedTrack() {
-    const newGpstrack: GpsTrack = new GpsTrack(Date.now(), 'Nowa trasa', '', '[]', '#FF0000', 0, TrackStatus.planned, TrackType.bicycle, null, null, '', undefined);
+    const newGpstrack: GpsTrack = new GpsTrack(Date.now(), 'Nowa trasa', '', '[]', '#FF0000', 0, TrackStatus.planned, TrackType.bicycle, null, null, '', undefined, 1);
     const track = new Track(newGpstrack, true, false);
     this.$store.commit('addPlannedTrack', track);
     this.plannedGroup.tracks.push(track);

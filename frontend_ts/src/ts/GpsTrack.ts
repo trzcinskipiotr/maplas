@@ -14,7 +14,7 @@ export default class GpsTrack {
     public videos: VideoLink[];
 
     /* tslint:disable-next-line */
-    constructor(public id: number, public name: string, public description: string, public points_json_optimized: string, public color: string, public distance: number, public status: TrackStatus, public type: TrackType, public start_time: Date, public end_time: Date, public gpx_file: string, public region: Region) {
+    constructor(public id: number, public name: string, public description: string, public points_json_optimized: string, public color: string, public distance: number, public status: TrackStatus, public type: TrackType, public start_time: Date, public end_time: Date, public gpx_file: string, public region: Region, public style: number) {
       this.photos = [];
       this.videos = [];
       this.refreshSegments();
@@ -37,12 +37,12 @@ export default class GpsTrack {
     }
 
     public convertToApiTrackSave() {
-      return {id: this.id, name: this.name, description: this.description, color: this.color, distance: this.distance, status: this.status, type: this.type, region: this.region ? this.region.id : undefined};
+      return {id: this.id, name: this.name, description: this.description, color: this.color, distance: this.distance, status: this.status, type: this.type, region: this.region ? this.region.id : undefined, style: this.style};
     }
 
     public convertToApiGpxFileSave() {
       const uploadUser: number = null;
-      return {name: this.name, description: this.description, color: this.color, distance: this.distance, status: this.status, type: this.type, start_time: this.start_time, end_time: this.end_time, gpx_file: this.gpx_file, region: this.region ? this.region.id : undefined, upload_user: uploadUser};
+      return {name: this.name, description: this.description, color: this.color, distance: this.distance, status: this.status, type: this.type, start_time: this.start_time, end_time: this.end_time, gpx_file: this.gpx_file, region: this.region ? this.region.id : undefined, upload_user: uploadUser, style: this.style};
     }
 
     public isBicycleTrack() {
@@ -62,6 +62,30 @@ export default class GpsTrack {
     }
     public isPlannedTrack() {
         return this.status === TrackStatus.planned;
+    }
+
+    public isTrailTrack() {
+      return this.status === TrackStatus.trail;
+    }
+
+    public isEventTrack() {
+      return this.status === TrackStatus.event;
+    }
+
+    public isBorderTrack() {
+      return this.status === TrackStatus.border;
+    }
+
+    public isOtherPeopleTrack() {
+      return this.status === TrackStatus.other_people;
+    }
+
+    public countPointsOptimized() {
+      let count = 0;
+      for(const segment of this.segments) {
+        count = count + segment.pointsArray.length;
+      }
+      return count;
     }
 
   }

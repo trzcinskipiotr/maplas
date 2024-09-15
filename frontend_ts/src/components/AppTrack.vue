@@ -55,7 +55,7 @@
           <span style="display: inline-block; margin-right: 3px;" @click="toggleRuler">
             <img :style="{'cursor': 'pointer', 'height': $store.state.isDesktop ? '24px' : '32px', 'width': $store.state.isDesktop ? null : '32px'}" :src="rulerActive ? icons.rulerVertical : icons.rulerHorizontal" />
           </span>
-          <span v-if="(track.gpsTrack.status === TrackStatus.planned) && ($store.state.isDesktop)">
+          <span v-if="((track.gpsTrack.status === TrackStatus.planned) || (track.gpsTrack.status === TrackStatus.border)) && ($store.state.isDesktop)">
             <span v-if="track === $store.state.editedTrack">
               <img @click="setEdited(null)" style="height: 24px; cursor: pointer" :src="icons.unlock" />
             </span>
@@ -64,7 +64,7 @@
             </span>
           </span>
           <span v-if="! track.onServer" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('removeTrack')">
-            <img @click="removeImportedTrack" style="height: 24px; cursor: pointer;" :src="icons.trash" />
+            <img @click="removeImportedTrack(); removePlannedTrack();" style="height: 24px; cursor: pointer;" :src="icons.trash" />
           </span>
         </div>
       </div>    
@@ -137,7 +137,7 @@ export default class AppTrack extends BaseComponent {
   private refreshTooltip() {
     if (this.$store.state.isDesktop) {
       for (const mapTrack of this.track.mapTracks) {
-        if (this.track.gpsTrack.status === TrackStatus.done) {
+        if ((this.track.gpsTrack.status != TrackStatus.planned) && (this.track.gpsTrack.status != TrackStatus.border)) {
           const element = document.getElementById('tooltip' + this.track.gpsTrack.id);
           mapTrack.bindTooltip(element, {sticky: true, opacity: 0.95});
         }
@@ -150,9 +150,10 @@ export default class AppTrack extends BaseComponent {
         mapTrack.off('click');
         mapTrack.on('click', (e: LeafletMouseEvent) => {
           if (! this.$store.state.editedTrack) {
-            if (this.track.gpsTrack.status == TrackStatus.planned) {
+            if ((this.track.gpsTrack.status == TrackStatus.planned) || (this.track.gpsTrack.status == TrackStatus.border)) {
               if (e.originalEvent.ctrlKey) {
                 if (! this.track.onServer) {
+                  this.track.removeMapObjects(this.$store.state.map);
                   this.$store.commit('removePlannedTrack', this.track);
                 }
               } else {
@@ -309,6 +310,15 @@ export default class AppTrack extends BaseComponent {
     }
   }
 
+  private changeStyle() {
+    for (const mapTrack of this.track.mapTracks) {
+      const dashArray = this.track.convertStyleIDToDash(this.track.gpsTrack.style);
+      mapTrack.setStyle({
+        dashArray: dashArray,
+      });
+    }
+  }
+
   @Watch('$store.state.editedTrack')
   private onEditedTrackChanged() {
     if (this.$store.state.editedTrack === this.track) {
@@ -434,6 +444,11 @@ export default class AppTrack extends BaseComponent {
     this.changeColor();
   }
 
+  @Watch('track.gpsTrack.style')
+  private onStyleChanged(value: string, oldValue: string) {
+    this.changeStyle();
+  }
+
   @Watch('track.lastRefresh')
   private onPointsChanged(value: string, oldValue: string) {
     this.showOrHideTrack();
@@ -448,12 +463,20 @@ export default class AppTrack extends BaseComponent {
     this.$store.commit('removeImportedTrack', this.track);
   }
 
-  public beforeDestroy() {
+  private removePlannedTrack() {
     if (this.rulerActive) {
       this.toggleRuler();
     }
-    if (this.track.gpsTrack.status == TrackStatus.planned) {
-      this.track.removeMapObjects(this.$store.state.map);
+    if (this.track === this.$store.state.editedTrack) {
+      this.$store.commit('setEditedTrack', null);
+    }
+    this.track.removeMapObjects(this.$store.state.map);
+    this.$store.commit('removePlannedTrack', this.track);
+  }
+
+  public beforeDestroy() {
+    if (this.rulerActive) {
+      this.toggleRuler();
     }
   }
 

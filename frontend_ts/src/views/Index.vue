@@ -246,6 +246,15 @@
       <span>
         <TrackDetails v-for="track in $store.state.imports" :track="track" :key="track.gpsTrack.id"></TrackDetails>
       </span>
+      <span>
+        <TrackDetails v-for="track in $store.state.eventTracks" :track="track" :key="track.gpsTrack.id"></TrackDetails>
+      </span>
+      <span>
+        <TrackDetails v-for="track in $store.state.otherPeopleTracks" :track="track" :key="track.gpsTrack.id"></TrackDetails>
+      </span>
+      <span>
+        <TrackDetails v-for="track in $store.state.trailTracks" :track="track" :key="track.gpsTrack.id"></TrackDetails>
+      </span>
       <span>  
         <SaveTrackModal v-for="track in $store.state.tracks" :track="track" :key="track.gpsTrack.id"></SaveTrackModal>
       </span>
@@ -254,6 +263,21 @@
       </span>
       <span>  
         <SaveTrackModal v-for="track in $store.state.plannedTracks" :track="track" :key="track.gpsTrack.id"></SaveTrackModal>
+      </span>
+      <span>  
+        <SaveTrackModal v-for="track in $store.state.tmpPlannedTracks" :track="track" :key="track.gpsTrack.id"></SaveTrackModal>
+      </span>
+      <span>  
+        <SaveTrackModal v-for="track in $store.state.eventTracks" :track="track" :key="track.gpsTrack.id"></SaveTrackModal>
+      </span>
+      <span>  
+        <SaveTrackModal v-for="track in $store.state.borderTracks" :track="track" :key="track.gpsTrack.id"></SaveTrackModal>
+      </span>
+      <span>  
+        <SaveTrackModal v-for="track in $store.state.otherPeopleTracks" :track="track" :key="track.gpsTrack.id"></SaveTrackModal>
+      </span>
+      <span>  
+        <SaveTrackModal v-for="track in $store.state.trailTracks" :track="track" :key="track.gpsTrack.id"></SaveTrackModal>
       </span>
       <span>  
         <SavePlaceModal v-for="place in $store.state.places" :place="place" :key="place.id"></SavePlaceModal>
@@ -1464,7 +1488,7 @@ export default class Index extends BaseComponent {
                 }
                 segments.push(pointsArray);
               }
-              const newGpstrack: GpsTrack = new GpsTrack(startIndex + trackIndex, fileTrack.name, data.metadata.description, JSON.stringify(segments), '#FF0000', distance, TrackStatus.done, TrackType.bicycle, startTime ? new Date(startTime) : null, endTime ? new Date(endTime) : null, gpxFileString, undefined);
+              const newGpstrack: GpsTrack = new GpsTrack(startIndex + trackIndex, fileTrack.name, data.metadata.description, JSON.stringify(segments), '#FF0000', distance, TrackStatus.done, TrackType.bicycle, startTime ? new Date(startTime) : null, endTime ? new Date(endTime) : null, gpxFileString, undefined, 1);
               const track = new Track(newGpstrack, true, false);
               this.$store.commit('addImportedTrack', track);
               const trackBounds = new L.LatLngBounds(track.mapTracks[0].getBounds().getNorthEast(), track.mapTracks[0].getBounds().getSouthWest());
@@ -1598,10 +1622,14 @@ export default class Index extends BaseComponent {
   private processTracks(results: any) {
     const tracks = [];
     const plannedTracks = [];
+    const borderTracks = [];
+    const trailTracks = [];
+    const eventTracks = [];
+    const otherPeopleTracks = []
     for (const gpstrack of results) {
       try {
         const region: Region = gpstrack.region ? new Region(gpstrack.region.id, gpstrack.region.name) : undefined;
-        const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color ? gpstrack.color : '#ff0000', gpstrack.distance, gpstrack.status, gpstrack.type, gpstrack.start_time ? new Date(gpstrack.start_time) : null, gpstrack.end_time ? new Date(gpstrack.end_time) : null, undefined, region);
+        const newGpstrack: GpsTrack = new GpsTrack(gpstrack.id, gpstrack.name, gpstrack.description, gpstrack.points_json_optimized, gpstrack.color ? gpstrack.color : '#ff0000', gpstrack.distance, gpstrack.status, gpstrack.type, gpstrack.start_time ? new Date(gpstrack.start_time) : null, gpstrack.end_time ? new Date(gpstrack.end_time) : null, undefined, region, gpstrack.style);
         let checked = false;
         if (typeof this.$route.query.tracks === 'string') {
           const tracksIds = this.$route.query.tracks.split(',');
@@ -1624,8 +1652,21 @@ export default class Index extends BaseComponent {
         }
         if (newGpstrack.isDoneTrack()) {
           tracks.push(track);
-        } else {
+        }
+        if (newGpstrack.isPlannedTrack()) {
           plannedTracks.push(track);
+        }
+        if (newGpstrack.isTrailTrack()) {
+          trailTracks.push(track);
+        }
+        if (newGpstrack.isBorderTrack()) {
+          borderTracks.push(track);
+        }
+        if (newGpstrack.isOtherPeopleTrack()) {
+          otherPeopleTracks.push(track);
+        }
+        if (newGpstrack.isEventTrack()) {
+          eventTracks.push(track);
         }
       } catch (error) {
         this.createAlert(AlertStatus.danger, this.$t('oneTrackError').toString(), 2000);
@@ -1633,6 +1674,11 @@ export default class Index extends BaseComponent {
     }
     this.$store.commit('setTracks', tracks);
     this.$store.commit('setPlannedTracks', plannedTracks);
+    this.$store.commit('setTrailTracks', trailTracks);
+    this.$store.commit('setBorderTracks', borderTracks);
+    this.$store.commit('setOtherPeopleTracks', otherPeopleTracks);
+    this.$store.commit('setEventTracks', eventTracks);
+    this.$store.commit('setTmpPlannedTracks', []);
     if (this.$route.query.tracks) {
       let trackBounds: L.LatLngBounds | undefined;
       for (const track of this.$store.getters.selectedTracks as Track[]) {

@@ -41,6 +41,7 @@
           <b>{{ $t('photosAndMovies') }}</b>: 
             {{ track.gpsTrack.photos.length }}<img v-if="track.gpsTrack.photos.length" @click="clickOpenGallery" style="height: 20px; cursor: pointer;" :src="icons.images" />&nbsp;
             {{ track.gpsTrack.videos.length }}<img v-if="track.gpsTrack.videos.length" @click="clickOpenVideos" style="height: 20px; cursor: pointer;" :src="icons.video" /><br>
+          <b>{{ $t('points') }}</b>: {{ track.gpsTrack.countPointsOptimized() }}<br>
           <template v-if="track.gpsTrack.gpx_file"><b>{{ $t('gpxFile') }}: </b>{{ track.gpsTrack.gpx_file.length|roundFileBytes }} <button @click="saveGPX" type="button" class="btn btn-primary btn-sm">Download</button><br><br></template>
           <template v-if="track.gpsTrack.gpx_file"><button @click="showHideTimeLables" type="button" class="btn btn-primary btn-sm">{{ timeLabelsVisible ? $t('hideTimeLabels') : $t('showTimeLabels') }}</button></template>&nbsp;
           <template v-if="track.gpsTrack.gpx_file"><button @click="showHideSpeedLables" type="button" class="btn btn-primary btn-sm">{{ speedLabelsVisible ? $t('hideSpeedLabels') : $t('showSpeedLabels') }}</button></template>&nbsp;&nbsp;

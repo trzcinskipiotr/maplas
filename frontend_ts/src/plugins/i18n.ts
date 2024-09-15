@@ -426,6 +426,18 @@ pl: {
   useHTML5location: 'Używaj lokalizacji HTML5',
   largeButtonsDuringLocation: 'Większe przyciski podczas nawigacji',
   showAllButtonsDuringLocation: 'Pokaż wszystkie przyciski podczas nawigacji',
+  myDone: 'Moja trasa',
+  myPlanned: 'Mój plan',
+  otherPeople: 'Cudza trasa',
+  trial: 'Szlak',
+  event: 'Wydarzenie',
+  border: 'Obszar',
+  tmpPlannedTracks: 'Nowe plany',
+  eventTracks: 'Wydarzenia',
+  otherPeopleTracks: 'Cudze trasy',
+  borderTracks: 'Obszary',
+  trailTracks: 'Szlaki',
+  points: 'Punkty',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

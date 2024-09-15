@@ -9,6 +9,10 @@ export const enum TrackType {
 export const enum TrackStatus {
   done = 1,
   planned = 2,
+  trail = 3,
+  other_people = 4,
+  event = 5,
+  border = 6,
 }
 
 export const enum AlertStatus {

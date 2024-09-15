@@ -19,6 +19,11 @@ export interface RootState {
   tracks: Track[];
   imports: Track[];
   plannedTracks: Track[];
+  tmpPlannedTracks: Track[];
+  trailTracks: Track[];
+  otherPeopleTracks: Track[];
+  eventTracks: Track[];
+  borderTracks: Track[];
   playingSpeed: number;
   regions: Region[];
   token: string;
@@ -50,6 +55,11 @@ const store: StoreOptions<RootState> = {
     tracks: Array<Track>(),
     imports: Array<Track>(),
     plannedTracks: Array<Track>(),
+    trailTracks: Array<Track>(),
+    otherPeopleTracks: Array<Track>(),
+    eventTracks: Array<Track>(),
+    borderTracks: Array<Track>(),
+    tmpPlannedTracks: Array<Track>(),
     playingSpeed: 10,
     regions: Array<Region>(),
     token: '',
@@ -119,8 +129,23 @@ const store: StoreOptions<RootState> = {
     setTracks(state, tracks: Track[]) {
       state.tracks = tracks;
     },
-    setPlannedTracks(state, plannedTracks: Track[]) {
-      state.plannedTracks = plannedTracks;
+    setTmpPlannedTracks(state, tracks: Track[]) {
+      state.tmpPlannedTracks = tracks;
+    },
+    setPlannedTracks(state, tracks: Track[]) {
+      state.plannedTracks = tracks;
+    },
+    setEventTracks(state, tracks: Track[]) {
+      state.eventTracks = tracks;
+    },
+    setBorderTracks(state, tracks: Track[]) {
+      state.borderTracks = tracks;
+    },
+    setTrailTracks(state, tracks: Track[]) {
+      state.trailTracks = tracks;
+    },
+    setOtherPeopleTracks(state, tracks: Track[]) {
+      state.otherPeopleTracks = tracks;
     },
     setSpeedLegendVisible(state, speedLegendVisible: boolean) {
       state.speedLegendVisible = speedLegendVisible;
@@ -151,7 +176,7 @@ const store: StoreOptions<RootState> = {
       state.imports.push(track);
     },
     addPlannedTrack(state, track) {
-      state.plannedTracks.push(track);
+      state.tmpPlannedTracks.push(track);
     },
     setEditedTrack(state, track) {
       state.editedTrack = track;
@@ -189,13 +214,30 @@ const store: StoreOptions<RootState> = {
       }
     },
     removePlannedTrack(state, track) {
-      const index = state.plannedTracks.indexOf(track);
+      const index = state.tmpPlannedTracks.indexOf(track);
       if (index >= 0) {
-        state.plannedTracks.splice(index, 1);
+        state.tmpPlannedTracks.splice(index, 1);
       }
     },
-    addTrack(state, track) {
-      state.tracks.push(track);
+    addTrack(state, track: Track) {
+      if (track.gpsTrack.isDoneTrack()) {
+        state.tracks.push(track);
+      }
+      if (track.gpsTrack.isPlannedTrack()) {
+        state.plannedTracks.push(track);
+      }
+      if (track.gpsTrack.isOtherPeopleTrack()) {
+        state.otherPeopleTracks.push(track);
+      }
+      if (track.gpsTrack.isEventTrack()) {
+        state.eventTracks.push(track);
+      }
+      if (track.gpsTrack.isTrailTrack()) {
+        state.trailTracks.push(track);
+      }
+      if (track.gpsTrack.isBorderTrack()) {
+        state.borderTracks.push(track);
+      }
     },
     sortTracks(state) {
       state.tracks.sort((a, b) => a.gpsTrack.start_time < b.gpsTrack.start_time ? 1 : -1);
@@ -211,7 +253,32 @@ const store: StoreOptions<RootState> = {
           looptrack.checked = options.checked;
         }
       }
+      for (const looptrack of state.tmpPlannedTracks) {
+        if (looptrack === options.track) {
+          looptrack.checked = options.checked;
+        }
+      }
       for (const looptrack of state.plannedTracks) {
+        if (looptrack === options.track) {
+          looptrack.checked = options.checked;
+        }
+      }
+      for (const looptrack of state.trailTracks) {
+        if (looptrack === options.track) {
+          looptrack.checked = options.checked;
+        }
+      }
+      for (const looptrack of state.eventTracks) {
+        if (looptrack === options.track) {
+          looptrack.checked = options.checked;
+        }
+      }
+      for (const looptrack of state.otherPeopleTracks) {
+        if (looptrack === options.track) {
+          looptrack.checked = options.checked;
+        }
+      }
+      for (const looptrack of state.borderTracks) {
         if (looptrack === options.track) {
           looptrack.checked = options.checked;
         }

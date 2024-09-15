@@ -42,19 +42,19 @@ class TrackSerializerRegionNested(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'photo_set', 'videolink_set']
+        fields = ['id', 'name', 'description', 'color', 'style', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'photo_set', 'videolink_set']
 
 class TrackSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'gpx_file', 'upload_user']
+        fields = ['id', 'name', 'description', 'color', 'style', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'gpx_file', 'upload_user']
 
 class TrackSerializerNoGpx(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        fields = ['id', 'name', 'description', 'color', 'points_json', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'upload_user']
+        fields = ['id', 'name', 'description', 'color', 'style', 'points_json', 'points_json_optimized', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'upload_user']
 
 class TrackSerializerFull(serializers.ModelSerializer):
     photo_set = serializers.SerializerMethodField()
@@ -69,7 +69,7 @@ class TrackSerializerFull(serializers.ModelSerializer):
 
     class Meta:
         model = Track
-        fields = ['id', 'name', 'description', 'color', 'points_json_optimized', 'points_json', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'gpx_file', 'upload_user', 'photo_set', 'videolink_set']
+        fields = ['id', 'name', 'description', 'color', 'style', 'points_json_optimized', 'points_json', 'status', 'type', 'start_time', 'end_time', 'distance', 'region', 'gpx_file', 'upload_user', 'photo_set', 'videolink_set']
 
 class PlaceTypeSerializer(serializers.ModelSerializer):
 

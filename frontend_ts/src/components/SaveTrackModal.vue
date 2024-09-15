@@ -47,6 +47,17 @@
                   </v-select>
                 </td>
               </tr>
+              <tr v-if="! track.onServer">
+                <th scope="row">{{ $t('state')}}</th>
+                <td>
+                  <v-select style="width: 500px" v-model="uploadTrackStatus" :options="uploadTrackStatuses" :clearable="false" :searchable="false" >
+                    <template slot="option" slot-scope="option">
+                      <img v-if="option.imgsrc" style="height: 20px;" :src="option.imgsrc"/>
+                      {{ option.label }}
+                    </template>
+                  </v-select>
+                </td>
+              </tr>
               <tr>
                 <th scope="row">{{ $t('region')}}</th>
                 <td>
@@ -58,9 +69,20 @@
                 </td>
               </tr>
               <tr>
-                <th scope="row">{{ $t('color') }}</th>
+                <th scope="row">{{ $t('style') }}</th>
                 <td>
-                  <color-popover :track="track" type="save"></color-popover>
+                  <div>
+                    <div style="float: left; margin-top: 4px; margin-right: 10px">
+                      <color-popover :track="track" type="save"></color-popover>
+                    </div>
+                    <div style="float: left;">
+                      <v-select style="width: 500px" v-model="uploadStyle" :options="uploadStyles" :clearable="true" :searchable="false" >
+                        <template slot="option" slot-scope="option">
+                          {{ option.label }}
+                        </template>
+                      </v-select>
+                    </div>
+                  </div>  
                 </td>  
               </tr>
               <tr>
@@ -152,6 +174,21 @@ export default class SaveTrackModal extends BaseComponent {
   private uploadRegion: {translate: string, label: string, value: Region} = null;
   private uploadRegions: Array<{translate: string, label: string, value: Region}> = [];
 
+  private uploadTrackStatuses: Array<{translate: string, label: string, value: number, icon?: string, imgsrc?: string}> = [];
+  private uploadTrackStatus: {translate: string, label: string, value: number, icon?: string, imgsrc?: string};
+
+  private uploadStyle: {label: string, value: number} = null;
+  private uploadStyles = [{label: 'Linia ciągła', value: 1}, {label: 'Długie kreski gęsto', value: 2}, {label: 'Długie kreski rzadko', value: 3}, {label: 'Krótkie kreski gęsto', value: 4}, {label: 'Krótkie kręski rzadko', value: 5}, {label: 'Kropki gęsto', value: 6}, {label: 'Kropki rzadko', value: 7}];
+
+  @Watch('uploadStyle')
+  private onUploadStyleChange() {
+    if (this.uploadStyle) {
+      this.track.gpsTrack.style = this.uploadStyle.value;
+    } else {
+      this.track.gpsTrack.style = 1;
+    }
+  }
+
   private trackLocalPhotoOrder = [];
   private updatePhotoOrder = false;
 
@@ -168,9 +205,26 @@ export default class SaveTrackModal extends BaseComponent {
       this.uploadTrackTypes = [{translate: 'mushroomTrack', label: '', imgsrc: icons.mushroomIcon, value: TrackType.mushroom}];
     }
     this.uploadTrackType = this.uploadTrackTypes[0];
+    this.uploadTrackStatuses = [{translate: 'myDone', label: '', imgsrc: null, value: TrackStatus.done},
+                                {translate: 'myPlanned', label: '', imgsrc: null, value: TrackStatus.planned},
+                                {translate: 'otherPeople', label: '', imgsrc: null, value: TrackStatus.other_people},
+                                {translate: 'trial', label: '', imgsrc: null, value: TrackStatus.trail},
+                                {translate: 'event', label: '', imgsrc: null, value: TrackStatus.event},
+                                {translate: 'border', label: '', imgsrc: null, value: TrackStatus.border}]
+    this.uploadTrackStatus = this.uploadTrackStatuses[0];
     for (const trackType of this.uploadTrackTypes) {
       if (this.track.gpsTrack.type === trackType.value) {
         this.uploadTrackType = trackType;
+      }
+    }
+    for (const trackStatus of this.uploadTrackStatuses) {
+      if (this.track.gpsTrack.status === trackStatus.value) {
+        this.uploadTrackStatus = trackStatus;
+      }
+    }
+    for (const trackStyle of this.uploadStyles) {
+      if (this.track.gpsTrack.style === trackStyle.value) {
+        this.uploadStyle = trackStyle;
       }
     }
   }
@@ -294,8 +348,10 @@ export default class SaveTrackModal extends BaseComponent {
     obj.name = this.uploadName;
     obj.region = this.uploadRegion ? this.uploadRegion.value.id : undefined;
     obj.type = this.uploadTrackType.value;
+    obj.status = this.uploadTrackStatus.value;
     obj.description = this.description;
-    if (this.track.gpsTrack.status === TrackStatus.planned) {
+    obj.style = this.uploadStyle.value;
+    if ((this.track.gpsTrack.status === TrackStatus.planned) || (this.track.gpsTrack.status === TrackStatus.border)) {
       obj.points_json_optimized = '[[';
       for (const segment of this.track.gpsTrack.segments) {
         for (const point of segment.pointsArray) {
@@ -317,6 +373,8 @@ export default class SaveTrackModal extends BaseComponent {
       this.track.gpsTrack.description = obj.description;
       this.track.gpsTrack.color = obj.color;
       this.track.gpsTrack.type = obj.type;
+      this.track.gpsTrack.status = obj.status;
+      this.track.gpsTrack.style = obj.style;
       if (this.updatePhotoOrder) {
         let order = 1;
         for(const photo of this.trackLocalPhotoOrder) {
@@ -379,9 +437,11 @@ export default class SaveTrackModal extends BaseComponent {
     obj.name = this.uploadName;
     obj.region = this.uploadRegion ? this.uploadRegion.value.id : undefined;
     obj.type = this.uploadTrackType.value;
+    obj.status = this.uploadTrackStatus.value;
     obj.description = this.description;
     obj.upload_user = this.$store.state.user.id;
-    if (this.track.gpsTrack.status === TrackStatus.planned) {
+    obj.style = this.uploadStyle.value;
+    if ((this.track.gpsTrack.status === TrackStatus.planned) || (this.track.gpsTrack.status === TrackStatus.border)) {
       obj.points_json_optimized = '[[';
       for (const segment of this.track.gpsTrack.segments) {
         for (const point of segment.pointsArray) {
@@ -405,6 +465,8 @@ export default class SaveTrackModal extends BaseComponent {
       this.track.gpsTrack.description = obj.description;
       this.track.gpsTrack.color = obj.color;
       this.track.gpsTrack.type = obj.type;
+      this.track.gpsTrack.status = obj.status;
+      this.track.gpsTrack.style = obj.style;
       this.track.gpsTrack.refreshSegments();
       this.track.refreshMapObjects(this.$store.state.map);
       this.track.onServer = true;
@@ -432,11 +494,10 @@ export default class SaveTrackModal extends BaseComponent {
       this.createAlert(AlertStatus.success, this.$t('trackSaved').toString(), 2000);
       this.closeUploadTrackModal();
       this.track.gpsTrack.id = response.data.id;
-      if (this.track.gpsTrack.status === TrackStatus.done) {
-        this.$store.commit('removeImportedTrack', this.track);
-        this.$store.commit('addTrack', this.track);
-        this.$store.commit('sortTracks');
-      }
+      this.$store.commit('removeImportedTrack', this.track);
+      this.$store.commit('removePlannedTrack', this.track);
+      this.$store.commit('addTrack', this.track);
+      this.$store.commit('sortTracks');
       this.refreshTrackPhotos();
     } catch(response) {
       this.createAlert(AlertStatus.danger, this.$t('trackSavedError').toString(), 2000);
@@ -453,6 +514,7 @@ export default class SaveTrackModal extends BaseComponent {
     }
     this.translateAndAddArrayToTranslator(this.uploadRegions);
     this.translateAndAddArrayToTranslator(this.uploadTrackTypes);
+    this.translateAndAddArrayToTranslator(this.uploadTrackStatuses);
     EventBus.$on('openSaveTrackModal' + this.track.gpsTrack.id, this.showUploadModal);
   }
 

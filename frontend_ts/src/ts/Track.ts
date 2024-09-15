@@ -65,19 +65,35 @@ export default class Track {
         weight: 3,
         opacity: 1,
         smoothFactor: 1,
+        dashArray: this.convertStyleIDToDash(this.gpsTrack.style),
       });
       this.mapTracks.push(poliline);
     }
-    const startIcon = L.icon({
-      iconUrl: icons.markerTrackStartIcon,
-      iconSize: [21, 21],
-      iconAnchor: [10, 10],
-    });
-    const finishIcon = L.icon({
-      iconUrl: icons.markerTrackFinishIcon,
-      iconSize: [21, 21],
-      iconAnchor: [10, 10],
-    });
+    let startIcon = null;
+    let finishIcon = null;
+    if (! this.gpsTrack.isBorderTrack()) {
+      startIcon = L.icon({
+        iconUrl: icons.markerTrackStartIcon,
+        iconSize: [21, 21],
+        iconAnchor: [10, 10],
+      });
+      finishIcon = L.icon({
+        iconUrl: icons.markerTrackFinishIcon,
+        iconSize: [21, 21],
+        iconAnchor: [10, 10],
+      });
+    } else {
+      startIcon = L.icon({
+        iconUrl: icons.markerTrackStartIcon,
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+      });
+      finishIcon = L.icon({
+        iconUrl: icons.markerTrackFinishIcon,
+        iconSize: [0, 0],
+        iconAnchor: [0, 0],
+      }); 
+    }
     const animateTrackHtml = this.gpsTrack.isBicycleTrack() ? '<img style="height: 20px;" src="' + icons.bicycle + '" />' : '<img style="height: 20px;" src="' + icons.shoe + '" />';
     for (const segment of this.gpsTrack.segments) {
       // @ts-ignore
@@ -101,7 +117,7 @@ export default class Track {
       const lastSegment = this.gpsTrack.segments[this.gpsTrack.segments.length - 1].pointsArray;
       this.startMarker = new L.Marker([firstSegment[0].lat, firstSegment[0].lng], {icon: startIcon, zIndexOffset: 1});
       this.finishMarker = new L.Marker([lastSegment[lastSegment.length - 1].lat, lastSegment[lastSegment.length - 1].lng], {icon: finishIcon, zIndexOffset: 2});
-      if (this.gpsTrack.status === TrackStatus.planned) {
+      if ((this.gpsTrack.status === TrackStatus.planned) || (this.gpsTrack.status === TrackStatus.border)) {
         let lastPoint: L.LatLng = null;
         let distance = 0;
         const markerIcon = L.icon({
@@ -140,6 +156,31 @@ export default class Track {
         }
       }
     }
+  }
+
+  public convertStyleIDToDash(style: number) {
+    if (style == 1) {
+      return [1000, 0];
+    }
+    if (style == 2) {
+      return [9, 6];
+    }
+    if (style == 3) {
+      return [9, 10];
+    }
+    if (style == 4) {
+      return [6, 5];
+    }
+    if (style == 5) {
+      return [6, 7];
+    }
+    if (style == 6) {
+      return [1, 5];
+    }
+    if (style == 7) {
+      return [1, 8];
+    }
+    return [1000, 0];
   }
 
   public removeMapObjects(map: L.Map) {

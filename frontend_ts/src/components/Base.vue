@@ -32,6 +32,18 @@ export default class BaseComponent extends Vue {
   public isPlannedTrack(track: GpsTrack) {
       return track.status === TrackStatus.planned;
   }
+  public isTrailTrack(track: GpsTrack) {
+    return track.status === TrackStatus.trail;
+  }
+  public isBorderTrack(track: GpsTrack) {
+    return track.status === TrackStatus.border;
+  }
+  public isOtherPeopleTrack(track: GpsTrack) {
+    return track.status === TrackStatus.other_people;
+  }
+  public isEventTrack(track: GpsTrack) {
+    return track.status === TrackStatus.event;
+  }
   public isDangerAlert(alert: Alert) {
       return alert.status === AlertStatus.danger;
   }

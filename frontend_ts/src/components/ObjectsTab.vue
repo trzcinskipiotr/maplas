@@ -29,9 +29,19 @@
     <MapPlace v-for="place of $store.state.places" :key="place.id" :place="place"></MapPlace>
   </div>
   <br>
+  <AppTrackGroup :searchText="''" :trackGroup="plannedTrackGroup"></AppTrackGroup>
+  <br>
   <PlannedTracks></PlannedTracks>
   <br>
-  <Areas></Areas>
+  <AppTrackGroup :searchText="''" :trackGroup="otherPeopleTrackGroup"></AppTrackGroup>
+  <br>
+  <AppTrackGroup :searchText="''" :trackGroup="eventTrackGroup"></AppTrackGroup>
+  <br>
+  <AppTrackGroup :searchText="''" :trackGroup="trailTrackGroup"></AppTrackGroup>
+  <br>
+  <AppTrackGroup :searchText="''" :trackGroup="borderTrackGroup"></AppTrackGroup>
+  <br>
+  <!--<Areas></Areas>-->
   </div>
 </template>
 
@@ -43,6 +53,8 @@ import $ from 'jquery';
 import FileSaver from 'file-saver';
 import { formatDateSeconds } from '@/ts/utils';
 import { EventBus } from '@/ts/EventBus';
+import TrackGroup from '@/ts/TrackGroup';
+import Track from '@/ts/Track';
 
 @Component
 export default class ObjectsTab extends BaseComponent {
@@ -52,6 +64,19 @@ export default class ObjectsTab extends BaseComponent {
   private placeGroups: any = null;
   private showApproved = true;
   private showNotApproved = true;
+
+  private plannedTrackGroup = new TrackGroup();
+  private eventTrackGroup = new TrackGroup();
+  private otherPeopleTrackGroup = new TrackGroup();
+  private borderTrackGroup = new TrackGroup();
+  private trailTrackGroup = new TrackGroup();
+
+  private createTrackGroupFromTracks(trackGroup: TrackGroup, tracks: Array<Track>) {
+    trackGroup.tracks = [];
+    for(const track of tracks) {
+      trackGroup.tracks.push(track);
+    }
+  }
 
   @Watch('$store.state.places')
   @Watch('$store.state.placeTypes')
@@ -83,7 +108,47 @@ export default class ObjectsTab extends BaseComponent {
     }
   }
 
+  @Watch('$store.state.plannedTracks')
+  private onPlannedTracksChange() {
+    this.createTrackGroupFromTracks(this.plannedTrackGroup, this.$store.state.plannedTracks);
+  }
+
+  @Watch('$store.state.eventTracks')
+  private onEventTracksChange() {
+    this.createTrackGroupFromTracks(this.eventTrackGroup, this.$store.state.eventTracks);
+  }
+
+  @Watch('$store.state.otherPeopleTracks')
+  private onOtherPeopleTracksChange() {
+    this.createTrackGroupFromTracks(this.otherPeopleTrackGroup, this.$store.state.otherPeopleTracks);
+  }
+
+  @Watch('$store.state.borderTracks')
+  private onBorderTracksChange() {
+    this.createTrackGroupFromTracks(this.borderTrackGroup, this.$store.state.borderTracks);
+  }
+
+  @Watch('$store.state.trailTracks')
+  private onTrailTracksChange() {
+    this.createTrackGroupFromTracks(this.trailTrackGroup, this.$store.state.trailTracks);
+  }
+
   public mounted() {
+    this.plannedTrackGroup.label = 'plannedTracks';
+    this.plannedTrackGroup.translate = 'plannedTracks';
+    this.eventTrackGroup.label = 'eventTracks';
+    this.eventTrackGroup.translate = 'eventTracks';
+    this.otherPeopleTrackGroup.label = 'otherPeopleTracks';
+    this.otherPeopleTrackGroup.translate = 'otherPeopleTracks';
+    this.borderTrackGroup.label = 'borderTracks';
+    this.borderTrackGroup.translate = 'borderTracks';
+    this.trailTrackGroup.label = 'trailTracks';
+    this.trailTrackGroup.translate = 'trailTracks';
+    this.createTrackGroupFromTracks(this.plannedTrackGroup, this.$store.state.plannedTracks);
+    this.createTrackGroupFromTracks(this.eventTrackGroup, this.$store.state.eventTracks);
+    this.createTrackGroupFromTracks(this.otherPeopleTrackGroup, this.$store.state.otherPeopleTracks);
+    this.createTrackGroupFromTracks(this.borderTrackGroup, this.$store.state.borderTracks);
+    this.createTrackGroupFromTracks(this.trailTrackGroup, this.$store.state.trailTracks);
     EventBus.$on('RefreshPlacesGroups', this.onStorePlacesChanged);
   }
 
