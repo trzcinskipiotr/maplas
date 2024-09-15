@@ -116,7 +116,7 @@ import { point } from 'leaflet';
 import Area from '@/ts/Area';
 import {removeKeyFromDB, clearDBs, countKeysInDBs, countKeysInDBsSum} from '@/ts/utils/db';
 import axios from 'axios';
-import { getStorageLength, truncate, getAllKeys, removeTile, getAllValues, saveTile } from '@/ts/leafletoffline';
+import { getAllKeys, getAllValues } from '@/ts/leafletoffline';
 
 @Component
 export default class OfflineCard extends BaseComponent {
@@ -199,10 +199,11 @@ export default class OfflineCard extends BaseComponent {
       this.saving = true;
       this.$store.state.offlineControl.options.parallel = this.$store.state.downloadThreads;
       this.$store.state.offlineControl.options.alwaysDownload = !this.useCache;
-      const firstUrl = this.$store.state.offlineControl._baseLayer._url;
-      const countToSave = this.$store.state.offlineControl.calculateTilesCount();
+      this.$store.state.offlineControl.options.layerName = this.layerName;
+      const firstUrl = this.$store.state.offlineControl.baseLayer._url;
+      const countToSave = this.$store.state.offlineControl.calculateTiles(true);
       if (window.confirm(this.$t('saveAllTitles', [countToSave, this.$store.state.offlineControl.options.zoomlevels, firstUrl, this.useCache]))) {
-        setTimeout(() => this.$store.state.offlineControl._saveTiles(), 100);
+        setTimeout(() => this.$store.state.offlineControl.downloadStart(), 100);
       } else {
         this.saving = false;
       }
@@ -213,7 +214,7 @@ export default class OfflineCard extends BaseComponent {
 
   private async getTilesForAreaInCache(zoomMin: number, zoomMax: number) {
     const cacheKeysSet = await getAllKeys();
-    const set = this.$store.state.offlineControl._baseLayer.getUrlsForAreaZooms(zoomMin, zoomMax, this.area) as Set<any>;
+    const set = this.$store.state.offlineControl.baseLayer.getUrlsForAreaZooms(zoomMin, zoomMax, this.area) as Set<any>;
     let count = 0;
     const tiles = [];
     for(const url of set) {
@@ -306,9 +307,9 @@ export default class OfflineCard extends BaseComponent {
 
   private async clearOffline() {
     this.clearing = true;
-    const sum = await getStorageLength();
+    const sum = await this.$store.state.offlineControl.getStorageLength();
     if(window.confirm(this.$t('removeAllTitles', [sum]))) {
-      const result = await truncate();
+      const result = await this.$store.state.offlineControl.storageTruncate();
       this.showMessageDiv(this.$t('allBitmapsRemoved'));
       this.clearing = false;
     } else {
@@ -318,7 +319,7 @@ export default class OfflineCard extends BaseComponent {
 
   private async countGlobalOffline() {
     this.countingGlobal = true;
-    const result = await getStorageLength();
+    const result = await this.$store.state.offlineControl.getStorageLength();
     this.showMessageDiv(result);
     this.countingGlobal = false;
   }
@@ -341,7 +342,7 @@ export default class OfflineCard extends BaseComponent {
     this.addingToExport = true;
     setTimeout(async () => {
       const cacheKeysSet = await getAllKeys();
-      const set = this.$store.state.offlineControl._baseLayer.getUrlsForAreaZooms(this.$store.state.minimalZoom, this.$store.state.maximalZoom, this.area) as Set<any>;
+      const set = this.$store.state.offlineControl.baseLayer.getUrlsForAreaZooms(this.$store.state.minimalZoom, this.$store.state.maximalZoom, this.area) as Set<any>;
       let missing = 0;
       let ok = 0;
       for(const url of set) {
@@ -536,13 +537,13 @@ export default class OfflineCard extends BaseComponent {
     }
     if (this.layerName.endsWith('Offline')) {
       offlineControl.setLayer(this.$store.state.baseMaps[this.layerName]);
-      offlineControl._baseLayer.on('savestart', (status: any) => {
+      offlineControl.baseLayer.on('savestart', (status: any) => {
         this.showMessageDiv('' + status.lengthSaved + '/' + status.lengthToBeSaved);
       });
-      offlineControl._baseLayer.on('refreshstatus', (status) => {
+      offlineControl.baseLayer.on('refreshstatus', (status) => {
         this.showProgressMessage(status);
       });
-      offlineControl._baseLayer.on('saveend', (status) => {
+      offlineControl.baseLayer.on('saveend', (status) => {
         this.showProgressMessage(status);
         this.saving = false;
       });

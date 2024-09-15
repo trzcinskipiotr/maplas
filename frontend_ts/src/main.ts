@@ -31,7 +31,7 @@ Vue.config.productionTip = false;
 import '@/assets/css/flags.css';
 import '@/assets/css/icons.css';
 
-const myWorker = new Worker("./worker.js");
+const myWorker = new Worker("./worker-opfs.js");
 document.worker = myWorker;
 
 import AppTrack from '@/components/AppTrack.vue';

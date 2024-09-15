@@ -946,6 +946,7 @@ export default class Index extends BaseComponent {
         layers[layer.dict_key] = eval(layer.javascript_code);
         layers[layer.dict_key]['options']['errorTileUrl'] = icons.tileDownloadError;
         layers[layer.dict_key]['options']['attribution'] = '';
+        layers[layer.dict_key]['options']['layerName'] = layer.dict_key;
         this.baseMaps[layer.display_name] = layers[layer.dict_key];
         if (! firstLayer) {
           firstLayer = layer.dict_key;
