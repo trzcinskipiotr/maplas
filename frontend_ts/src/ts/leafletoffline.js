@@ -75,7 +75,7 @@ export class TileLayerOffline extends leaflet.TileLayer {
     }
   }
 
-  getAreaTileUrls(bounds, zoom, countOnly) {
+  getAreaTileUrls(bounds, zoom, countOnly, alwaysDownload, timestamp) {
     if (countOnly) {
       return this.getAreaTilePoints(bounds, this.getTileSize(), true);
     } else {
@@ -86,7 +86,7 @@ export class TileLayerOffline extends leaflet.TileLayer {
         const data = {x: tilePoint.x, y: tilePoint.y, z: zoom};
         console.log(data);
         console.log(leaflet.Util.template(this._url, data));
-        tiles.push({url: leaflet.Util.template(this._url, data), z: zoom, x: tilePoint.x, y: tilePoint.y, layerName: this.options.layerName});
+        tiles.push({url: leaflet.Util.template(this._url, data), z: zoom, x: tilePoint.x, y: tilePoint.y, layerName: this.options.layerName, alwaysDownload: alwaysDownload, timestamp: timestamp});
       }
       return tiles;
     }
@@ -102,22 +102,25 @@ class ControlSaveTiles {
     this.options = options;
 
     document.worker.addEventListener('message', event => {
-      const message = event.data;
-      if (message == 'OK') {
-        this.status.lengthLoadedFromNetwork += 1;
-        this.status.lengthSaved += 1;
+      const eventType = event.data.event;
+      const timestamp = event.data.timestamp;
+      if (timestamp == this.processTimestamp) {
+        if (eventType == 'OK') {
+          this.status.lengthLoadedFromNetwork += 1;
+          this.status.lengthSaved += 1;
+        }
+        if (eventType == 'TILEINCACHE') {
+          this.status.lengthLoadedFromCache += 1;
+        }
+        if (eventType == 'DOWNLOADERROR') {
+          this.status.lengthLoadErrors += 1;
+        }
+        this.baseLayer.fire('refreshstatus', this.status);
+        if (this.status.lengthSaved === this.status.lengthToBeSaved - this.status.lengthLoadErrors - this.status.lengthLoadedFromCache) {
+          this.baseLayer.fire('saveend', this.status);
+        }
+        this.loadAndSaveTile();
       }
-      if (message == 'TILEINCACHE') {
-        this.status.lengthLoadedFromCache += 1;
-      }
-      if (message == 'DOWNLOADERROR') {
-        this.status.lengthLoadErrors += 1;
-      }
-      this.baseLayer.fire('refreshstatus', this.status);
-      if (this.status.lengthSaved === this.status.lengthToBeSaved - this.status.lengthLoadErrors - this.status.lengthLoadedFromCache) {
-        this.baseLayer.fire('saveend', this.status);
-      }
-      this.loadAndSaveTile(this.status.tilesforSave);
     });
   }
 
@@ -133,9 +136,9 @@ class ControlSaveTiles {
     for (let i = 0; i < zoomlevels.length; i += 1) {
       const area = leaflet.bounds(this.map.project(latlngBounds.getNorthWest(), zoomlevels[i]), this.map.project(latlngBounds.getSouthEast(), zoomlevels[i]));
       if (countOnly) {
-        sum = sum + this.baseLayer.getAreaTileUrls(area, zoomlevels[i], true);
+        sum = sum + this.baseLayer.getAreaTileUrls(area, zoomlevels[i], true, this.options.alwaysDownload, this.processTimestamp);
       } else {
-        tiles = tiles.concat(this.baseLayer.getAreaTileUrls(area, zoomlevels[i], false));
+        tiles = tiles.concat(this.baseLayer.getAreaTileUrls(area, zoomlevels[i], false, this.options.alwaysDownload, this.processTimestamp));
       }
     }
     if (countOnly) {
@@ -166,9 +169,14 @@ class ControlSaveTiles {
   };
 
   downloadStart() {
+    this.processTimestamp = Date.now();
     const tiles = this.calculateTiles();
     this.resetStatus(tiles);  
     this.saveTilesToCache();
+  }
+
+  downloadCancel() {
+    this.processTimestamp = null;
   }
 
   async openDirectory() {

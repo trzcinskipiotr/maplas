@@ -2,17 +2,27 @@
   <div style="display: none">
     <div ref="tooltip" style="minWidth: 200px">
       <div v-if="renderPopup">
-        {{ place.id }} <b>{{ place.name }}</b> {{ place.lat}}, {{ place.lon }}
-        <span style="float: right">
-          <span :id="'tooltipPlace' + place.id" style='margin-right: 3px;'>
-            <img style="height: 12px" :src="place.approved ? icons.approved : icons.question" />
+        <div style="margin-bottom: 5px">
+          <span v-if="$store.state.isDesktop">
+            {{ place.id }} <b>{{ place.name }}</b>&nbsp;<a :href="'https://maps.google.com/maps?q=' + place.lat + ',' + place.lon" target="_blank">{{ place.lat}}, {{ place.lon }}</a>
           </span>
-          <b-tooltip v-if="$store.state.isDesktop" :target="'tooltipPlace' + place.id">{{ place.approved ? $t('placeApproved') : $t('placeNotApproved') }}</b-tooltip>
-          <span v-if="place.photos.length" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('fullRes')">
-            <img ref="fullResImage" @click="makeFullResGallery" style="height: 12px; cursor: pointer" :src="icons.fullResolution" />
-          </span>
-          <br>
-        </span>  
+          <span v-else>
+            <b>{{ place.name }}</b>&nbsp;
+            <a :href="'https://maps.google.com/maps?q=' + place.lat + ',' + place.lon" target="_blank">
+              <img style="height: 12px; cursor: pointer" :src="icons.locationBlack" />
+            </a>
+          </span>  
+          <span style="float: right; margin-right: 16px;">
+            <span :id="'tooltipPlace' + place.id" style='margin-right: 3px;'>
+              <img style="height: 12px" :src="place.approved ? icons.approved : icons.question" />
+            </span>
+            <b-tooltip v-if="$store.state.isDesktop" :target="'tooltipPlace' + place.id">{{ place.approved ? $t('placeApproved') : $t('placeNotApproved') }}</b-tooltip>
+            <span v-if="place.photos.length" style='margin-right: 3px;' v-b-tooltip.hover :title="$t('fullRes')">
+              &nbsp;<img ref="fullResImage" @click="makeFullResGallery" style="height: 12px; cursor: pointer" :src="icons.fullResolution" />
+            </span>
+            <br>
+          </span>  
+        </div>  
         <div v-if="place.photos.length" style="float: left;">
           <center>
             <table v-if="((place.photos.length > 1) && ($store.state.isDesktop))">
@@ -22,10 +32,9 @@
                 <td @click="photoIndex != place.photos.length - 1 ? nextPhoto() : null" style="padding: 0px"><img @load="resizePopup" :style="{width: '10px', height: '20px', cursor: photoIndex == place.photos.length - 1 ? 'arrow' : 'pointer'}" :src="photoIndex == place.photos.length - 1 ? icons.arrowRightDisabled : icons.arrowRight"></td>
               </tr>
             </table>
-            <img v-else @load="resizePopup" ref="smallImage" :src="replaceHTTP(place.photos[0].image_thumb)" :class="$store.state.isDesktop ? 'popupimgbig' : 'popupimgsmall'" @click="makeGallery"></td>
+            <img v-else @load="resizePopup" ref="smallImage" :src="replaceHTTP(place.photos[0].image_thumb)" :class="$store.state.isDesktop ? 'popupimgbig' : 'popupimgsmall'" @click="makeGallery">
           </center>
-          <br>
-          <span style="float: right; color: gray">{{ place.photos[0].org_filename }} {{ place.photos[0].exif_time_taken | formatDateSeconds }}</span><br>
+          <span v-if="$store.state.isDesktop" style="float: right; color: gray"><br>{{ place.photos[0].org_filename }} {{ place.photos[0].exif_time_taken | formatDateSeconds }}<br></span>
         </div>
         <span v-if="place.videos.length">
           <div v-for="video in place.videos" :key="video.id">
@@ -33,15 +42,16 @@
             <center><div v-html="video.html"></div></center>
           </div>
         </span> 
-        {{ place.description }}<br>
+        <span v-if="$store.state.isDesktop">{{ place.description }}<br></span>
         <span v-if="(place.marker.getLatLng().lat != place.lat) && (place.marker.getLatLng().lng != place.lon)">
           <img @click="undoLocation" style="height: 20px; cursor: pointer;" :src="icons.undo" />&nbsp;
           <img @click="saveLocation" style="height: 20px; cursor: pointer;" :src="icons.save" />&nbsp;
         </span>
-        <span v-b-tooltip.hover :title="$t('editPlace')">
+        <span v-if="$store.state.isDesktop" v-b-tooltip.hover :title="$t('editPlace')">
           <img @click="showEditPlaceModal" style="height: 20px; cursor: pointer;" :src="icons.upload" />
         </span>
-      </div>  
+        <img v-else style="height: 5px; width: 5px;" :src="icons.blankWhite" /> 
+      </div>
     </div>
   </div>
 </template>
@@ -169,6 +179,10 @@ export default class MapPlace extends BaseComponent {
   cursor: pointer; 
   max-width: 200px; 
   max-height: 200px
+}
+
+.leaflet-popup-content {
+  margin: 8px !important;
 }
 
 </style>

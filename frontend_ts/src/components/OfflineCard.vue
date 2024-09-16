@@ -11,8 +11,8 @@
           </select>
           {{ $t('zoomTo') }} <select v-model="$store.state.maximalZoom">
             <option v-for="zoom in allowMaximalZoom" :value="zoom" :key="zoom">{{ zoom }}</option>
-          </select><br>
-          {{ $t('selectArea') }} <select v-model="area">
+          </select>
+          <!--{{ $t('selectArea') }} <select v-model="area">
             <option :value="null" :key="0">Cała warstwa / widoczny obszar</option>
             <template v-for="area in $store.state.areas">
               <option :value="area" :key="area.unique" v-if="area.tile_indexes">{{ area.name }}</option>
@@ -21,9 +21,9 @@
           <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="activateAreas">
             <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="activatingAreas" :src="icons.spinnerWhite" />&nbsp;
             {{ $t('activateAreas') }}
-          </button>&nbsp;
+          </button>&nbsp;-->
         </div>
-        <div class="buttongroup">
+        <!--<div class="buttongroup">
           <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="deleteOffline">
             <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="deleting" :src="icons.spinnerWhite" />&nbsp;
             {{ $t('deleteOffline') }}
@@ -63,22 +63,27 @@
               {{ $t('clearSelection') }}
             </button>
           </template>  
-        </div>
+        </div>-->
         <div class="buttongroup">
-        {{ $t('threads') }} <select v-model="$store.state.downloadThreads">
-          <option v-for="thread in allowDownloadThreads" :value="thread" :key="thread">{{ thread }}</option>
-        </select>&nbsp;
-        <b-form-checkbox style="display: inline;" v-model="useCache">
-        </b-form-checkbox>{{ $t('useCache') }}
-        <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="downloadOffline">
-          <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="saving" :src="icons.spinnerWhite" />&nbsp;
-          {{ $t('downloadOffline') }}
-        </button>&nbsp;
-        <span v-b-tooltip.hover :title="$t('corsWarning')">
-          <img style="height: 24px; cursor: pointer;" :src="icons.info" />
-        </span>
+          {{ $t('threads') }} <select v-model="$store.state.downloadThreads">
+            <option v-for="thread in allowDownloadThreads" :value="thread" :key="thread">{{ thread }}</option>
+          </select>&nbsp;
+          <b-form-checkbox style="display: inline;" v-model="useCache"></b-form-checkbox>{{ $t('useCache') }}
+          <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="downloadOffline">
+            <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="saving" :src="icons.spinnerWhite" />&nbsp;
+            {{ $t('downloadOffline') }}
+          </button>&nbsp;
+          <span v-b-tooltip.hover :title="$t('corsWarning')">
+            <img style="height: 24px; cursor: pointer;" :src="icons.info" />
+          </span>
+          <template v-if="saving">
+            <br>
+            <button class="btn btn-danger btn-sm" @click="stopDownloadOffline">
+              {{ $t('stopDownloadOffline') }}
+            </button>
+          </template>  
         </div>
-        <div class="buttongroup">
+        <!--<div class="buttongroup">
         {{ $t('showZoom') }} <select v-model="showZoom">
           <option v-for="zoom in allowZoomToShow" :value="zoom" :key="zoom">{{ zoom }}</option>
         </select>&nbsp;
@@ -86,7 +91,7 @@
           <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="showZoomLoading" :src="icons.spinnerWhite" />&nbsp;
           {{ offlineShowing ? $t('hideOffline') : $t('showOffline') }}
         </button><template v-if="offlineShowing">&nbsp;{{ offlineShowingCount }}</template>
-        </div>
+        </div>-->
         <div class="buttongroup">
           <button :disabled="operationInProgess" class="btn btn-primary btn-sm" @click="clearOffline">
             <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="clearing" :src="icons.spinnerWhite" />&nbsp;
@@ -210,6 +215,11 @@ export default class OfflineCard extends BaseComponent {
     } else {
       this.showMessageError(this.$t('mapNotOffline'));
     }
+  }
+
+  private stopDownloadOffline() {
+    this.$store.state.offlineControl.downloadCancel();
+    this.saving = false;
   }
 
   private async getTilesForAreaInCache(zoomMin: number, zoomMax: number) {

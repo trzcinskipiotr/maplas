@@ -438,6 +438,7 @@ pl: {
   borderTracks: 'Obszary',
   trailTracks: 'Szlaki',
   points: 'Punkty',
+  stopDownloadOffline: 'Zatrzymaj',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

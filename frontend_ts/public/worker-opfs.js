@@ -56,10 +56,7 @@ addEventListener('message', async event => {
     const tileExists = await checkTileInCache(tileInfo);
     const t2 = Date.now();
     const checkCacheTime = t2 - t1;
-    if (tileExists) {
-      postMessage('TILEINCACHE');
-      console.log(tileInfo.url + ': in cache, times: ' + checkCacheTime);
-    } else {
+    if ((! tileExists) || (tileInfo.alwaysDownload)) {
       try {
         const blob = await downloadTile(tileInfo.url);
         const t3 = Date.now();
@@ -69,13 +66,16 @@ addEventListener('message', async event => {
           const t4 = Date.now();
           const saveTileTime = t4 - t3;
           console.log(tileInfo.url + ': downloaded, times: ' + checkCacheTime + ' ' + downloadTileTime + ' ' + saveTileTime);
-          postMessage('OK');
+          postMessage({event: 'OK', timestamp: tileInfo.timestamp});
         } else {
-          postMessage('DOWNLOADERROR');
+          postMessage({event: 'DOWNLOADERROR', timestamp: tileInfo.timestamp});
         }
       } catch {
-        postMessage('DOWNLOADERROR');
+        postMessage({event: 'DOWNLOADERROR', timestamp: tileInfo.timestamp});
       }
+    } else {
+      postMessage({event: 'TILEINCACHE', timestamp: tileInfo.timestamp});
+      console.log(tileInfo.url + ': in cache, times: ' + checkCacheTime);
     }
   }
 });

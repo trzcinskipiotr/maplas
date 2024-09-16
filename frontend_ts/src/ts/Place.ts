@@ -8,6 +8,7 @@ import 'lg-zoom.js';
 import 'lg-hash.js';
 import 'lg-autoplay.js';
 import VideoLink from './VideoLink';
+import markerIcons from '@/ts/markerIcons';
 
 export default class Place {
 
@@ -16,12 +17,13 @@ export default class Place {
   public videos: VideoLink[];
 
   constructor(public id: number, public name: string, public description: string, public lat: number, public lon: number, public type: PlaceType, public approved: boolean, zoomLevel: number, draggable: boolean) {
-    const markerSizeClass = this.getMarkerSizeClass(zoomLevel);
     const markerIconClass = this.getMarkerIconClass();
-    const iconHtml = '<i style="color: blue" class="maplas-icon ' + markerIconClass + ' ' + markerSizeClass + '"></i>';
-    const markerIcon = L.divIcon({
-      html: iconHtml,
-      className: 'dummy',
+    const size = this.getMarkerSize(zoomLevel);
+    const anchor = this.getMarkerAnchor(zoomLevel);
+    const markerIcon = L.icon({
+      iconSize: [size, size],
+      iconAnchor: [anchor, anchor],
+      iconUrl: markerIcons[markerIconClass],
     });
     this.marker = new L.Marker([lat, lon], {icon: markerIcon, draggable: draggable});
     this.photos = [];
@@ -63,25 +65,52 @@ export default class Place {
     return 'icon48px';
   }
 
+  public getMarkerSize(zoomLevel: number) {
+    if (zoomLevel <= 11) {
+      return 13;
+    }
+    if (zoomLevel <= 14) {
+      return 21;
+    }
+    if (zoomLevel <= 16) {
+      return 37;
+    }
+    return 49;
+  }
+
+  public getMarkerAnchor(zoomLevel: number) {
+    if (zoomLevel <= 11) {
+      return 6;
+    }
+    if (zoomLevel <= 14) {
+      return 10;
+    }
+    if (zoomLevel <= 16) {
+      return 18;
+    }
+    return 24;
+  }
+
   public getMarkerIconClass() {
     if (this.type) {
       if (this.type.icon) {
-        return this.type.icon;
+        return this.type.icon.replaceAll('-', '_');
       } else {
-        return 'maplas-other';
+        return 'maplas_other';
       }
     } else {
-      return 'maplas-other';
+      return 'maplas_other';
     }
   }
 
   public changeMarkerSize(zoomLevel: number) {
-    const markerSizeClass = this.getMarkerSizeClass(zoomLevel);
     const markerIconClass = this.getMarkerIconClass();
-    const iconHtml = '<i style="color: blue" class="maplas-icon ' + markerIconClass + ' ' + markerSizeClass + '"></i>';
-    const markerIcon = L.divIcon({
-      html: iconHtml,
-      className: 'dummy',
+    const size = this.getMarkerSize(zoomLevel);
+    const anchor = this.getMarkerAnchor(zoomLevel);
+    const markerIcon = L.icon({
+      iconSize: [size, size],
+      iconAnchor: [anchor, anchor],
+      iconUrl: markerIcons[markerIconClass],
     });
     this.marker.setIcon(markerIcon);
   }
