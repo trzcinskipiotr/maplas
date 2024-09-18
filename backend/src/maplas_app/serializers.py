@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer, VideoLink
+from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer, VideoLink, GpsPoint
 
 class VideoLinkSerializer(serializers.ModelSerializer):
 
@@ -115,3 +115,9 @@ class AreaSerializerFull(serializers.ModelSerializer):
     class Meta:
         model = Area
         fields = ['id', 'name', 'description', 'points_json', 'color', 'tile_indexes']
+
+class GpsPointSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = GpsPoint
+        fields = ['id', 'name', 'time', 'lat', 'lon', 'created']

@@ -1,7 +1,7 @@
 from django.contrib import admin
 from imagekit.admin import AdminThumbnail
 
-from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer, VideoLink, StringField
+from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer, VideoLink, StringField, GpsPoint
 
 
 @admin.register(Track)
@@ -59,3 +59,8 @@ class VideoLinkAdmin(admin.ModelAdmin):
 class StringFieldAdmin(admin.ModelAdmin):
     list_display = ('id', 'key', 'value')
     search_fields = ('key', 'value')
+
+@admin.register(GpsPoint)
+class GpsPointAdmin(admin.ModelAdmin):
+    list_display = ('id', 'lat', 'lon', 'time', 'created')
+    search_fields = ('lat', 'lon', 'time', 'created')

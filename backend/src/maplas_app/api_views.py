@@ -2,13 +2,25 @@ from rest_framework import viewsets
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin, CreateModelMixin, RetrieveModelMixin
 
 from maplas_app import serializers
-from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer, StringField
+from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer, StringField, GpsPoint
 from maplas_app.utils import fill_array_from_gpx_file
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 
+from rest_framework.permissions import AllowAny
+
 from django.conf import settings
+
+import os
+import json
+
+def get_cache_filename(endpoint):
+    revision = StringField.objects.filter(key=settings.DATA_REVISION_KEY).first()
+    if revision:
+        return '/var/cache/maplas/{}.{}'.format(endpoint, revision.value)
+    else:
+        return None
 
 class TrackViewSet(ListModelMixin, UpdateModelMixin, RetrieveModelMixin, CreateModelMixin, viewsets.GenericViewSet):
     queryset = Track.objects.all().order_by('-start_time')
@@ -42,6 +54,27 @@ class TrackViewSet(ListModelMixin, UpdateModelMixin, RetrieveModelMixin, CreateM
         track = serializer.save()
         if not nogpx:
             fill_array_from_gpx_file(track)
+
+    def cache_list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        bicycle = self.request.query_params.get('bicycle', None)
+        mushroom = self.request.query_params.get('mushroom', None)
+        filename = get_cache_filename('tracks')
+        if bicycle:
+            filename = get_cache_filename('tracksbicycle')
+        if mushroom:
+            filename = get_cache_filename('tracksmushroom')
+        if os.path.isfile(filename):
+            try:
+                with open(filename, 'r') as content_file:
+                    content = content_file.read()
+                    return Response(json.loads(content))
+            except:
+                return Response(serializer.data)
+        else:
+            return Response(serializer.data)
+
 
 class RegionViewSet(ListModelMixin, viewsets.GenericViewSet):
     queryset = Region.objects.all().order_by('id')
@@ -105,3 +138,13 @@ def datarevision(request):
         return Response({"datarevision": revision.value})
     else:
         return Response({"error": "no data revision in DB"}, status=500)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def addpoints(request):
+    points = request.data['points']
+    print(points)
+    for point in points:
+        GpsPoint.objects.create(lat=point['lat'], lon=point['lon'], time=point['time'], name='')
+    return Response({"OK": "OK"})

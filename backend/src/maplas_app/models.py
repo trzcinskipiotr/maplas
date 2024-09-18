@@ -263,6 +263,13 @@ class StringField(models.Model):
     key = models.CharField(max_length=1000, db_index=True, null=False)
     value = models.TextField(null=False, blank=True)
 
+class GpsPoint(models.Model):
+    created = models.DateTimeField(null=False, blank=False, auto_now_add=True)
+    lat = models.FloatField(null=False, blank=False)
+    lon = models.FloatField(null=False, blank=False)
+    time = models.DateTimeField(null=False, blank=False, db_index=True)
+    name = models.CharField(max_length=1000, null=False)
+
 @receiver(models.signals.post_save, sender=Area)
 @receiver(models.signals.post_save, sender=MapLayer)
 @receiver(models.signals.post_save, sender=VideoLink)
