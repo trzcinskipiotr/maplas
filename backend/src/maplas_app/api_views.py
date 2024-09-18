@@ -139,6 +139,15 @@ def datarevision(request):
     else:
         return Response({"error": "no data revision in DB"}, status=500)
 
+@api_view(['GET'])
+def gpspoint(request):
+    gpspoint = GpsPoint.objects.order_by('-time').first()
+    if gpspoint:
+        gpspoint_serializer = serializers.GpsPointSerializer(gpspoint, many=False)
+        return Response({"gpspoint": gpspoint_serializer.data})
+    else:
+        return Response({"error": "no gpspoint in DB"}, status=500)
+
 
 @api_view(['POST'])
 @permission_classes([AllowAny])

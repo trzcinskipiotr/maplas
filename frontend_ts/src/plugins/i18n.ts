@@ -439,6 +439,8 @@ pl: {
   trailTracks: 'Szlaki',
   points: 'Punkty',
   stopDownloadOffline: 'Zatrzymaj',
+  hideFollow: 'Zatrzymaj śledzenie',
+  showFollow: 'Rozpocznij śledzenie',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

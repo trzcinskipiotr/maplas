@@ -18,4 +18,5 @@ urlpatterns = [
     path('api/auth/', include('djoser.urls.authtoken')),
     path('api/datarevision/', api_views.datarevision),
     path('api/addpoints/', api_views.addpoints),
+    path('api/gpspoint/', api_views.gpspoint),
 ]

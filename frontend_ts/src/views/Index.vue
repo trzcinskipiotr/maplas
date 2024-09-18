@@ -201,6 +201,15 @@
         </a>
       </div>
     </div>
+    <div id="followdiv" style="display: none;">
+      <div id="followdivinner" class="leaflet-bar leaflet-control">
+        <a id="followdivinnera" @click="toggleFollow" class="leaflet-control-zoom-out centerall">
+          <b-tooltip v-if="(document.getElementById('followdivinner')) && ($store.state.isDesktop)" :target="document.getElementById('followdivinner')">{{ followActive ? $t('hideFollow') : $t('showFollow') }}</b-tooltip>
+          <img v-if="followActive" style="cursor: pointer; width: 28px; height: 28px;" :src="icons.followGreen" />
+          <img v-else style="cursor: pointer; width: 28px; height: 28px;" :src="icons.followBlack" />
+        </a>
+      </div>
+    </div>
     <div id="speedlegenddiv" style="display: none;">
       <div id="speedlegenddivinner">
         <div style="background-color: white; margin: 2px" v-if="$store.state.speedLegendVisible">
@@ -319,6 +328,7 @@ import VideoLink from '@/ts/VideoLink';
 import moment from 'moment';
 import { TileLayerOffline, createSaveTilesControl } from '@/ts/leafletoffline';
 import * as icons from '@/ts/icons';
+import { formatTimeSeconds } from '@/ts/utils';
 
 interface FileReaderEventTarget extends EventTarget {
   result: string;
@@ -388,6 +398,9 @@ export default class Index extends BaseComponent {
   private showAllButtonsDuringLocation = false;
 
   private icons = icons;
+
+  private followActive = false;
+  private followMarker: L.CircleMarker = null;
 
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
@@ -779,6 +792,7 @@ export default class Index extends BaseComponent {
     this.addRulerButton();
     this.addImportButton();
     this.addLocationButton();
+    this.addFollowButton();
     //this.addCurrentLocationControl();
     this.addOffline();
     this.downloadTracks();
@@ -1289,6 +1303,41 @@ export default class Index extends BaseComponent {
      }
   }
 
+  private followInterval: number = null;
+
+  private getCurrentFollowPoint() {
+    const endPoint = this.$store.state.appHost + 'api/gpspoint/';
+    axios.get(endPoint).then((response) => {
+      const point = response.data.gpspoint;
+      this.followMarker.setLatLng([point.lat, point.lon]);
+      const popup = L.popup().setContent(formatTimeSeconds(point.time));
+      this.followMarker.bindPopup(popup).openPopup();
+    }).catch(() => {
+
+    })
+  }
+
+  private toggleFollow(e) {
+    if (this.followActive) {
+      if (this.followMarker) {
+        this.followMarker.removeFrom(this.$store.state.map);
+      }
+      clearInterval(this.followInterval);
+      this.followActive = false;
+    } else {
+      if (! this.followMarker) {
+        this.followMarker = new L.CircleMarker([0, 0], {radius: 11, fill: true, fillOpacity: 0.5, color: 'red'});
+      }
+      this.followMarker.setLatLng([0, 0]);
+      this.followMarker.addTo(this.$store.state.map);
+      this.followInterval = setInterval(() => {
+        this.getCurrentFollowPoint();
+      }, 1000);
+      this.getCurrentFollowPoint();
+      this.followActive = true;
+    }
+  }
+
   private toggleLocation(e) {
     if (this.locationActive) {
       if (this.locationMarker) {
@@ -1374,6 +1423,18 @@ export default class Index extends BaseComponent {
       },
     });
     this.$store.state.map.addControl(new locationControl());
+  }
+
+  private async addFollowButton() {
+    const followControl = L.Control.extend({
+      options: {
+        position: 'topright'
+      },
+      onAdd: (map: L.Map) => {
+        return document.getElementById('followdivinner');
+      },
+    });
+    this.$store.state.map.addControl(new followControl());
   }
 
   private togglePanel(e) {
