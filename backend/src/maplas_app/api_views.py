@@ -1,5 +1,8 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, authtoken
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin, CreateModelMixin, RetrieveModelMixin
+
+from django.contrib.auth.models import User
+from django.db.models import Q
 
 from maplas_app import serializers
 from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer, StringField, GpsPoint
@@ -132,6 +135,27 @@ class AreaViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateMo
         return self.basic_serializer_class
 
 @api_view(['GET'])
+def loggeduserinfo(request):
+    if request.user and request.user.is_authenticated:
+        return Response({"username": request.user.username, "email": request.user.email})
+    else:
+        return Response({}, status=401)
+
+import time
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def loginuser(request):
+    username = request.data['username']
+    password = request.data['password']
+    user = User.objects.filter(Q(username=username) | Q(email=username)).first()
+    if user and user.is_active:
+        if user.check_password(password):
+            token, created = authtoken.models.Token.objects.get_or_create(user=user)
+            return Response({"username": user.username, "email": user.email, 'auth_token': token.key})
+    return Response({}, status=400)
+
+@api_view(['GET'])
 def datarevision(request):
     revision = StringField.objects.filter(key=settings.DATA_REVISION_KEY).first()
     if revision:
@@ -153,7 +177,6 @@ def gpspoint(request):
 @permission_classes([AllowAny])
 def addpoints(request):
     points = request.data['points']
-    print(points)
     for point in points:
         GpsPoint.objects.create(lat=point['lat'], lon=point['lon'], time=point['time'], name='')
     return Response({"OK": "OK"})

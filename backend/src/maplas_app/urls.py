@@ -14,9 +14,9 @@ router.register(r'maplayers', api_views.MapLayerViewSet)
 
 urlpatterns = [
     path('api/', include(router.urls)),
-    path('api/auth/', include('djoser.urls')),
-    path('api/auth/', include('djoser.urls.authtoken')),
     path('api/datarevision/', api_views.datarevision),
     path('api/addpoints/', api_views.addpoints),
     path('api/gpspoint/', api_views.gpspoint),
+    path('api/loggeduserinfo/', api_views.loggeduserinfo),
+    path('api/loginuser/', api_views.loginuser)
 ]

@@ -75,7 +75,7 @@
                           <form @submit.prevent="logOutFromApi" class="form-inline">
                             <div style="width: 100%" class="form-group flex-form-group">
                               <div style="width: 66%;">
-                                {{ $t('welcome') }}: {{ $store.state.user.username }}
+                                {{ $t('welcome') }}: {{ $store.state.user }}
                              </div>
                              <button type="submit" class="btn btn-primary">{{ $t('logOut') }}</button>
                             </div>
@@ -84,9 +84,12 @@
                         <div v-else>
                           <form @submit.prevent="logInToApi" class="form-inline">
                             <div style="width: 100%" class="form-group flex-form-group">
-                              <input style="width: 33%" type="text" v-model="login" class="form-control mr-2" :placeholder="$t('login')">
-                              <input style="width: 33%" type="password" autocomplete="off" v-model="password" class="form-control mr-2" :placeholder="$t('password')">
-                              <button type="submit" class="btn btn-primary">{{ $t('logIn') }}</button>
+                              <input :disabled="loginInProgress" style="width: 33%" type="text" v-model="login" class="form-control mr-2" :placeholder="$t('login')">
+                              <input :disabled="loginInProgress" style="width: 33%" type="password" autocomplete="off" v-model="password" class="form-control mr-2" :placeholder="$t('password')">
+                              <button :disabled="loginInProgress" type="submit" class="btn btn-primary">
+                                <img style='height: 16px; animation: rotation 2s infinite linear;' v-if="loginInProgress" :src="icons.spinnerWhite" />&nbsp;
+                                {{ $t('logIn') }}
+                              </button>
                             </div>
                           </form> 
                         </div>
@@ -573,56 +576,61 @@ export default class Index extends BaseComponent {
     this.offlineControlZoomChange();
   }
 
+  private loginInProgress = false;
+
   private logInToApi() {
-    axios.post(this.$store.state.appHost + 'api/auth/token/login/', {username: this.login, password: this.password}).then(
-      (response) => {
-        this.createAlert(AlertStatus.success, this.$t('logInSuccess').toString(), 2000);
-        this.$store.commit('setToken', {token: response.data.auth_token, vue: this});
-        this.refreshLoginInfo(false);
-        this.refreshPhotos();
-      },
-    ).catch(
-      (response) => {
-        this.createAlert(AlertStatus.danger, this.$t('logInError').toString(), 2000);
-      },
+    this.loginInProgress = true;
+    axios.post(this.$store.state.appHost + 'api/loginuser/', {username: this.login, password: this.password}).then((response) => {
+      this.createAlert(AlertStatus.success, this.$t('logInSuccess').toString(), 2000);
+      this.$store.commit('setToken', response.data.auth_token);
+      this.$store.commit('setUser', response.data.username);
+      this.refreshPhotos();
+    }).catch((response) => {
+      this.createAlert(AlertStatus.danger, this.$t('logInError').toString(), 2000);
+    },
     ).finally(() => {
       this.login = '';
       this.password = '';
+      this.loginInProgress = false;
     });
   }
 
   private logOutFromApi() {
     this.createAlert(AlertStatus.success, this.$t('logOutSuccess').toString(), 2000);
-    this.$store.commit('setToken', {token: '', vue: this});
+    this.$store.commit('setToken', null);
     this.$store.commit('setUser', null);
     this.refreshPhotos();
   }
 
   private maplasToken: string = null;
+  private maplasUser: string = null;
 
   private setStoreToken() {
     // @ts-ignore
     this.maplasToken = localStorage.getItem('maplasToken');
+    this.maplasUser = localStorage.getItem('maplasUser');
+    if (this.maplasUser) {
+      this.$store.commit('setUser', this.maplasUser);
+      this.createAlert(AlertStatus.success, this.$t('welcome').toString() + ': ' + this.maplasUser, 2000);
+    }
     if (this.maplasToken) {
-      this.$store.commit('setToken', {'token': this.maplasToken});
-      this.refreshLoginInfo(true);
+      this.$store.commit('setToken', this.maplasToken);
+      this.refreshLoginInfo();
     }
   }
 
-  private refreshLoginInfo(showAllerts: boolean) {
-    axios.get(this.$store.state.appHost + 'api/auth/users/me/').then(
-      (response) => {
-        if (showAllerts) {
-          this.createAlert(AlertStatus.success, this.$t('welcome').toString() + ': ' + response.data.username, 2000);
-        }
-        this.$store.commit('setUser', response.data);
-      },
-    ).catch(
-      (response) => {
-        this.$store.commit('setToken', {token: '', vue: this});
+  private refreshLoginInfo() {
+    axios.get(this.$store.state.appHost + 'api/loggeduserinfo/').then((response) => {
+    }).catch((error) => {
+      if ((error.response) && (error.response.status == 401)) {
+        this.$store.commit('setToken', null);
+        this.$store.commit('setUser', null);
         this.createAlert(AlertStatus.danger, this.$t('logInSessionExpired').toString(), 2000);
-      },
-    );
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      }
+    });
   }
 
   private node: any = null;

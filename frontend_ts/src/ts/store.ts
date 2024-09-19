@@ -109,11 +109,11 @@ const store: StoreOptions<RootState> = {
     setAppHost(state, appHost: string) {
       state.appHost = appHost;
     },
-    setToken(state, payload: any) {
-      state.token = payload.token;
-      if (payload.token) {
-        axios.defaults.headers.common['Authorization'] = 'Token ' + payload.token;
-        localStorage.setItem('maplasToken', payload.token);
+    setToken(state, token: any) {
+      state.token = token;
+      if (token) {
+        axios.defaults.headers.common['Authorization'] = 'Token ' + token;
+        localStorage.setItem('maplasToken', token);
       } else {
         delete axios.defaults.headers.common['Authorization'];
         localStorage.removeItem('maplasToken');
@@ -121,6 +121,11 @@ const store: StoreOptions<RootState> = {
     },
     setUser(state, user: any) {
       state.user = user;
+      if (user) {
+        localStorage.setItem('maplasUser', user);
+      } else {
+        localStorage.removeItem('maplasUser');
+      }
       const markersDraggable = !!user;
       for (const place of state.places) {
         place.setDraggable(markersDraggable);
