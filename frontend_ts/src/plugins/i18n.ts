@@ -441,6 +441,9 @@ pl: {
   stopDownloadOffline: 'Zatrzymaj',
   hideFollow: 'Zatrzymaj śledzenie',
   showFollow: 'Rozpocznij śledzenie',
+  mushroom: 'Grzyby',
+  mushrooms: 'Grzyby',
+  roads: 'Drogi',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

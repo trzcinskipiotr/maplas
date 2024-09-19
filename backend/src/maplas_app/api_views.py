@@ -98,7 +98,7 @@ class PlaceViewSet(ListModelMixin, CreateModelMixin, RetrieveModelMixin, UpdateM
         return self.create_update_serializer_class
 
 class PlaceTypeViewSet(ListModelMixin, viewsets.GenericViewSet):
-    queryset = PlaceType.objects.all().order_by('order')
+    queryset = PlaceType.objects.all().order_by('group__order', 'order')
     serializer_class = serializers.PlaceTypeSerializer
 
 class PhotoViewSet(ListModelMixin, CreateModelMixin, UpdateModelMixin, viewsets.GenericViewSet):

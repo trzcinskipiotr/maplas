@@ -102,12 +102,26 @@ class Track(models.Model):
     def calculate_distance_from_segments_optimized(self):
         return calculate_distance_from_segments(json.loads(self.points_json_optimized))
 
+class PlaceTypeGroup(models.Model):
+    name = models.CharField(max_length=100, null=False, blank=False)
+    pl = models.CharField(max_length=100, null=False, blank=False)
+    en = models.CharField(max_length=100, null=False, blank=False)
+    order = models.IntegerField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['order']
+
+    def __str__(self):
+        return self.name
+
+
 class PlaceType(models.Model):
     name = models.CharField(max_length=100, null=False, blank=False)
     icon = models.CharField(max_length=100, null=False, blank=False)
     pl = models.CharField(max_length=100, null=False, blank=False)
     en = models.CharField(max_length=100, null=False, blank=False)
     order = models.IntegerField(null=True, blank=True)
+    group = models.ForeignKey(PlaceTypeGroup, null=True, on_delete=models.PROTECT)
 
     class Meta:
         ordering = ['order']

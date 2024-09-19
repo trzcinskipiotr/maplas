@@ -1,7 +1,7 @@
 from django.contrib import admin
 from imagekit.admin import AdminThumbnail
 
-from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer, VideoLink, StringField, GpsPoint
+from maplas_app.models import Track, Region, Place, PlaceType, Photo, Area, MapLayer, VideoLink, StringField, GpsPoint, PlaceTypeGroup
 
 
 @admin.register(Track)
@@ -25,8 +25,13 @@ class TrackDetailsAdmin(admin.ModelAdmin):
 
 @admin.register(PlaceType)
 class PlaceTypeAdmin(admin.ModelAdmin):
-    list_display = ('id', 'name', 'icon', 'pl', 'en', 'order')
+    list_display = ('id', 'name', 'icon', 'pl', 'en', 'order', 'group')
     search_fields = ('id', 'name', 'icon', 'pl', 'en')
+
+@admin.register(PlaceTypeGroup)
+class PlaceTypeGroupAdmin(admin.ModelAdmin):
+    list_display = ('id', 'name', 'pl', 'en', 'order')
+    search_fields = ('id', 'name', 'pl', 'en')
 
 @admin.register(Place)
 class PlaceAdmin(admin.ModelAdmin):

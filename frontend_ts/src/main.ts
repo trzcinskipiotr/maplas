@@ -29,7 +29,6 @@ loadgoogle({key: 'GOOGLE_API_KEY'});
 Vue.config.productionTip = false;
 
 import '@/assets/css/flags.css';
-import '@/assets/css/icons.css';
 
 const myWorker = new Worker("./worker-opfs.js");
 document.worker = myWorker;
@@ -50,6 +49,7 @@ import AppArea from '@/components/AppArea.vue';
 import Areas from '@/components/Areas.vue';
 import SaveTrackModal from '@/components/SaveTrackModal.vue';
 import SavePlaceModal from '@/components/SavePlaceModal.vue';
+import PlaceTypeGroupCard from '@/components/PlaceTypeGroupCard.vue';
 Vue.component('AppTrack', AppTrack);
 Vue.component('AppTrackGroup', AppTrackGroup);
 Vue.component('TrackStatusIcon', TrackStatusIcon);
@@ -66,6 +66,7 @@ Vue.component('AppArea', AppArea);
 Vue.component('Areas', Areas);
 Vue.component('SaveTrackModal', SaveTrackModal);
 Vue.component('SavePlaceModal', SavePlaceModal);
+Vue.component('PlaceTypeGroupCard', PlaceTypeGroupCard);
 
 import {formatDate, formatDateSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes, formatDateSecondsEpoch} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);
