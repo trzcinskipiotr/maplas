@@ -414,6 +414,16 @@ export default class TrackDetails extends BaseComponent {
   private onMaximizeChanged() {
     if (this.track.maximized) {
       this.maximizeTrack(null);
+    } else {
+      if (this.timeLabelsVisible) {
+        this.showHideTimeLables();
+      }
+      if (this.speedLabelsVisible) {
+        this.showHideSpeedLables();
+      }
+      if (this.speedTrackVisible) {
+        this.colorTrackBySpeed();
+      }
     }
   }
 

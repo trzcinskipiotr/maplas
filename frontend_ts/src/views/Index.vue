@@ -108,7 +108,8 @@
                     <b-form-slider style="width: 100%;" v-model="playingSpeed" :min=1 :max=20></b-form-slider><br><br>
                     <b-form-checkbox :disabled="locationActive" style="display: inline;" v-model="useHTML5location"></b-form-checkbox>{{ $t('useHTML5location') }}<br>
                     <b-form-checkbox style="display: inline;" v-model="largeButtonsDuringLocation"></b-form-checkbox>{{ $t('largeButtonsDuringLocation') }}<br>
-                    <b-form-checkbox style="display: inline;" v-model="showAllButtonsDuringLocation"></b-form-checkbox>{{ $t('showAllButtonsDuringLocation') }}<br><br>
+                    <b-form-checkbox style="display: inline;" v-model="showAllButtonsDuringLocation"></b-form-checkbox>{{ $t('showAllButtonsDuringLocation') }}<br>
+                    <b-form-checkbox style="display: inline;" v-model="lockPortrait"></b-form-checkbox>{{ $t('lockPortrait') }}<br><br>
                     <OfflineCard></OfflineCard>
                     <br>
                     <button class="btn btn-primary" @click="noSleepToggle">{{ noSleepActive ? $t('noSleepActive') : $t('noSleepInactive')}}</button>
@@ -399,6 +400,7 @@ export default class Index extends BaseComponent {
   private useHTML5location = false;
   private largeButtonsDuringLocation = false;
   private showAllButtonsDuringLocation = false;
+  private lockPortrait = false;
 
   private icons = icons;
 
@@ -434,6 +436,27 @@ export default class Index extends BaseComponent {
       localStorage.setItem('showAllButtonsDuringLocation', this.showAllButtonsDuringLocation.toString());
       this.changeButtonSizeDuringLocation();
     }
+  }
+
+  private lockOrUnlockScreen() {
+    if ((this.locationActive) && (this.lockPortrait)) {
+      screen.orientation.lock("portrait").then(() => {
+        this.createAlert(AlertStatus.success, this.$t('lockCreated').toString(), 2000);
+      }).catch((error) => {
+        this.createAlert(AlertStatus.danger, this.$t('lockError').toString(), 2000);
+      });
+    } else {
+      try {
+        screen.orientation.unlock();
+      } catch {
+      }
+    }
+  }
+
+  @Watch('lockPortrait')
+  private onLockPortrait(value: string, oldValue: string) {
+    localStorage.setItem('lockPortrait', this.lockPortrait.toString());
+    this.lockOrUnlockScreen();
   }
 
   private changeButtonSizeDuringLocation() {
@@ -640,6 +663,7 @@ export default class Index extends BaseComponent {
     this.largeButtonsDuringLocation = (localStorage.getItem('largeButtonsDuringLocation') == 'true');
     this.showAllButtonsDuringLocation = (localStorage.getItem('showAllButtonsDuringLocation') == 'true');
     this.useHTML5location = (localStorage.getItem('useHTML5location') == 'true');
+    this.lockPortrait = (localStorage.getItem('lockPortrait') == 'true');
     console.log('KV settings loaded');
   }
 
@@ -1419,6 +1443,7 @@ export default class Index extends BaseComponent {
     }
     e.stopPropagation();
     this.changeButtonSizeDuringLocation();
+    this.lockOrUnlockScreen();
   }
 
   private async addLocationButton() {

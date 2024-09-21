@@ -444,6 +444,9 @@ pl: {
   mushroom: 'Grzyby',
   mushrooms: 'Grzyby',
   roads: 'Drogi',
+  lockPortrait: 'Blokuj orientację pionową w czasie nawigacji',
+  lockCreated: 'Orinetacja pionowa zablokowana',
+  lockError: 'Błąd blokowania orientacji pionowej',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});
