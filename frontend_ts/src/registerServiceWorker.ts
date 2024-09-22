@@ -42,4 +42,5 @@ if ((process.env.NODE_ENV === 'production') && (process.env.VUE_APP_PWA)) {
       console.error('Error during service worker registration:', error);
     },
   });
+
 }

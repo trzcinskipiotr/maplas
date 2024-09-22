@@ -126,6 +126,7 @@
                     </div>  
                     <OfflineCard></OfflineCard>
                     <br>
+                    <button class="btn btn-primary" @click="countPhotoCache">{{ $t('countPhotoCache') }}</button><br><br>
                     <button class="btn btn-primary" @click="noSleepToggle">{{ noSleepActive ? $t('noSleepActive') : $t('noSleepInactive')}}</button>
                     <span v-if="VUE_APP_BUILD_DATE"><br><br>{{ $t('buildDate') }}: {{ VUE_APP_BUILD_DATE | formatDateSecondsEpoch }}<br></span>
                     <router-link :to="{'name': 'cache'}">Show cache files</router-link><br>
@@ -465,12 +466,42 @@ export default class Index extends BaseComponent {
         this.createAlert(AlertStatus.success, this.$t('lockCreated').toString(), 2000);
       }).catch((error) => {
         this.createAlert(AlertStatus.danger, this.$t('lockError').toString(), 2000);
-        this.createAlert(AlertStatus.danger, error, 2000);
       });
     } else {
       try {
         screen.orientation.unlock();
       } catch {
+      }
+    }
+  }
+
+  private async checkOrCachePhoto(url: string) {
+    const cache = await caches.open('maplas-pwa-img');
+    const response = await cache.match(url);
+    if (! response) {
+      const response = await fetch(url);
+    }
+  }
+
+  private async countPhotoCache() {
+    const cache = await caches.open('maplas-pwa-img');
+    const keys = await cache.keys();
+    this.createAlert(AlertStatus.success, keys.length, 2000);
+  }
+
+  private async startThumbsCache() {
+    if (this.$store.state.places) {
+      for (const place of this.$store.state.places) {
+        for (const photo of place.photos) {
+          await this.checkOrCachePhoto(photo.image_thumb);
+        }
+      }
+    }
+    if (this.$store.state.tracks) {
+      for (const track of this.$store.state.tracks) {
+        for (const photo of track.gpsTrack.photos) {
+          await this.checkOrCachePhoto(photo.image_thumb);
+        }
       }
     }
   }
@@ -861,6 +892,9 @@ export default class Index extends BaseComponent {
     }, 15000);
     this.changeButtonSizeDuringLocation();
     this.mapMoveEnd(null);
+    setTimeout(() => {
+      this.startThumbsCache();
+    }, 60000);
   }
 
   private addZoomControl() {

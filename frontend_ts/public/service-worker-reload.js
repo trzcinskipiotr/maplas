@@ -63,34 +63,40 @@ async function fetchOrGetEvent(event) {
   }
 }
 
+async function getFromCacheOrNetwork(event) {
+  try {
+    const cache = await caches.open(IMG_CACHE_NAME);
+    const response = await cache.match(event.request);
+    if (response) {
+      console.log(event.request.url + ': response is returned from cache');
+      return response;
+    } else {
+      const response = await fetch(event.request);
+      if (response && response.status == 200) {
+        const responseCloneToSave = response.clone();
+        cache.put(event.request, responseCloneToSave);
+        console.log(event.request.url + ': response is saved to cache');
+        return response;
+      } else {
+        return response;
+      }
+    }
+  } catch (error) {
+  }
+}
+
 self.addEventListener('fetch', event => {
     console.log('Fetching: ' + event.request.url + ' in ServiceWorker');
     if (event.request.method == 'GET') {
-        const url = event.request.url;
-        let processByServiceWorker = false;
-        if (url.includes('/djangoapp/api/tracks/')) {
-            processByServiceWorker = true;
-        }
-        if (url.includes('/djangoapp/api/places/')) {
-            processByServiceWorker = true;
-        }
-        if (url.includes('/djangoapp/api/areas/')) {
-            processByServiceWorker = true;
-        }
-        if (url.includes('/djangoapp/api/maplayers/')) {
-            processByServiceWorker = true;
-        }
-        if (url.includes('/djangoapp/api/placetypes/')) {
-            processByServiceWorker = true;
-        }
-        if (url.includes('/djangoapp/api/regions/')) {
-            processByServiceWorker = true;
-        }
-        processByServiceWorker = false;
-        if (processByServiceWorker) {
-            console.log(event.request.url + ': intercepted by ServiceWorker');
-            event.respondWith(fetchOrGetEvent(event));
-        }
+      const url = event.request.url;
+      let processByServiceWorker = false;
+      if (url.includes('/media/CACHE/')) {
+        processByServiceWorker = true;
+      }
+      if (processByServiceWorker) {
+          console.log(event.request.url + ': intercepted by ServiceWorker');
+          event.respondWith(getFromCacheOrNetwork(event));
+      }
     }
 });
 

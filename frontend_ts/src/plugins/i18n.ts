@@ -448,6 +448,7 @@ pl: {
   lockCreated: 'Orinetacja pionowa zablokowana',
   lockError: 'Błąd blokowania orientacji pionowej',
   speedScale: 'Skale prędkości',
+  countPhotoCache: 'Policz cache miniatur',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});
