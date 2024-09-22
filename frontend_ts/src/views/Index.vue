@@ -490,17 +490,19 @@ export default class Index extends BaseComponent {
   }
 
   private async startThumbsCache() {
-    if (this.$store.state.places) {
-      for (const place of this.$store.state.places) {
-        for (const photo of place.photos) {
-          await this.checkOrCachePhoto(this.replaceHTTP(photo.image_thumb));
+    if (this.$store.state.pwa) {
+      if (this.$store.state.places) {
+        for (const place of this.$store.state.places) {
+          for (const photo of place.photos) {
+            await this.checkOrCachePhoto(this.replaceHTTP(photo.image_thumb));
+          }
         }
       }
-    }
-    if (this.$store.state.tracks) {
-      for (const track of this.$store.state.tracks) {
-        for (const photo of track.gpsTrack.photos) {
-          await this.checkOrCachePhoto(this.replaceHTTP(photo.image_thumb));
+      if (this.$store.state.tracks) {
+        for (const track of this.$store.state.tracks) {
+          for (const photo of track.gpsTrack.photos) {
+            await this.checkOrCachePhoto(this.replaceHTTP(photo.image_thumb));
+          }
         }
       }
     }
