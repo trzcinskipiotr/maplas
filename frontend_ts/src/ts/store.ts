@@ -33,6 +33,7 @@ export interface RootState {
   speedLegendVisible: boolean;
   speedThresholds: number[];
   speedColors: Array<{color: string}>;
+  speedScales: any;
   editedTrack: Track;
   editedArea: Area;
   isDesktop: boolean;
@@ -67,15 +68,10 @@ const store: StoreOptions<RootState> = {
     places: Array<Place>(),
     placeTypes: Array<PlaceType>(),
     speedLegendVisible: false,
-    speedThresholds: [8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22],
-    speedColors: [
-      {color: 'rgb(229,11,10)'}, {color: 'rgb(231,106,12)'}, {color: 'rgb(231,154,12)'},
-      {color: 'rgb(228,201,12)'}, {color: 'rgb(210,230,12)'}, {color: 'rgb(164,231,12)'},
-      {color: 'rgb(68,231,12)'}, {color: 'rgb(11,230,143)'}, {color: 'rgb(12,220,230)'},
-      {color: 'rgb(12,175,230)'}, {color: 'rgb(12,126,230)'}, {color: 'rgb(11,77,229)'},
-      {color: 'rgb(88,12,230)'}, {color: 'rgb(137,12,230)'}, {color: 'rgb(181,11,229)'},
-      {color: 'rgb(230,12,229)'}
-    ],
+    speedThresholds: null,
+    speedColors: null,
+    speedScales: {1: {'thresholds': [0, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], 'colors': [{color: 'rgb(229,11,10)'}, {color: 'rgb(231,106,12)'}, {color: 'rgb(231,154,12)'}, {color: 'rgb(228,201,12)'}, {color: 'rgb(210,230,12)'}, {color: 'rgb(164,231,12)'}, {color: 'rgb(68,231,12)'}, {color: 'rgb(11,230,143)'}, {color: 'rgb(12,220,230)'}, {color: 'rgb(12,175,230)'}, {color: 'rgb(12,126,230)'}, {color: 'rgb(11,77,229)'}, {color: 'rgb(88,12,230)'}, {color: 'rgb(137,12,230)'}, {color: 'rgb(181,11,229)'}, {color: 'rgb(230,12,229)'}]},
+                  2: {'thresholds': [0, 5, 10, 15, 20], 'colors': [{color: 'rgb(229,11,10)'}, {color: 'rgb(231,154,12)'}, {color: 'rgb(210,230,12)'}, {color: 'rgb(11,230,143)'}, {color: 'rgb(12,126,230)'}]}},
     editedTrack: null,
     editedArea: null,
     isDesktop: !process.env.VUE_APP_PWA,
@@ -154,6 +150,12 @@ const store: StoreOptions<RootState> = {
     },
     setSpeedLegendVisible(state, speedLegendVisible: boolean) {
       state.speedLegendVisible = speedLegendVisible;
+    },
+    setSpeedScale(state, scale: any) {
+      if (scale in state.speedScales) {
+        state.speedThresholds = state.speedScales[scale]['thresholds'];
+        state.speedColors = state.speedScales[scale]['colors'];
+      }
     },
     setRegions(state, regions: Region[]) {
       state.regions = regions;

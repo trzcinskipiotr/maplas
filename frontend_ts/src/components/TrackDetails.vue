@@ -266,6 +266,18 @@ export default class TrackDetails extends BaseComponent {
     this.speedLabelsVisible = !this.speedLabelsVisible;
   }
 
+
+  @Watch('$store.state.speedThresholds')
+  private onSpeedScaleChooseChange() {
+    if (this.speedTrackVisible) {
+      this.colorTrackBySpeed();
+      this.speedTrack = null;
+      this.colorTrackBySpeed();
+    } else {
+      this.speedTrack = null;
+    }
+  }
+
   private colorTrackBySpeed() {
     if (! this.speedTrack) {
       const points: {lat: number, lon: number, speed: number}[] = [];
@@ -295,12 +307,12 @@ export default class TrackDetails extends BaseComponent {
         multiOptions: {
           optionIdxFn: (latLng) => {
             const altThresholds = this.$store.state.speedThresholds;
-            for (let i = 0; i < altThresholds.length; ++i) {
+            for (let i = 1; i < altThresholds.length; ++i) {
                 if (latLng.speed <= altThresholds[i]) {
-                    return i;
+                    return i - 1;
                 }
             }
-            return altThresholds.length;
+            return altThresholds.length - 1;
           },
           options: this.$store.state.speedColors,
         },

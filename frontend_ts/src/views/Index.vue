@@ -110,6 +110,20 @@
                     <b-form-checkbox style="display: inline;" v-model="largeButtonsDuringLocation"></b-form-checkbox>{{ $t('largeButtonsDuringLocation') }}<br>
                     <b-form-checkbox style="display: inline;" v-model="showAllButtonsDuringLocation"></b-form-checkbox>{{ $t('showAllButtonsDuringLocation') }}<br>
                     <b-form-checkbox style="display: inline;" v-model="lockPortrait"></b-form-checkbox>{{ $t('lockPortrait') }}<br><br>
+                    <div v-if="$store.state.isDesktop">
+                      {{ $t('speedScale') }}<br>
+                      <div class="form-check">
+                        <div v-for="(speedScale, sKey) of $store.state.speedScales" :key="sKey">
+                          <input class="form-check-input" type="radio" name="speedScaleRadio" :id="'speedScaleChoose' + sKey" :value="sKey" v-model="speedScaleChoose">
+                          <div style="background-color: white; margin: 2px">
+                            <span v-for="(color, index) in speedScale.colors" :key="color.color" :style="{'display': 'inline-block', 'font-size': '12px', 'text-align': 'center', 'color': 'white', 'width': '16px', 'height': '14px', 'margin': '1px', 'background-color': color.color}">
+                              <b>{{ speedScale.thresholds[index] }}</b>
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <br>
+                    </div>  
                     <OfflineCard></OfflineCard>
                     <br>
                     <button class="btn btn-primary" @click="noSleepToggle">{{ noSleepActive ? $t('noSleepActive') : $t('noSleepInactive')}}</button>
@@ -354,6 +368,8 @@ export default class Index extends BaseComponent {
   private fullscreenOpened = false;
   private playingSpeed = this.$store.state.playingSpeed;
 
+  private speedScaleChoose = "1";
+
   private mainGalleryOpened = false;
 
   private groups = [{id: 'year', translate: 'year', label: '', grouper: new YearTrackGrouper()}, {id: 'type', translate: 'type', label: '', grouper: new TypeTrackGrouper()}, {id: 'region', translate: 'region', label: '', grouper: new RegionTrackGrouper()}];
@@ -407,6 +423,11 @@ export default class Index extends BaseComponent {
   private followActive = false;
   private followMarker: L.CircleMarker = null;
 
+  @Watch('speedScaleChoose')
+  private onSpeedScaleChooseChange() {
+    this.$store.commit('setSpeedScale', this.speedScaleChoose);
+  }
+
   @Watch('language')
   private onLanguageChanged(value: string, oldValue: string) {
     i18n.locale = this.language!.language;
@@ -444,6 +465,7 @@ export default class Index extends BaseComponent {
         this.createAlert(AlertStatus.success, this.$t('lockCreated').toString(), 2000);
       }).catch((error) => {
         this.createAlert(AlertStatus.danger, this.$t('lockError').toString(), 2000);
+        this.createAlert(AlertStatus.danger, error, 2000);
       });
     } else {
       try {
@@ -811,6 +833,7 @@ export default class Index extends BaseComponent {
     this.setLanguage();
     this.setAppHost();
     this.setStoreToken();
+    this.$store.commit('setSpeedScale', this.speedScaleChoose);
     await this.downloadDataRevision();
     this.createMap([52.743682, 16.273668], 11);
     console.log('Map created');
