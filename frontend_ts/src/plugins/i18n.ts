@@ -214,6 +214,7 @@ en: {
   useHTML5location: 'Use HTML5 location service',
   largeButtonsDuringLocation: 'Large buttons during location',
   showAllButtonsDuringLocation: 'Show all buttons during location',
+  galleries: 'Galleries',
 },
 pl: {
   tracksDownloaded: '{0} trasy ściągnięte',
@@ -449,6 +450,7 @@ pl: {
   lockError: 'Błąd blokowania orientacji pionowej',
   speedScale: 'Skale prędkości',
   countPhotoCache: 'Policz cache miniatur',
+  galleries: 'Galerie',
 }};
 
 export default new VueI18n({locale: 'en', fallbackLocale: 'en', messages});

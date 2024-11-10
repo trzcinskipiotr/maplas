@@ -2,25 +2,33 @@
   <div id="appvue">
     <div class="wrapper">
       <div id="sidebar">
-        <div class="card">
-          <div class="card-header">
-            {{ $t('mainMenu') }}
-            <div style="float: right;">
-              <img @click="togglePanel" style="height: 20px; cursor: pointer;" :src="icons.closeIcon" />
+        <div class="card" style="position: relative">
+          <div style="position: sticky; top: 0; z-index: 1000000">
+            <div style="background-color: rgb(247, 247, 247)">
+              <div class="card-header">
+                {{ $t('mainMenu') }}
+                <div style="float: right;">
+                  <img @click="togglePanel" style="height: 20px; cursor: pointer;" :src="icons.closeIcon" />
+                </div>
+              </div>
             </div>
+            <div style="background-color: white">  
+              <div class="mx-0 px-0 card-body">
+                <ul class="nav nav-tabs" id="tabs" role="tablist">
+                  <li class="nav-item">
+                    <a class="nav-link active" id="home-tab" data-toggle="tab" href="#tabtracks" role="tab">{{ $t('tracks') }}</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabsettings" role="tab">{{ $t('settings') }}</a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabplaces" role="tab">{{ $t('objects') }}</a>
+                  </li>
+                </ul>
+              </div>
+            </div>  
           </div>
-          <div class="mx-0 px-0 card-body">
-            <ul class="nav nav-tabs" id="tabs" role="tablist">
-              <li class="nav-item">
-                <a class="nav-link active" id="home-tab" data-toggle="tab" href="#tabtracks" role="tab">{{ $t('tracks') }}</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabsettings" role="tab">{{ $t('settings') }}</a>
-              </li>
-              <li class="nav-item">
-                <a class="nav-link" id="profile-tab" data-toggle="tab" href="#tabplaces" role="tab">{{ $t('objects') }}</a>
-              </li>
-            </ul>
+          <div>
             <div class="tab-content" id="tab_content_tracks">
               <div class="tab-pane show active" role="tabpanel" id="tabtracks">
                 <div class="card">
@@ -147,7 +155,17 @@
       </div>  
       <div class="content">
         <div id="main_gallery_div" style="height: 100vh; overflow-y: scroll">
-          <div v-if="mainGalleryOpened">
+          <div style="position: sticky; top: 0; background-color: rgb(247, 247, 247)">
+            <div class="card">
+              <div class="card-header">
+                {{ $t('galleries') }}
+                <div style="float: right;">
+                  <img @click="toggleGalleryPanel" style="height: 20px; cursor: pointer;" :src="icons.closeIcon" />
+                </div>
+              </div>
+            </div>
+          </div>      
+          <div v-if="mainGalleryOpened" style="padding: 20px">
             <div v-for="(trackGroupGroup, key) in trackGroupsDict" :key="key">
               <div v-show="groupBy.id === key">
                 <div v-for="trackGroup in trackGroupGroup" :key="trackGroup.label" class="mb-2">
@@ -1888,7 +1906,7 @@ export default class Index extends BaseComponent {
   }
 
   #map.small {
-    width: 20% !important;
+    width: 0% !important;
   }
 
   .wrapper {
@@ -1940,7 +1958,7 @@ export default class Index extends BaseComponent {
 
   #main_gallery_div.active {
     display: block !important;
-    padding: 20px;
+    padding: 0px;
     height: 100%;
     width: 100%;
     background-image: url(../assets/gallery_background.jpg);
