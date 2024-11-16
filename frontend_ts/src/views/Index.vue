@@ -162,10 +162,13 @@
                 <div style="float: right;">
                   <img @click="toggleGalleryPanel" style="height: 20px; cursor: pointer;" :src="icons.closeIcon" />
                 </div>
+                <div style="float: right; width: 50%; max-width: 200px; height: 0px; margin-right: 10px">
+                  <b-form-slider v-model="imagesInRow" style="width: 100%" :min=1 :max=10></b-form-slider><br><br>
+                </div>
               </div>
             </div>
           </div>      
-          <div v-if="mainGalleryOpened" style="padding: 20px">
+          <div id="mainGalleryPhotos" v-if="mainGalleryOpened" style="padding: 10px">
             <div v-for="(trackGroupGroup, key) in trackGroupsDict" :key="key">
               <div v-show="groupBy.id === key">
                 <div v-for="trackGroup in trackGroupGroup" :key="trackGroup.label" class="mb-2">
@@ -177,7 +180,7 @@
                     <template v-if="track.gpsTrack.description">{{ track.gpsTrack.description }}<br></template>
                     <br>
                     <span v-for="(photo, index) in track.gpsTrack.photos" :key="photo.id">
-                      <img style="margin: 5px; cursor: pointer" :src="replaceHTTP(photo.image_thumb)" @click="clickOpenGallery(track.gpsTrack.id, index)" />
+                      <img :key="refresh" :style="{'margin-right': '5px', 'margin-bottom': '5px', 'cursor': 'pointer', 'object-fit': 'cover', 'object-position': 'center', 'height': calculateGalleryWidth(), 'width': calculateGalleryWidth()}" :src="replaceHTTP(photo.image_fullhd)" @click="clickOpenGallery(track.gpsTrack.id, index)" />
                     </span>
                     <br><br><br>
                   </div>  
@@ -386,6 +389,9 @@ export default class Index extends BaseComponent {
   private document = document;
   private fullscreenOpened = false;
   private playingSpeed = this.$store.state.playingSpeed;
+  private imagesInRow: number = null;
+
+  private refresh = 1;
 
   private speedScaleChoose = "1";
 
@@ -490,6 +496,20 @@ export default class Index extends BaseComponent {
         screen.orientation.unlock();
       } catch {
       }
+    }
+  }
+
+  private calculateGalleryWidth() {
+    const div = document.getElementById('mainGalleryPhotos');
+    if (div) {
+      if (! this.imagesInRow) {
+        this.calculateImagesInRowAtStart();
+      }
+      const width = div.getBoundingClientRect().width - 20 - 5 * this.imagesInRow;
+      return Math.floor(width / this.imagesInRow) + 'px';
+    } else {
+      this.refresh = this.refresh + 1;
+      return '300px';
     }
   }
 
@@ -876,6 +896,11 @@ export default class Index extends BaseComponent {
         this.sendRequestWithCache(url, null, true, filename).then(data => resolve(data)).catch(error => reject(error));
       })
     })
+  }
+
+  private calculateImagesInRowAtStart() {
+    const width = document.getElementById('mainGalleryPhotos').getBoundingClientRect().width;
+    this.imagesInRow = Math.max(Math.floor(width / 300), 1);
   }
 
   private async mounted() {

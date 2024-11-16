@@ -157,7 +157,7 @@ export default class TrackDetails extends BaseComponent {
     window.lightGallery(this.$refs.gallerySpan, {
       index: index,
       dynamic: true,
-      autoplay: true,
+      autoplay: false,
       pause: 2000,
       galleryId: time,
       dynamicEl: fullRess,

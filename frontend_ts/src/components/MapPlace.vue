@@ -131,7 +131,7 @@ export default class MapPlace extends BaseComponent {
     }
     window.lightGallery(this.$refs.smallImage, {
       dynamic: true,
-      autoplay: true,
+      autoplay: false,
       pause: 2000,
       galleryId: time,
       dynamicEl: fullHDs,
@@ -150,7 +150,7 @@ export default class MapPlace extends BaseComponent {
     }
     window.lightGallery(this.$refs.fullResImage, {
       dynamic: true,
-      autoplay: true,
+      autoplay: false,
       pause: 2000,
       galleryId: time,
       dynamicEl: fullRess,
