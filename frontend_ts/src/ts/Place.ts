@@ -3,7 +3,6 @@ import PlaceType from './PlaceType';
 import Photo from './Photo';
 import 'lightgallery.js';
 import 'lightgallery.js/dist/css/lightgallery.css';
-//import 'lg-fullscreen.js';
 import 'lg-zoom.js';
 import 'lg-hash.js';
 import 'lg-autoplay.js';

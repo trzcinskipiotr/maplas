@@ -162,8 +162,11 @@
                 <div style="float: right;">
                   <img @click="toggleGalleryPanel" style="height: 20px; cursor: pointer;" :src="icons.closeIcon" />
                 </div>
-                <div style="float: right; width: 50%; max-width: 200px; height: 0px; margin-right: 10px">
-                  <b-form-slider v-model="imagesInRow" style="width: 100%" :min=1 :max=10></b-form-slider><br><br>
+                <div style="float: right; margin-right: 10px;">
+                  <img style="width: 20px; height: 20px; cursor: pointer;" @click="toggleFullScreen" :src="fullscreenOpened ? icons.exitFullScreen : icons.enterFullScreen">
+                </div>
+                <div style="float: right; width: 50%; max-width: 200px; margin-right: 10px;">
+                  <b-form-slider v-model="imagesInRow" style="width: 100%" :min=1 :max=10></b-form-slider>
                 </div>
               </div>
             </div>
@@ -288,10 +291,10 @@
     <template v-if="(document.getElementsByClassName('leaflet-control-zoom-out')[0]) && ($store.state.isDesktop)">
       <b-tooltip :target="document.getElementsByClassName('leaflet-control-zoom-out')[0]">{{ $t('zoomOut') }}</b-tooltip>
     </template>
+    <span>
+      <TrackDetails v-for="track in $store.state.tracks" :track="track" :key="track.gpsTrack.id"></TrackDetails>
+    </span>
     <template v-if="$store.state.isDesktop">
-      <span>
-        <TrackDetails v-for="track in $store.state.tracks" :track="track" :key="track.gpsTrack.id"></TrackDetails>
-      </span>
       <span>
         <TrackDetails v-for="track in $store.state.imports" :track="track" :key="track.gpsTrack.id"></TrackDetails>
       </span>
@@ -1600,9 +1603,11 @@ export default class Index extends BaseComponent {
     this.$refs.fullscreenTooltip.$emit('close');
   }
 
+  private fullScreenControl = null;
+
   private addFullScreenControl() {
     if (this.$store.state.isDesktop) {
-      L.control.fullscreen({
+      this.fullScreenControl = L.control.fullscreen({
         position: 'topright',
         title: '',
         titleCancel: '',
@@ -1610,8 +1615,39 @@ export default class Index extends BaseComponent {
         fullscreenElement: document.documentElement,
       }).addTo(this.$store.state.map);
 
-      this.$store.state.map.on('enterFullscreen', () => {this.fullscreenOpened = true; this.closeFullscreenTooltip(); });
-      this.$store.state.map.on('exitFullscreen', () => {this.fullscreenOpened = false; this.closeFullscreenTooltip(); });
+      this.$store.state.map.on('enterFullscreen', () => {
+        this.fullscreenOpened = true; 
+        this.closeFullscreenTooltip();
+        $(".leaflet-control-zoom-fullscreen").addClass('leaflet-control-zoom-fullscreen_exit').removeClass('leaflet-control-zoom-fullscreen_enter');
+      });
+
+      this.$store.state.map.on('exitFullscreen', () => {
+        this.fullscreenOpened = false; 
+        this.closeFullscreenTooltip();
+        $(".leaflet-control-zoom-fullscreen").removeClass('leaflet-control-zoom-fullscreen_exit').addClass('leaflet-control-zoom-fullscreen_enter');
+      });
+    } else {
+      document.onfullscreenchange = (event) => {
+        if (document.fullscreenElement) {
+          this.fullscreenOpened = true;
+        } else {
+          this.fullscreenOpened = false;
+        }
+      };
+    }
+  }
+
+  private toggleFullScreen() {
+    if (this.fullScreenControl) {
+      this.fullScreenControl.toggleFullScreen();
+    } else {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen();
+        this.fullscreenOpened = true;
+      } else if (document.exitFullscreen) {
+        document.exitFullscreen();
+        this.fullscreenOpened = false;
+      }
     }
   }
 
@@ -2023,7 +2059,18 @@ export default class Index extends BaseComponent {
   }
 
   .leaflet-control-zoom-fullscreen {
-    background-image: url(../assets/fullscreen_icon.png);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' version='1.1' width='1000' height='1000' viewBox='0 0 1000 1000' xml:space='preserve'%3E%3Cdesc%3ECreated with Fabric.js 3.5.0%3C/desc%3E%3Cdefs%3E%3C/defs%3E%3Crect x='0' y='0' width='100%25' height='100%25' fill='rgba(255,255,255,0)'/%3E%3Cg transform='matrix(1.4208 0 0 1.4208 500.014 500.014)' id='216632'%3E%3Cg style='' vector-effect='non-scaling-stroke'%3E%3Cg transform='matrix(33.3333 0 0 33.3333 -216.6668 -216.6668)'%3E%3Cpath style='stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;' transform=' translate(-5.5, -5.5)' d='M 4 1.5 C 2.61929 1.5 1.5 2.61929 1.5 4 V 8.5 C 1.5 9.05228 1.94772 9.5 2.5 9.5 H 3.5 C 4.05228 9.5 4.5 9.05228 4.5 8.5 V 4.5 H 8.5 C 9.05228 4.5 9.5 4.05228 9.5 3.5 V 2.5 C 9.5 1.94772 9.05228 1.5 8.5 1.5 H 4 Z' stroke-linecap='round'/%3E%3C/g%3E%3Cg transform='matrix(33.3333 0 0 33.3333 216.6666 -216.6668)'%3E%3Cpath style='stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;' transform=' translate(-18.5, -5.5)' d='M 20 1.5 C 21.3807 1.5 22.5 2.61929 22.5 4 V 8.5 C 22.5 9.05228 22.0523 9.5 21.5 9.5 H 20.5 C 19.9477 9.5 19.5 9.05228 19.5 8.5 V 4.5 H 15.5 C 14.9477 4.5 14.5 4.05228 14.5 3.5 V 2.5 C 14.5 1.94772 14.9477 1.5 15.5 1.5 H 20 Z' stroke-linecap='round'/%3E%3C/g%3E%3Cg transform='matrix(33.3333 0 0 33.3333 216.6666 216.6666)'%3E%3Cpath style='stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;' transform=' translate(-18.5, -18.5)' d='M 20 22.5 C 21.3807 22.5 22.5 21.3807 22.5 20 V 15.5 C 22.5 14.9477 22.0523 14.5 21.5 14.5 H 20.5 C 19.9477 14.5 19.5 14.9477 19.5 15.5 V 19.5 H 15.5 C 14.9477 19.5 14.5 19.9477 14.5 20.5 V 21.5 C 14.5 22.0523 14.9477 22.5 15.5 22.5 H 20 Z' stroke-linecap='round'/%3E%3C/g%3E%3Cg transform='matrix(33.3333 0 0 33.3333 -216.6668 216.6666)'%3E%3Cpath style='stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;' transform=' translate(-5.5, -18.5)' d='M 1.5 20 C 1.5 21.3807 2.61929 22.5 4 22.5 H 8.5 C 9.05228 22.5 9.5 22.0523 9.5 21.5 V 20.5 C 9.5 19.9477 9.05228 19.5 8.5 19.5 H 4.5 V 15.5 C 4.5 14.9477 4.05228 14.5 3.5 14.5 H 2.5 C 1.94772 14.5 1.5 14.9477 1.5 15.5 V 20 Z' stroke-linecap='round'/%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/svg%3E") !important;
+    background-size: cover;
+    background-origin: content-box;
+    padding: 8px;
+  }
+
+  .leaflet-control-zoom-fullscreen_enter {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' version='1.1' width='1000' height='1000' viewBox='0 0 1000 1000' xml:space='preserve'%3E%3Cdesc%3ECreated with Fabric.js 3.5.0%3C/desc%3E%3Cdefs%3E%3C/defs%3E%3Crect x='0' y='0' width='100%25' height='100%25' fill='rgba(255,255,255,0)'/%3E%3Cg transform='matrix(1.4208 0 0 1.4208 500.014 500.014)' id='216632'%3E%3Cg style='' vector-effect='non-scaling-stroke'%3E%3Cg transform='matrix(33.3333 0 0 33.3333 -216.6668 -216.6668)'%3E%3Cpath style='stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;' transform=' translate(-5.5, -5.5)' d='M 4 1.5 C 2.61929 1.5 1.5 2.61929 1.5 4 V 8.5 C 1.5 9.05228 1.94772 9.5 2.5 9.5 H 3.5 C 4.05228 9.5 4.5 9.05228 4.5 8.5 V 4.5 H 8.5 C 9.05228 4.5 9.5 4.05228 9.5 3.5 V 2.5 C 9.5 1.94772 9.05228 1.5 8.5 1.5 H 4 Z' stroke-linecap='round'/%3E%3C/g%3E%3Cg transform='matrix(33.3333 0 0 33.3333 216.6666 -216.6668)'%3E%3Cpath style='stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;' transform=' translate(-18.5, -5.5)' d='M 20 1.5 C 21.3807 1.5 22.5 2.61929 22.5 4 V 8.5 C 22.5 9.05228 22.0523 9.5 21.5 9.5 H 20.5 C 19.9477 9.5 19.5 9.05228 19.5 8.5 V 4.5 H 15.5 C 14.9477 4.5 14.5 4.05228 14.5 3.5 V 2.5 C 14.5 1.94772 14.9477 1.5 15.5 1.5 H 20 Z' stroke-linecap='round'/%3E%3C/g%3E%3Cg transform='matrix(33.3333 0 0 33.3333 216.6666 216.6666)'%3E%3Cpath style='stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;' transform=' translate(-18.5, -18.5)' d='M 20 22.5 C 21.3807 22.5 22.5 21.3807 22.5 20 V 15.5 C 22.5 14.9477 22.0523 14.5 21.5 14.5 H 20.5 C 19.9477 14.5 19.5 14.9477 19.5 15.5 V 19.5 H 15.5 C 14.9477 19.5 14.5 19.9477 14.5 20.5 V 21.5 C 14.5 22.0523 14.9477 22.5 15.5 22.5 H 20 Z' stroke-linecap='round'/%3E%3C/g%3E%3Cg transform='matrix(33.3333 0 0 33.3333 -216.6668 216.6666)'%3E%3Cpath style='stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;' transform=' translate(-5.5, -18.5)' d='M 1.5 20 C 1.5 21.3807 2.61929 22.5 4 22.5 H 8.5 C 9.05228 22.5 9.5 22.0523 9.5 21.5 V 20.5 C 9.5 19.9477 9.05228 19.5 8.5 19.5 H 4.5 V 15.5 C 4.5 14.9477 4.05228 14.5 3.5 14.5 H 2.5 C 1.94772 14.5 1.5 14.9477 1.5 15.5 V 20 Z' stroke-linecap='round'/%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/svg%3E") !important;
+  }
+
+  .leaflet-control-zoom-fullscreen_exit {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' version='1.1' width='1000' height='1000' viewBox='0 0 1000 1000' xml:space='preserve'%3E%3Cdesc%3ECreated with Fabric.js 3.5.0%3C/desc%3E%3Cdefs%3E%3C/defs%3E%3Crect x='0' y='0' width='100%25' height='100%25' fill='rgba(255,255,255,0)'/%3E%3Cg transform='matrix(1.431 0 0 1.431 499.9956 499.9956)' id='142615'%3E%3Cg style='' vector-effect='non-scaling-stroke'%3E%3Cg transform='matrix(33.3333 0 0 33.3333 -216.6668 -216.6668)'%3E%3Cpath style='stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;' transform=' translate(-5.5, -5.5)' d='M 7 9.5 C 8.38071 9.5 9.5 8.38071 9.5 7 V 2.5 C 9.5 1.94772 9.05228 1.5 8.5 1.5 H 7.5 C 6.94772 1.5 6.5 1.94772 6.5 2.5 V 6.5 H 2.5 C 1.94772 6.5 1.5 6.94772 1.5 7.5 V 8.5 C 1.5 9.05228 1.94772 9.5 2.5 9.5 H 7 Z' stroke-linecap='round'/%3E%3C/g%3E%3Cg transform='matrix(33.3333 0 0 33.3333 216.6666 -216.6668)'%3E%3Cpath style='stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;' transform=' translate(-18.5, -5.5)' d='M 17 9.5 C 15.6193 9.5 14.5 8.38071 14.5 7 V 2.5 C 14.5 1.94772 14.9477 1.5 15.5 1.5 H 16.5 C 17.0523 1.5 17.5 1.94772 17.5 2.5 V 6.5 H 21.5 C 22.0523 6.5 22.5 6.94772 22.5 7.5 V 8.5 C 22.5 9.05228 22.0523 9.5 21.5 9.5 H 17 Z' stroke-linecap='round'/%3E%3C/g%3E%3Cg transform='matrix(33.3333 0 0 33.3333 216.6666 216.6666)'%3E%3Cpath style='stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;' transform=' translate(-18.5, -18.5)' d='M 17 14.5 C 15.6193 14.5 14.5 15.6193 14.5 17 V 21.5 C 14.5 22.0523 14.9477 22.5 15.5 22.5 H 16.5 C 17.0523 22.5 17.5 22.0523 17.5 21.5 V 17.5 H 21.5 C 22.0523 17.5 22.5 17.0523 22.5 16.5 V 15.5 C 22.5 14.9477 22.0523 14.5 21.5 14.5 H 17 Z' stroke-linecap='round'/%3E%3C/g%3E%3Cg transform='matrix(33.3333 0 0 33.3333 -216.6668 216.6666)'%3E%3Cpath style='stroke: none; stroke-width: 1; stroke-dasharray: none; stroke-linecap: butt; stroke-dashoffset: 0; stroke-linejoin: miter; stroke-miterlimit: 4; is-custom-font: none; font-file-url: none; fill: rgb(0,0,0); fill-rule: nonzero; opacity: 1;' transform=' translate(-5.5, -18.5)' d='M 9.5 17 C 9.5 15.6193 8.38071 14.5 7 14.5 H 2.5 C 1.94772 14.5 1.5 14.9477 1.5 15.5 V 16.5 C 1.5 17.0523 1.94772 17.5 2.5 17.5 H 6.5 V 21.5 C 6.5 22.0523 6.94772 22.5 7.5 22.5 H 8.5 C 9.05228 22.5 9.5 22.0523 9.5 21.5 V 17 Z' stroke-linecap='round'/%3E%3C/g%3E%3C/g%3E%3C/g%3E%3C/svg%3E") !important;
   }
 
   .leaflet-control-scale-line {
