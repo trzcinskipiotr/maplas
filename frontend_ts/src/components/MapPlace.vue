@@ -4,7 +4,7 @@
       <div v-if="renderPopup">
         <div style="margin-bottom: 5px">
           <span v-if="$store.state.isDesktop">
-            {{ place.id }} <b>{{ place.name }}</b>&nbsp;<a :href="'https://maps.google.com/maps?q=' + place.lat + ',' + place.lon" target="_blank">{{ place.lat}}, {{ place.lon }}</a>
+            {{ place.id }} <b><a v-if="place.link" target="_blank" :href="place.link">{{ place.name }}</a><span v-else>{{ place.name }}</span></b>&nbsp;<a :href="'https://maps.google.com/maps?q=' + place.lat + ',' + place.lon" target="_blank">{{ place.lat}}, {{ place.lon }}</a>
           </span>
           <span v-else>
             <b>{{ place.name }}</b>&nbsp;

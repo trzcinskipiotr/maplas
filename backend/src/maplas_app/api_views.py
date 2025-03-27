@@ -180,3 +180,15 @@ def addpoints(request):
     for point in points:
         GpsPoint.objects.create(lat=point['lat'], lon=point['lon'], time=point['time'], name='')
     return Response({"OK": "OK"})
+
+@api_view(['GET'])
+def stringfield(request, key):
+    value = StringField.objects.filter(key__iexact=key.lower()).first()
+    if value:
+        try:
+            json_response = json.loads(value.value)
+            return Response({"results": json_response})
+        except Exception:
+            return Response({"results": value.value})
+    else:
+        return Response({"error": "no key in DB"}, status=500)

@@ -933,6 +933,7 @@ export default class Index extends BaseComponent {
     this.downloadRegions();
     this.downloadPlaceTypes();
     this.downloadPlaces();
+    this.downloadPlacesCzasWLas();
     this.downloadAreas();
     this.noSleep = new NoSleep();
     setTimeout(() => {
@@ -1785,12 +1786,45 @@ export default class Index extends BaseComponent {
     this.$store.commit('setPlaces', places);
   } 
 
+  private processPlacesCzasWLas(results: any) {
+    const places: Place[] = [];
+    const parking_type = new PlaceType(1000000, 'parking', 'maplas-parking', 1);
+    const other_type = new PlaceType(1000001, 'other', 'maplas-other', 1);
+    for (const responsePlace of results) {
+      let placetype = null;
+      if (responsePlace.category == "8") {
+        placetype = parking_type;
+      } else {
+        placetype = other_type;
+      }
+      const place = new Place(1000000, responsePlace.name, '', parseFloat(responsePlace.coordinates[0]).toFixed(5), parseFloat(responsePlace.coordinates[1]).toFixed(5), placetype, false, this.$store.state.map.getZoom(), !!this.$store.state.user);
+      place.link = 'https://czaswlas.pl' + responsePlace.link;
+      for (const responsePhoto of responsePlace.pictures) {
+        const photo = new Photo(1000000, 'Photo', '', responsePhoto, null, 'https://czaswlas.pl' + responsePhoto.replace('_mini_320x169', '_mini_gallery'), 'https://czaswlas.pl' + responsePhoto.replace('_mini_320x169', '_mini_gallery'), 'https://czaswlas.pl' + responsePhoto, false, 1, false);
+        place.addPhoto(photo);
+      }
+      places.push(place);
+    }
+    this.$store.commit('setPlacesCzasWLas', places);
+  } 
+
   private downloadPlaces() {
     const endPoint = this.$store.state.appHost + 'api/places/';
     this.downloadUrlWithCache(endPoint, 'places.txt').then((response) => {
       this.processPlaces(response.results);
       this.createAlert(AlertStatus.success, this.$t('placesDownloaded', [response.results.length]).toString(), 2000);
     }).catch((response) => {
+      this.createAlert(AlertStatus.danger, this.$t('placesError').toString(), 2000);
+    });
+  }
+
+  private downloadPlacesCzasWLas() {
+    const endPoint = this.$store.state.appHost + 'api/stringfield/czaswlas/';
+    this.downloadUrlWithCache(endPoint, 'czaswlas.txt').then((response) => {
+      this.processPlacesCzasWLas(response.results);
+      this.createAlert(AlertStatus.success, this.$t('placesDownloaded', [response.results.length]).toString(), 2000);
+    }).catch((error) => {
+      console.log(error);
       this.createAlert(AlertStatus.danger, this.$t('placesError').toString(), 2000);
     });
   }

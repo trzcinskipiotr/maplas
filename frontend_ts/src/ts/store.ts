@@ -45,6 +45,7 @@ export interface RootState {
   downloadThreads: number;
   areas: Area[];
   translations: any,
+  placesCzasWLas: Place[],
 }
 
 const store: StoreOptions<RootState> = {
@@ -83,6 +84,7 @@ const store: StoreOptions<RootState> = {
     downloadThreads: 10,
     areas: Array<Area>(),
     translations: {'pl': {}, 'en': {}},
+    placesCzasWLas: null,
   },
   getters: {
     selectedTracks: (state): Track[] => {
@@ -162,6 +164,9 @@ const store: StoreOptions<RootState> = {
     },
     setPlaces(state, places: Place[]) {
       state.places = places;
+    },
+    setPlacesCzasWLas(state, places: Place[]) {
+      state.placesCzasWLas = places;
     },
     setPlaceTypes(state, placeTypes: PlaceType[]) {
       state.placeTypes = placeTypes;

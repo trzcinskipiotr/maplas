@@ -18,5 +18,6 @@ urlpatterns = [
     path('api/addpoints/', api_views.addpoints),
     path('api/gpspoint/', api_views.gpspoint),
     path('api/loggeduserinfo/', api_views.loggeduserinfo),
-    path('api/loginuser/', api_views.loginuser)
+    path('api/loginuser/', api_views.loginuser),
+    path('api/stringfield/<str:key>/', api_views.stringfield),
 ]
