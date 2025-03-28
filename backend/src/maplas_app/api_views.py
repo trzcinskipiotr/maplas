@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from rest_framework import viewsets, authtoken
 from rest_framework.mixins import ListModelMixin, UpdateModelMixin, CreateModelMixin, RetrieveModelMixin
 
@@ -17,6 +18,7 @@ from django.conf import settings
 
 import os
 import json
+import requests
 
 def get_cache_filename(endpoint):
     revision = StringField.objects.filter(key=settings.DATA_REVISION_KEY).first()
@@ -192,3 +194,16 @@ def stringfield(request, key):
             return Response({"results": value.value})
     else:
         return Response({"error": "no key in DB"}, status=500)
+
+@api_view(['GET'])
+def strava(request, z, y, x):
+    headers = {'Cookie': 'copy from Chrome...'}
+    url = 'https://content-a.strava.com/identified/globalheat/ride/blue/{}/{}/{}.png?v=19'.format(z, y, x)
+    response = requests.get(url, headers=headers)
+    new_response = HttpResponse(response.content,
+                     content_type=response.headers['Content-Type'] if 'Content-Type' in response.headers else None,
+                     status=response.status_code,
+                     reason=response.reason,
+                     )
+    new_response['Server'] = response.headers['Server']
+    return new_response

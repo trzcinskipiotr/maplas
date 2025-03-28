@@ -1091,6 +1091,7 @@ export default class Index extends BaseComponent {
 
   private processMapLayers(result: {dict_key: string, javascript_code: string, display_name: string}[]) {
     const layers: LayersDictionary = {};
+    const overlays: LayersDictionary = {};
     let firstLayer = '';
     this.baseMaps = {}
     if (result.length > 0) {
@@ -1113,6 +1114,7 @@ export default class Index extends BaseComponent {
       this.baseMaps['OpenStreetMap'] = layers['openStreetMap'];
       firstLayer = 'openStreetMap';
     }
+    overlays['strava'] = L.tileLayer('https://strava-heatmap.tiles.freemap.sk/ride/purple/{z}/{x}/{y}.png', {maxZoom: 18, maxNativeZoom: 15});
 
     this.$store.state.baseMaps = this.baseMaps;
 
@@ -1137,7 +1139,7 @@ export default class Index extends BaseComponent {
     console.log(`Available layers: ${availableLayers}`);
 
     const maplayer: string = (typeof this.$route.query.maplayer === 'string') ? this.$route.query.maplayer : '';
-    L.control.layers(this.baseMaps).addTo(this.$store.state.map!);
+    L.control.layers(this.baseMaps, overlays).addTo(this.$store.state.map!);
     if (layers.hasOwnProperty(maplayer)) {
       layers[maplayer].addTo(this.$store.state.map!);
     } else {
