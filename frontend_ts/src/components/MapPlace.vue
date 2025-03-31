@@ -23,7 +23,7 @@
             <br>
           </span>  
         </div>  
-        <div v-if="place.photos.length" style="float: left;">
+        <div v-if="place.photos.length">
           <center>
             <table v-if="((place.photos.length > 1) && ($store.state.isDesktop))">
               <tr>
