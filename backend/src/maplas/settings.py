@@ -154,3 +154,5 @@ if not DEBUG:
 MERGE_SEGMENT_DISTANCE = int(os.environ.get('MERGE_SEGMENT_DISTANCE') or 100)
 
 DATA_REVISION_KEY = 'DATA_REVISION'
+
+KOMOOT_TRAIL_VIEW_IMG="/Users/piotr.trzcinski/Desktop/PRIV/maplas/backend/src/komoot_trail_view/"

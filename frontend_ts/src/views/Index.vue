@@ -1014,6 +1014,10 @@ export default class Index extends BaseComponent {
     this.$store.commit('setAppHost', window.location.hostname === 'localhost' ? 'http://localhost:8000/djangoapp/' : '/djangoapp/');
   }
 
+  public getMediaHost() {
+    return ((window.location.hostname === 'localhost') || (window.location.hostname === '127.0.0.1')) ? 'http://localhost:8000/media/' : '/media/';
+  }
+
   private mapClicked(e) {
     if (this.$store.state.editedTrack) {
       this.$store.state.editedTrack.addPoint(e.latlng.lat, e.latlng.lng, this.$store.state.map)
@@ -1814,11 +1818,13 @@ export default class Index extends BaseComponent {
   private processPlacesKomootTrailView(results: any) {
     const places: Place[] = [];
     const parking_type = new PlaceType(1000000, 'parking', 'maplas-parking', 1);
-    const other_type = new PlaceType(1000001, 'other', 'maplas-other', 1);
+    const other_type = new PlaceType(1000001, 'other', 'blue_circle', 1);
+    const mediaHost = this.getMediaHost();
+    console.log(mediaHost);
     for (const responsePlace of results) {
       const placetype = other_type;
       const place = new Place(1000000, responsePlace.id, '', responsePlace.lat.toFixed(5), responsePlace.lon.toFixed(5), placetype, false, this.$store.state.map.getZoom(), !!this.$store.state.user);
-      const photo = new Photo(1000000, 'Photo', '', responsePlace.id, null, responsePlace.photo, responsePlace.photo, responsePlace.photo + '?width=300', false, 1, false);
+      const photo = new Photo(1000000, 'Photo', '', responsePlace.id, null, mediaHost + 'komoot_trail_view/' + responsePlace.id + '.jpg', mediaHost + 'komoot_trail_view/' + responsePlace.id + '.jpg', mediaHost + 'komoot_trail_view/' + responsePlace.id + '_thumb.jpg', false, 1, false);
       place.addPhoto(photo);
       places.push(place);
     }
