@@ -52,6 +52,7 @@ import SavePlaceModal from '@/components/SavePlaceModal.vue';
 import PlaceTypeGroupCard from '@/components/PlaceTypeGroupCard.vue';
 import CzasWLasCard from '@/components/CzasWLasCard.vue';
 import KomootTrailViewCard from '@/components/KomootTrailViewCard.vue';
+import KomootPoiCard from '@/components/KomootPoiCard.vue';
 Vue.component('AppTrack', AppTrack);
 Vue.component('AppTrackGroup', AppTrackGroup);
 Vue.component('TrackStatusIcon', TrackStatusIcon);
@@ -71,6 +72,7 @@ Vue.component('SavePlaceModal', SavePlaceModal);
 Vue.component('PlaceTypeGroupCard', PlaceTypeGroupCard);
 Vue.component('CzasWLasCard', CzasWLasCard);
 Vue.component('KomootTrailViewCard', KomootTrailViewCard);
+Vue.component('KomootPoiCard', KomootPoiCard);
 
 import {formatDate, formatDateSeconds, formatDateDay, roundTrackDistance, sumTracksDistance, sumTracksDistanceWalk, sumTracksDistanceBicycle, sumTracksDistanceMushroom, roundFileBytes, formatDateSecondsEpoch} from '@/ts/utils';
 Vue.filter('formatDate', formatDate);

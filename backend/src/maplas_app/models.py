@@ -277,6 +277,25 @@ class StringField(models.Model):
     key = models.CharField(max_length=1000, db_index=True, null=False)
     value = models.TextField(null=False, blank=True)
 
+    def short_value(self):
+        return self.value[:100]
+
+    def count(self):
+        try:
+            obj = json.loads(self.value)
+            return len(obj)
+        except:
+            return None
+
+    def size(self):
+        length = len(self.value)
+        if length < 1024:
+            return '{}B'.format(length)
+        elif length < 1024*1024:
+            return '{}KB'.format(round(length/1024), 1)
+        else:
+            return '{}MB'.format(round(length/1024/1024, 1))
+
 class GpsPoint(models.Model):
     created = models.DateTimeField(null=False, blank=False, auto_now_add=True)
     lat = models.FloatField(null=False, blank=False)

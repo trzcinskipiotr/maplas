@@ -62,7 +62,7 @@ class VideoLinkAdmin(admin.ModelAdmin):
 
 @admin.register(StringField)
 class StringFieldAdmin(admin.ModelAdmin):
-    list_display = ('id', 'key', 'value')
+    list_display = ('id', 'key', 'short_value', 'count', 'size')
     search_fields = ('key', 'value')
 
 @admin.register(GpsPoint)

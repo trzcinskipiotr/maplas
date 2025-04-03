@@ -4,6 +4,8 @@
     <br>
     <KomootTrailViewCard></KomootTrailViewCard>
     <br>
+    <KomootPoiCard></KomootPoiCard>
+    <br>
     <PlaceTypeGroupCard v-for="placeTypeGroup in placeTypeGroups" :placeTypeGroup="placeTypeGroup" :key="placeTypeGroup.id" :refresh="refresh"></PlaceTypeGroupCard>
     <MapPlace v-for="place of $store.state.places" :key="place.id" :place="place"></MapPlace>
     <AppTrackGroup :searchText="''" :trackGroup="plannedTrackGroup"></AppTrackGroup>

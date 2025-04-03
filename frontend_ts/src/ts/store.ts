@@ -47,6 +47,7 @@ export interface RootState {
   translations: any,
   placesCzasWLas: Place[],
   placesKomootTrailView: Place[],
+  placesKomootPoi: Place[],
 }
 
 const store: StoreOptions<RootState> = {
@@ -87,6 +88,7 @@ const store: StoreOptions<RootState> = {
     translations: {'pl': {}, 'en': {}},
     placesCzasWLas: null,
     placesKomootTrailView: null,
+    placesKomootPoi: null,
   },
   getters: {
     selectedTracks: (state): Track[] => {
@@ -172,6 +174,9 @@ const store: StoreOptions<RootState> = {
     },
     setPlacesKomootTrailView(state, places: Place[]) {
       state.placesKomootTrailView = places;
+    },
+    setPlacesKomootPoi(state, places: Place[]) {
+      state.placesKomootPoi = places;
     },
     setPlaceTypes(state, placeTypes: PlaceType[]) {
       state.placeTypes = placeTypes;

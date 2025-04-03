@@ -1,6 +1,8 @@
 from django.conf import settings
 from gpxpy.geo import haversine_distance
 
+import math
+
 
 def calculate_distance_from_segments(segments):
     distance = 0
@@ -16,3 +18,11 @@ def calculate_distance_from_segments(segments):
             last_point = point
             first_segment_point = False
     return round(distance)
+
+
+def gps2tile(lat_deg, lon_deg, zoom):
+  lat_rad = math.radians(lat_deg)
+  n = 1 << zoom
+  xtile = int((lon_deg + 180.0) / 360.0 * n)
+  ytile = int((1.0 - math.asinh(math.tan(lat_rad)) / math.pi) / 2.0 * n)
+  return xtile, ytile

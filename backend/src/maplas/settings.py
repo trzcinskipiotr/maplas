@@ -156,3 +156,8 @@ MERGE_SEGMENT_DISTANCE = int(os.environ.get('MERGE_SEGMENT_DISTANCE') or 100)
 DATA_REVISION_KEY = 'DATA_REVISION'
 
 KOMOOT_TRAIL_VIEW_IMG="/Users/piotr.trzcinski/Desktop/PRIV/maplas/backend/src/komoot_trail_view/"
+KOMOOT_POI_IMG="/Users/piotr.trzcinski/Desktop/PRIV/maplas/backend/src/komoot_poi/"
+CZASWLAS_IMG="/Users/piotr.trzcinski/Desktop/PRIV/maplas/backend/src/czaswlas/"
+
+KOMOOTPOI_DOWNLOAD_DIR='/Users/piotr.trzcinski/KOMOOTPOI/'
+KOMOOTTRAILVIEW_DOWNLOAD_DIR='/Users/piotr.trzcinski/KOMOOTTRAILVIEW/'

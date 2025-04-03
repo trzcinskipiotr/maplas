@@ -935,6 +935,7 @@ export default class Index extends BaseComponent {
     this.downloadPlaces();
     this.downloadPlacesCzasWLas();
     this.downloadPlacesKomootTrailView();
+    this.downloadPlacesKomootPoi();
     this.downloadAreas();
     this.noSleep = new NoSleep();
     setTimeout(() => {
@@ -1831,6 +1832,26 @@ export default class Index extends BaseComponent {
     this.$store.commit('setPlacesKomootTrailView', places);
   } 
 
+  private processPlacesKomootPoi(results: any) {
+    const places: Place[] = [];
+    const parking_type = new PlaceType(1000000, 'parking', 'maplas-parking', 1);
+    const other_type = new PlaceType(1000001, 'other', 'red_circle', 1);
+    const mediaHost = this.getMediaHost();
+    console.log(mediaHost);
+    for (const responsePlace of results) {
+      const placetype = other_type;
+      let name = responsePlace.feature.properties.name;
+      if (responsePlace.feature.properties.name_pl) {
+        name = responsePlace.feature.properties.name_pl;
+      }
+      const place = new Place(1000000, name, '', responsePlace.lat.toFixed(5), responsePlace.lon.toFixed(5), placetype, false, this.$store.state.map.getZoom(), !!this.$store.state.user);
+      const photo = new Photo(1000000, 'Photo', '', responsePlace.id, null, mediaHost + 'komoot_poi/' + responsePlace.id + '.jpg', mediaHost + 'komoot_poi/' + responsePlace.id + '.jpg', mediaHost + 'komoot_poi/' + responsePlace.id + '_thumb.jpg', false, 1, false);
+      place.addPhoto(photo);
+      places.push(place);
+    }
+    this.$store.commit('setPlacesKomootPoi', places);
+  } 
+
   private downloadPlaces() {
     const endPoint = this.$store.state.appHost + 'api/places/';
     this.downloadUrlWithCache(endPoint, 'places.txt').then((response) => {
@@ -1856,6 +1877,17 @@ export default class Index extends BaseComponent {
     const endPoint = this.$store.state.appHost + 'api/stringfield/komoottrailview/';
     this.downloadUrlWithCache(endPoint, 'komoottrailview.txt').then((response) => {
       this.processPlacesKomootTrailView(response.results);
+      this.createAlert(AlertStatus.success, this.$t('placesDownloaded', [response.results.length]).toString(), 2000);
+    }).catch((error) => {
+      console.log(error);
+      this.createAlert(AlertStatus.danger, this.$t('placesError').toString(), 2000);
+    });
+  }
+
+  private downloadPlacesKomootPoi() {
+    const endPoint = this.$store.state.appHost + 'api/stringfield/komootpoi/';
+    this.downloadUrlWithCache(endPoint, 'komootpoi.txt').then((response) => {
+      this.processPlacesKomootPoi(response.results);
       this.createAlert(AlertStatus.success, this.$t('placesDownloaded', [response.results.length]).toString(), 2000);
     }).catch((error) => {
       console.log(error);
