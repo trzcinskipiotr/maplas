@@ -196,9 +196,9 @@ def stringfield(request, key):
         return Response({"error": "no key in DB"}, status=500)
 
 @api_view(['GET'])
-def strava(request, z, y, x):
+def strava(request, z, x, y):
     headers = {'Cookie': 'copy from Chrome...'}
-    url = 'https://content-a.strava.com/identified/globalheat/ride/blue/{}/{}/{}.png?v=19'.format(z, y, x)
+    url = 'https://content-a.strava.com/identified/globalheat/ride/blue/{}/{}/{}.png?v=19'.format(z, x, y)
     response = requests.get(url, headers=headers)
     new_response = HttpResponse(response.content,
                      content_type=response.headers['Content-Type'] if 'Content-Type' in response.headers else None,

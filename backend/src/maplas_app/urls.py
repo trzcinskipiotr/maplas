@@ -20,5 +20,5 @@ urlpatterns = [
     path('api/loggeduserinfo/', api_views.loggeduserinfo),
     path('api/loginuser/', api_views.loginuser),
     path('api/stringfield/<str:key>/', api_views.stringfield),
-    path('api/strava/<int:z>/<int:y>/<int:x>/', api_views.strava),
+    path('api/strava/<int:z>/<int:x>/<int:y>/', api_views.strava),
 ]

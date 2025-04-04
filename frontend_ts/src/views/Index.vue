@@ -1120,7 +1120,7 @@ export default class Index extends BaseComponent {
       this.baseMaps['OpenStreetMap'] = layers['openStreetMap'];
       firstLayer = 'openStreetMap';
     }
-    overlays['strava'] = L.tileLayer('https://strava-heatmap.tiles.freemap.sk/ride/purple/{z}/{x}/{y}.png', {maxZoom: 18, maxNativeZoom: 15});
+    overlays['strava'] = L.tileLayer('http://127.0.0.1:8001/media/purple/{z}/{x}/{y}.png', {maxZoom: 18, maxNativeZoom: 15});
 
     this.$store.state.baseMaps = this.baseMaps;
 
