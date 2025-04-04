@@ -1,23 +1,9 @@
 import json
-import sys
-import time
-import math
-
-from django.conf import settings
-
-import requests
-import geopandas
-from vt2geojson.tools import vt_bytes_to_geojson
 
 from django.core.management.base import BaseCommand
-import os
+from rest_framework.templatetags.rest_framework import highlight_code
 
-from maplas_app.gps_utils import gps2tile
-from maplas_app.models import StringField, update_revision
-
-from PIL import Image
-
-#https://b.tiles-api.maps.komoot.net/v1/tiles/poi/13/4513/2667.vector.pbf?cache-version=1
+from maplas_app.models import StringField
 
 PUSZCZA_NOTECKA = [[52.60444, 15.42921], [52.87802, 16.98279]]
 PUSZCZA_BYDGOSKA = [[52.83056, 17.88215], [53.11460, 18.75272]]
@@ -40,11 +26,40 @@ class Command(BaseCommand):
         noname_pl = 0
         numeric_id = 0
         nonnumeric_id = 0
+        imagesindetails = 0
+        noimagesindetails = 0
+        totalimages = 0
+        firstandsecondphoto = 0
+        highlightpoints = 0
+        highlightsegments = 0
         for poi in pois:
-            if poi['photo']:
+            first_photo = False
+            second_photo = False
+            #print(json.dumps(poi, indent=4))
+            if poi['details'] and 'images' in poi['details']:
+                if len(poi['details']['images']) > 0:
+                    imagesindetails += 1
+                    first_photo = True
+                totalimages = totalimages + len(poi['details']['images'])
+            if poi['details'] and '_embedded' in poi['details'] and 'images' in poi['details']['_embedded'] and '_embedded' in poi['details']['_embedded']['images'] and 'items' in poi['details']['_embedded']['images']['_embedded']:
+                if len(poi['details']['_embedded']['images']['_embedded']['items']) > 0:
+                    imagesindetails += 1
+                    second_photo = True
+                totalimages = totalimages + len(poi['details']['_embedded']['images']['_embedded']['items'])
+            if first_photo and second_photo:
+                firstandsecondphoto += 1
+            if 'front_image_url' in poi['feature']['properties']:
                 photos += 1
             else:
                 nophotos += 1
+            if poi['details'] and 'type' in poi['details']:
+                type = poi['details']['type']
+                if type == 'highlight_point':
+                    highlightpoints += 1
+                if type == 'highlight_segment':
+                    highlightsegments += 1
+                if type != 'highlight_point' and type != 'highlight_segment':
+                    print(type)
             if 'name' in poi['feature']['properties']:
                 name += 1
             else:
@@ -57,12 +72,11 @@ class Command(BaseCommand):
                 numeric_id += 1
             else:
                 nonnumeric_id += 1
-            if poi['id'] == 'N0676':
-                print(json.dumps(poi))
+            if poi['id'] == '6247358aaa':
+                print(json.dumps(poi, indent=4))
+                if poi['details'] and 'images' in poi['details']:
+                    print(len(poi['details']['images']))
                 print()
-            #if poi['id'].isnumeric() and not poi['photo']:
-            #    print(json.dumps(poi))
-            #    print()
         print('All: {}'.format(all))
         print('Photo: {}'.format(photos))
         print('No photo: {}'.format(nophotos))
@@ -72,3 +86,10 @@ class Command(BaseCommand):
         print('Noname PL: {}'.format(noname_pl))
         print('Numeric ID: {}'.format(numeric_id))
         print('NonNumeric ID: {}'.format(nonnumeric_id))
+
+        print('imagesindetails: {}'.format(imagesindetails))
+        print('noimagesindetails: {}'.format(noimagesindetails))
+        print('totalimages: {}'.format(totalimages))
+        print('firstandsecondphoto: {}'.format(firstandsecondphoto))
+        print('highlightpoints: {}'.format(highlightpoints))
+        print('highlightsegments: {}'.format(highlightsegments))

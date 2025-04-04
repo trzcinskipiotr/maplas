@@ -49,17 +49,21 @@ class Command(BaseCommand):
         time.sleep(2)
 
         if type == 'poi':
-            DATABASE_KEY='KOMOOTPOI_{}'.format(zoom)
+            DATABASE_KEY = 'KOMOOTPOI'
+            DATABASE_ZOOM_KEY='KOMOOTPOI_{}'.format(zoom)
             DATABASE_DETAILS_KEY='KOMOOTPOI_DETAILS'
-            MAINDIR = settings.KOMOOTPOI_DOWNLOAD_DIR
+            MAINDIR = settings.KOMOOT_POI_TILE_DIR
             TILE_URL = 'https://b.tiles-api.maps.komoot.net/v1/tiles/poi/{}/{}/{}.vector.pbf?cache-version=1'
         if type == 'trailview':
-            DATABASE_KEY = 'KOMOOTTRAILVIEW_{}'.format(zoom)
+            DATABASE_KEY = 'KOMOOTTRAILVIEW'
+            DATABASE_ZOOM_KEY = 'KOMOOTTRAILVIEW_{}'.format(zoom)
             DATABASE_DETAILS_KEY = 'KOMOOTTRAILVIEW_DETAILS'
-            MAINDIR = settings.KOMOOTTRAILVIEW_DOWNLOAD_DIR
+            MAINDIR = settings.KOMOOT_TRAIL_VIEW_TILE_DIR
             TILE_URL = 'https://trailview-tiles.maps.komoot.net/tiles/v2/{}/{}/{}.vector.pbf'
         if StringField.objects.filter(key=DATABASE_KEY).count() == 0:
             StringField.objects.create(key=DATABASE_KEY, value='[]')
+        if StringField.objects.filter(key=DATABASE_ZOOM_KEY).count() == 0:
+            StringField.objects.create(key=DATABASE_ZOOM_KEY, value='[]')
         if StringField.objects.filter(key=DATABASE_DETAILS_KEY).count() == 0:
             StringField.objects.create(key=DATABASE_DETAILS_KEY, value='{}')
         mainzoomdir = '{}{}/'.format(MAINDIR, zoom)
@@ -78,13 +82,8 @@ class Command(BaseCommand):
         tiles_download_failed = 0
         tiles_from_cache = 0
         tiles_processed = 0
-        db_value = StringField.objects.get(key=DATABASE_KEY)
-        db_value_json = json.loads(db_value.value)
         db_details_value = StringField.objects.get(key=DATABASE_DETAILS_KEY)
         db_details_value_json = json.loads(db_details_value.value)
-        points_in_db_dict = {}
-        for item in db_value_json:
-            points_in_db_dict[item['id']] = item
         details_in_db_dict = {}
         for point_id in db_details_value_json.keys():
             details_in_db_dict[point_id] = db_details_value_json[point_id]
@@ -117,15 +116,24 @@ class Command(BaseCommand):
                         lon = feature['geometry']['coordinates'][0]
                         lat = feature['geometry']['coordinates'][1]
                         if self.is_to_import(lat, lon):
-                            id = feature['properties']['id']
+                            if type == 'poi':
+                                id = feature['properties']['id']
+                            if type == 'trailview':
+                                id = feature['properties']['trailview_id']
                             point = {'id': id, 'lat': lat, 'lon': lon, 'feature': feature, 'details': None}
                             if id in details_in_db_dict:
                                 details_from_cache += 1
-                                point['details'] = details_in_db_dict[id]
+                                details = details_in_db_dict[id]
+                                point['details'] = details
+                                point['photos'] = []
+                                if 'images' in details:
+                                    for image in details['images']:
+                                        point['photos'].append(image['src'].split('?')[0])
+                                if '_embedded' in details and 'images' in details['_embedded'] and '_embedded' in details['_embedded']['images'] and 'items' in details['_embedded']['images']['_embedded']:
+                                    for image in details['_embedded']['images']['_embedded']['items']:
+                                        point['photos'].append(image['src'].split('?')[0])
                             else:
                                 details_to_download += 1
-                                if details_to_download >= 1000:
-                                    continue
                                 if type == 'poi':
                                     if point['id'].isnumeric():
                                         details_url = 'https://www.komoot.com/api/v007/highlights/{}?_embedded=coordinates%2Cimages%2Ctips%2Crecommenders%2Cbookmark&_embedded.tips=rating&_embedded.images=rating'.format(point['id'])
@@ -137,6 +145,28 @@ class Command(BaseCommand):
                                     if response_details.status_code == 200:
                                         details_downloaded_ok += 1
                                         response_details_json = response_details.json()
+                                        point['photos'] = []
+                                        if 'images' in response_details_json:
+                                            for image in response_details_json['images']:
+                                                point['photos'].append(image['src'].split('?')[0])
+                                        if '_embedded' in response_details_json and 'images' in response_details_json['_embedded'] and '_embedded' in response_details_json['_embedded']['images'] and 'items' in response_details_json['_embedded']['images']['_embedded']:
+                                            for image in response_details_json['_embedded']['images']['_embedded']['items']:
+                                                point['photos'].append(image['src'].split('?')[0])
+                                        point['details'] = response_details_json
+                                        details_in_db_dict[id] = response_details_json
+                                        time.sleep(0.1)
+                                    else:
+                                        details_download_failed += 1
+                                        print('{}: response: {}'.format(details_url, response_details.status_code))
+                                if type == 'trailview':
+                                    details_url = 'https://www.komoot.com/api/trailview/v1/images/{}?hl=pl'.format(id)
+                                    headers = {'Cookie': '_ga=GA1.1.388016038.1743165997; _hjSessionUser_5024555=eyJpZCI6IjNhMTYyNzkxLWE4ZGMtNTA3NS04OGVmLTUyYWYwODI5NjBjMCIsImNyZWF0ZWQiOjE3NDMxNjU5OTcxMzUsImV4aXN0aW5nIjpmYWxzZX0=; koa_re=1775288925; koa_rt=829517129603%7C%2F829517129603%2Fkomoot-web%2F3d959286-ed58-42ec-8968-251b0125c5dc%7C1775288925; koa_ae=1743754665; koa_at=829517129603%7CeyJ4NXQjUzI1NiI6InlIQ2xZdUdwWlNvU2c3dkhrT1k4YzYyR2NGdGxSeV9neEpIYkJfNFpjamsiLCJraWQiOiJqd3QtMjAyNTAyMTEiLCJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJydGkiOiJjZTg0ZGJiMDkxY2Q4NzI3YWNiOTUyNmQ5OTg2NzU4NjFlMzgyMDhlZGViNzI2MzNjMWY1NTQ0MmE5ZTE5MmQ3IiwidXNlcl9uYW1lIjoiODI5NTE3MTI5NjAzIiwic2NvcGUiOlsidXNlci4qIl0sImV4cCI6MTc0Mzc1NDcyNSwiaWF0IjoxNzQzNzUyOTI1LCJqdGkiOiIyNzJlNTk1MC00Zjc0LTQ4NTAtODhkZC1jZmFkNGE0ODM4NjYiLCJjbGllbnRfaWQiOiJrb21vb3Qtd2ViIiwidXNlcm5hbWUiOiI4Mjk1MTcxMjk2MDMifQ.hcj9lxpqP5gQrDyE32Hyn1kM4Wvmxn9a2rWkj9CqeMIEPO1B7imY7JSIsxFqQTHm4Gpu7FIRg_9EQc2dEhWK4sFvHx1bs2uRaz0LZA4nnir8a7HaLo5b77t_OD2d9L4tWPQr9rtHr7fmEFwSBhIEkwOjfxTMI2L78eBRAfn2ZvBrF7V0iMyQrhQfu4CxpUcg3oIKMk44CkLCUHoM0VxTdXD2sRYDuxZUntX-UunPcI6aKpeIQs4IcHTGN4eUep_DLeVcezLIdVNTo8_DNCEbYmYAKD0ntNBLoCrBPGrvAbv8hGHK7tgPtInHw9AfT-p0aJRnImFAT1rUoXwoYKwTRQ%7C1743754665; kmt_sess=eyJsYW5nIjoicGwiLCJtZXRyaWMiOnRydWUsInByb2ZpbGUiOnsidXNlcm5hbWUiOiI4Mjk1MTcxMjk2MDMiLCJsb2NhbGUiOiJwbF9QTCIsIm1ldHJpYyI6dHJ1ZX19; kmt_sess.sig=rTVdDTdrnsWkcjIM3bHW-3So0jM; _ga_R7DCLCR1RB=GS1.1.1743752927.3.0.1743752927.60.0.0; _dd_s=rum=0&expire=1743753833411'}
+                                    response_details = requests.get(details_url, headers=headers)
+                                    if response_details.status_code == 200:
+                                        details_downloaded_ok += 1
+                                        response_details_json = response_details.json()
+                                        photo_link = response_details_json['image']['src']
+                                        point['photo'] = photo_link.split('?')[0]
                                         point['details'] = response_details_json
                                         details_in_db_dict[id] = response_details_json
                                         time.sleep(0.1)
@@ -155,6 +185,10 @@ class Command(BaseCommand):
         print('Tiles to download: {}'.format(tiles_to_download))
         print('Tiles downloaded OK: {}'.format(tiles_downloaded_ok))
         print('Tiles download failed: {}'.format(tiles_download_failed))
+
+        komoot_string_field = StringField.objects.get(key=DATABASE_ZOOM_KEY)
+        komoot_string_field.value = json.dumps(points_to_save)
+        komoot_string_field.save()
 
         komoot_string_field = StringField.objects.get(key=DATABASE_KEY)
         komoot_string_field.value = json.dumps(points_to_save)

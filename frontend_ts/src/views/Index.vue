@@ -1012,11 +1012,11 @@ export default class Index extends BaseComponent {
   }
 
   private setAppHost() {
-    this.$store.commit('setAppHost', window.location.hostname === 'localhost' ? 'http://localhost:8000/djangoapp/' : '/djangoapp/');
+    this.$store.commit('setAppHost', window.location.hostname === 'localhost' ? 'http://localhost:8001/djangoapp/' : '/djangoapp/');
   }
 
   public getMediaHost() {
-    return ((window.location.hostname === 'localhost') || (window.location.hostname === '127.0.0.1')) ? 'http://localhost:8000/media/' : '/media/';
+    return ((window.location.hostname === 'localhost') || (window.location.hostname === '127.0.0.1')) ? 'http://localhost:8001/media/' : '/media/';
   }
 
   private mapClicked(e) {
@@ -1798,6 +1798,7 @@ export default class Index extends BaseComponent {
     const places: Place[] = [];
     const parking_type = new PlaceType(1000000, 'parking', 'maplas-parking', 1);
     const other_type = new PlaceType(1000001, 'other', 'maplas-other', 1);
+    const mediaHost = this.getMediaHost();
     for (const responsePlace of results) {
       let placetype = null;
       if (responsePlace.category == "8") {
@@ -1807,14 +1808,15 @@ export default class Index extends BaseComponent {
       }
       const place = new Place(1000000, responsePlace.name, '', parseFloat(responsePlace.coordinates[0]).toFixed(5), parseFloat(responsePlace.coordinates[1]).toFixed(5), placetype, false, this.$store.state.map.getZoom(), !!this.$store.state.user);
       place.link = 'https://czaswlas.pl' + responsePlace.link;
-      for (const responsePhoto of responsePlace.pictures) {
-        const photo = new Photo(1000000, 'Photo', '', responsePhoto, null, 'https://czaswlas.pl' + responsePhoto.replace('_mini_320x169', '_mini_gallery'), 'https://czaswlas.pl' + responsePhoto.replace('_mini_320x169', '_mini_gallery'), 'https://czaswlas.pl' + responsePhoto, false, 1, false);
+      for (const responsePhoto of responsePlace.images) {
+        const photo = new Photo(1000000, 'Photo', '', responsePhoto['thumb'], null, mediaHost + 'czaswlas/' + responsePhoto['full'], mediaHost + 'czaswlas/' + responsePhoto['full'], mediaHost + 'czaswlas/' + responsePhoto['thumb'], false, 1, false);
         place.addPhoto(photo);
       }
       places.push(place);
     }
     this.$store.commit('setPlacesCzasWLas', places);
   } 
+
 
   private processPlacesKomootTrailView(results: any) {
     const places: Place[] = [];
@@ -1834,19 +1836,26 @@ export default class Index extends BaseComponent {
 
   private processPlacesKomootPoi(results: any) {
     const places: Place[] = [];
-    const parking_type = new PlaceType(1000000, 'parking', 'maplas-parking', 1);
-    const other_type = new PlaceType(1000001, 'other', 'red_circle', 1);
-    const mediaHost = this.getMediaHost();
-    console.log(mediaHost);
+    const yellow_circle = new PlaceType(1000000, 'parking', 'yellow_circle', 1);
+    const red_circle = new PlaceType(1000001, 'other', 'red_circle', 1);
     for (const responsePlace of results) {
-      const placetype = other_type;
+      let placetype = yellow_circle;
+      if ((responsePlace.details) && (responsePlace.details.type)) {
+        if ((responsePlace.details.type == 'highlight_point') || (responsePlace.details.type == 'highlight_segment')) {
+          placetype = red_circle;
+        }
+      }
       let name = responsePlace.feature.properties.name;
       if (responsePlace.feature.properties.name_pl) {
         name = responsePlace.feature.properties.name_pl;
       }
-      const place = new Place(1000000, name, '', responsePlace.lat.toFixed(5), responsePlace.lon.toFixed(5), placetype, false, this.$store.state.map.getZoom(), !!this.$store.state.user);
-      const photo = new Photo(1000000, 'Photo', '', responsePlace.id, null, mediaHost + 'komoot_poi/' + responsePlace.id + '.jpg', mediaHost + 'komoot_poi/' + responsePlace.id + '.jpg', mediaHost + 'komoot_poi/' + responsePlace.id + '_thumb.jpg', false, 1, false);
-      place.addPhoto(photo);
+      const place = new Place(responsePlace.id, name, '', responsePlace.lat.toFixed(5), responsePlace.lon.toFixed(5), placetype, false, this.$store.state.map.getZoom(), !!this.$store.state.user);
+      if (responsePlace.photos) {
+        for (const responsePhoto of responsePlace.photos) {
+          const photo = new Photo(1000000, 'Photo', '', responsePlace.id, null, responsePhoto, responsePhoto, responsePhoto + '?width=300&height=300', false, 1, false);
+          place.addPhoto(photo);
+        }
+      }
       places.push(place);
     }
     this.$store.commit('setPlacesKomootPoi', places);

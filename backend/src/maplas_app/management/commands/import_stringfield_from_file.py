@@ -10,7 +10,7 @@ class Command(BaseCommand):
         parser.add_argument('filename', type=str)
 
     def handle(self, *args, **options):
-        stringfield = StringField.objects.get(key=options['key'])
+        stringfield, created = StringField.objects.get_or_create(key=options['key'])
         with open(options['filename'], 'r') as f:
             content = f.read()
             stringfield.value = content

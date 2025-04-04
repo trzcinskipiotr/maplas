@@ -1,3 +1,6 @@
 backend/src/komoot_trail_view
 backend/src/komoot_poi
 backend/src/czaswlas
+db/
+download/
+backend/set_env.sh

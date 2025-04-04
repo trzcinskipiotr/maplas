@@ -312,6 +312,7 @@ class GpsPoint(models.Model):
 @receiver(models.signals.post_save, sender=Track)
 @receiver(models.signals.post_save, sender=Region)
 @receiver(models.signals.post_save, sender=PlaceTypeGroup)
+@receiver(models.signals.post_save, sender=StringField)
 @receiver(models.signals.post_delete, sender=Area)
 @receiver(models.signals.post_delete, sender=MapLayer)
 @receiver(models.signals.post_delete, sender=VideoLink)
@@ -321,8 +322,14 @@ class GpsPoint(models.Model):
 @receiver(models.signals.post_delete, sender=Track)
 @receiver(models.signals.post_delete, sender=Region)
 @receiver(models.signals.post_delete, sender=PlaceTypeGroup)
+@receiver(models.signals.post_delete, sender=StringField)
 def update_revision(sender, instance, **kwargs):
-    field = StringField.objects.filter(key=settings.DATA_REVISION_KEY).first()
-    if field:
-        field.value = '{}'.format(time.time_ns())
-        field.save()
+    update = True
+    if sender == StringField:
+        if instance.key == settings.DATA_REVISION_KEY:
+            update = False
+    if update:
+        field = StringField.objects.filter(key=settings.DATA_REVISION_KEY).first()
+        if field:
+            field.value = '{}'.format(time.time_ns())
+            field.save()
