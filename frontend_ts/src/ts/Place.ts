@@ -11,20 +11,20 @@ import markerIcons from '@/ts/markerIcons';
 
 export default class Place {
 
-  public marker: L.Marker;
+  public marker: L.Marker | L.CircleMarker;
   public photos: Photo[];
   public videos: VideoLink[];
 
   constructor(public id: number, public name: string, public description: string, public lat: number, public lon: number, public type: PlaceType, public approved: boolean, zoomLevel: number, draggable: boolean) {
-    const markerIconClass = this.getMarkerIconClass();
     const size = this.getMarkerSize(zoomLevel);
     const anchor = this.getMarkerAnchor(zoomLevel);
-    const markerIcon = L.icon({
-      iconSize: [size, size],
-      iconAnchor: [anchor, anchor],
-      iconUrl: markerIcons[markerIconClass],
-    });
-    this.marker = new L.Marker([lat, lon], {icon: markerIcon, draggable: draggable});
+    if ((type) && (type.icon instanceof Object)) {
+      this.marker = new L.CircleMarker([lat, lon], {radius: size / 2, color: type.icon.color, draggable: draggable});
+    } else {
+      const markerIconClass = this.getMarkerIconClass();
+      const markerIcon = L.icon({iconSize: [size, size], iconAnchor: [anchor, anchor], iconUrl: markerIcons[markerIconClass]});
+      this.marker = new L.Marker([lat, lon], {icon: markerIcon, draggable: draggable});
+    }
     this.photos = [];
     this.videos = [];
   }

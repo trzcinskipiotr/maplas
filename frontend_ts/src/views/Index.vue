@@ -1065,6 +1065,7 @@ export default class Index extends BaseComponent {
         contextmenu: true,
         contextmenuWidth: 140,
         zoomControl: false,
+        renderer: L.canvas({ padding: 0.1 }),
         contextmenuItems: [{
           text: this.$t('addPlace'),
           callback: this.openNewPlaceModal
@@ -1800,8 +1801,8 @@ export default class Index extends BaseComponent {
 
   private processPlacesCzasWLas(results: any) {
     const places: Place[] = [];
-    const parking_type = new PlaceType(1000000, 'parking', 'maplas-parking', 1);
-    const other_type = new PlaceType(1000001, 'other', 'maplas-other', 1);
+    const parking_type = new PlaceType(1000000, 'parking', {'color': 'rgb(38, 120, 252)'}, 1);
+    const other_type = new PlaceType(1000001, 'other', {'color': 'orange'}, 1);
     const mediaHost = this.getMediaHost();
     for (const responsePlace of results) {
       let placetype = null;
@@ -1824,8 +1825,7 @@ export default class Index extends BaseComponent {
 
   private processPlacesKomootTrailView(results: any) {
     const places: Place[] = [];
-    const parking_type = new PlaceType(1000000, 'parking', 'maplas-parking', 1);
-    const other_type = new PlaceType(1000001, 'other', 'blue_circle', 1);
+    const other_type = new PlaceType(1000001, 'other', {'color': 'blue'}, 1);
     const mediaHost = this.getMediaHost();
     console.log(mediaHost);
     for (const responsePlace of results) {
@@ -1840,8 +1840,8 @@ export default class Index extends BaseComponent {
 
   private processPlacesKomootPoi(results: any) {
     const places: Place[] = [];
-    const yellow_circle = new PlaceType(1000000, 'parking', 'yellow_circle', 1);
-    const red_circle = new PlaceType(1000001, 'other', 'red_circle', 1);
+    const yellow_circle = new PlaceType(1000000, 'parking', {'color': 'yellow'}, 1);
+    const red_circle = new PlaceType(1000001, 'other', {'color': 'red'}, 1);
     for (const responsePlace of results) {
       let placetype = yellow_circle;
       if ((responsePlace.details) && (responsePlace.details.type)) {

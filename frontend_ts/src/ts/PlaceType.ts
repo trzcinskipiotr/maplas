@@ -1,5 +1,5 @@
 export default class PlaceType {
 
-  constructor(public id: number, public name: string, public icon: string, public group: Object) {
+  constructor(public id: number, public name: string, public icon: string | Object, public group: Object) {
   }
 }
