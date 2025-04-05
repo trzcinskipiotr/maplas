@@ -264,6 +264,7 @@ class MapLayer(models.Model):
     dict_key = models.CharField(max_length=100, null=False, blank=False)
     display_name = models.CharField(max_length=100, null=False, blank=False)
     javascript_code = models.TextField(null=False, blank=False)
+    type = models.CharField(max_length=100, null=False, blank=False, choices=[('base', 'base'), ('overlay', 'overlay')])
 
 class VideoLink(models.Model):
     name = models.CharField(max_length=1000, null=False, blank=False)

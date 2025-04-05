@@ -89,7 +89,7 @@ class MapLayerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MapLayer
-        fields = ['id', 'is_active', 'order', 'dict_key', 'display_name', 'javascript_code']
+        fields = ['id', 'is_active', 'order', 'dict_key', 'display_name', 'javascript_code', 'type']
 
 class PhotoSerializer(serializers.ModelSerializer):
 

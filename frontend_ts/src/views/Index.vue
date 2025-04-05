@@ -1102,13 +1102,18 @@ export default class Index extends BaseComponent {
     this.baseMaps = {}
     if (result.length > 0) {
       for (const layer of result) {
-        layers[layer.dict_key] = eval(layer.javascript_code);
-        layers[layer.dict_key]['options']['errorTileUrl'] = icons.tileDownloadError;
-        layers[layer.dict_key]['options']['attribution'] = '';
-        layers[layer.dict_key]['options']['layerName'] = layer.dict_key;
-        this.baseMaps[layer.display_name] = layers[layer.dict_key];
-        if (! firstLayer) {
-          firstLayer = layer.dict_key;
+        const dict = layer.type == 'base' ? layers : overlays;
+        dict[layer.dict_key] = eval(layer.javascript_code);
+        if (layer.type == 'base') {
+          dict[layer.dict_key]['options']['errorTileUrl'] = icons.tileDownloadError;
+        }
+        dict[layer.dict_key]['options']['attribution'] = '';
+        dict[layer.dict_key]['options']['layerName'] = layer.dict_key;
+        if (layer.type == 'base') {
+          this.baseMaps[layer.display_name] = layers[layer.dict_key];
+          if (! firstLayer) {
+            firstLayer = layer.dict_key;
+          }
         }
       }
     } else {
@@ -1120,7 +1125,6 @@ export default class Index extends BaseComponent {
       this.baseMaps['OpenStreetMap'] = layers['openStreetMap'];
       firstLayer = 'openStreetMap';
     }
-    overlays['strava'] = L.tileLayer('http://127.0.0.1:8001/media/purple/{z}/{x}/{y}.png', {maxZoom: 18, maxNativeZoom: 15});
 
     this.$store.state.baseMaps = this.baseMaps;
 

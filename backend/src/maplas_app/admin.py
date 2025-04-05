@@ -52,7 +52,7 @@ class AreaAdmin(admin.ModelAdmin):
 
 @admin.register(MapLayer)
 class MapLayerAdmin(admin.ModelAdmin):
-    list_display = ('id', 'is_active', 'order', 'dict_key', 'display_name', 'javascript_code')
+    list_display = ('id', 'is_active', 'order', 'dict_key', 'display_name', 'type', 'javascript_code')
     search_fields = ('dict_key', 'display_name', 'javascript_code')
 
 @admin.register(VideoLink)
